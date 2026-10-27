@@ -4,7 +4,8 @@ import { t } from '../../i18n';
 import { MRT_BTN } from '../../ui/mrtButtons';
 
 const api = () => (window as any).qr || {};
-const fmt = (v: any) => (v && typeof v === 'object' ? `${v.mm} mm / ${v.in} in` : String(v));
+const fmt = (v: any) => (v && typeof v === 'object' ? `${v.mm} mm / ${v.in} in` : typeof v === 'number' ? `${v} mm` : String(v));
+const thr = (x: any) => (!x ? '' : typeof x === 'string' ? x : x.text || x.raw || x.callout || '');
 
 export function StandardsSection({ part }: any) {
   const list: any[] = part.standards || [];
@@ -15,7 +16,7 @@ export function StandardsSection({ part }: any) {
   return <div className="qr-std" data-testid="standards-panel">
     <div className="qr-lbl">{t('std.title')}</div>
     {list.map((s) => { const file = (s.doc && s.doc.file) || (done[s.id] && done[s.id] !== 'ok' ? done[s.id] : ''); return <div key={s.id} className="qr-std-row" data-testid="std-row" data-status={s.status}>
-      <div className="qr-std-h"><bdi className="qr-ltr">{s.std}{s.dash ? '-' + s.dash : ''}{s.thread ? ' ' + s.thread : ''}</bdi>
+      <div className="qr-std-h"><bdi className="qr-ltr">{s.std}{s.dash ? '-' + s.dash : ''}{thr(s.thread) ? ' ' + thr(s.thread) : ''}</bdi>
         <span className="qr-muted"> {t('std.status.' + s.status)}</span>
         {s.doc && s.doc.rev ? <span className="qr-muted"> {t('bd.rev')} {s.doc.rev}</span> : null}
         {s.doc && s.doc.newerRev ? <span className="qr-std-newer" data-testid="std-newer"> {t('std.newerRev', { rev: s.doc.newerRev })}</span> : null}
