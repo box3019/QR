@@ -74,3 +74,5 @@
 .qr-root .qr-drop-btns button.qr-blue, .qr-root .qr-drop-btns button.qr-blue:not(:disabled) { background: #2563eb !important; background-color: #2563eb !important; background-image: none !important; border-color: #1d4ed8 !important; color: #fff !important; }
 .qr-root .qr-drop-btns button.qr-blue:hover:not(:disabled) { background-color: #1d4ed8 !important; }
 .qr-root .qr-bsec button.qr-sec-main { height: auto !important; min-height: 0; max-height: none; white-space: normal; overflow: visible; line-height: 1.35; }
+.qr-sec-line { flex-wrap: wrap; }
+.qr-root .qr-bsec button.qr-sec-main { flex: 1 1 15rem; grid-template-columns: minmax(0, 7.5rem) minmax(8rem, 1fr); }
