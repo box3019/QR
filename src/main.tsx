@@ -13,3 +13,4 @@ import './styles/type.css';
 import './styles/history.css';
 import App from './App';
 createRoot(document.getElementById('root')!).render(<App />);
+import './styles/caps.css';
