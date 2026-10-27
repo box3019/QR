@@ -43,7 +43,7 @@ const [exe, data, out] = process.argv.slice(2); fs.mkdirSync(out, { recursive: t
   win.evaluate((p) => window.__qrRun(p), [path.join(data, 'KLA_matbug_d.pdf')]);
   await win.waitForSelector('[data-testid=busy]', { timeout: 60000 }).catch(() => {}); await win.waitForTimeout(1500);
   await win.screenshot({ path: path.join(out, 'v014_toast_he.png') }); console.log('TOAST', await win.evaluate(() => { const e = document.querySelector('[data-testid=busy-text]'); return e ? JSON.stringify({ text: e.textContent, cut: e.scrollWidth > e.clientWidth }) : 'none'; }));
-  await win.waitForFunction(() => !document.querySelector('[data-testid=import-view][data-active=true]') && !window.__qrBusyActive, null, { timeout: 10 * 60 * 1000 }).catch(() => {}); await win.waitForTimeout(1500);
+  await win.waitForFunction(() => !document.querySelector('[data-testid=busy]'), null, { timeout: 10 * 60 * 1000 }).catch(() => {}); await win.waitForTimeout(1500);
   console.log('APPEND', JSON.stringify(await win.evaluate(() => ({ n: window.__qrParts.length, toast: !!document.querySelector('[data-testid=busy]'), choice: !!document.querySelector('[data-testid=drop-choice]') }))));
   await app.close();
 })().catch((e) => { console.error(e); process.exit(1); });
