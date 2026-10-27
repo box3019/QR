@@ -25,6 +25,7 @@ export default function App() {
   const [dialog, setDialog] = useState<null | 'settings' | 'questions' | 'summary'>(null);
   const [focus, setFocus] = useState<any>(null);
   const [lastRun, setLastRun] = useState<any>(null);
+  const [rfqs, setRfqs] = useState<any[]>([]);
 
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
   useEffect(() => qr().onEvent((ev: any) => {
@@ -41,20 +42,24 @@ export default function App() {
 
   const run = useCallback(async (paths: string[]) => {
     if (!paths.length) return;
-    setParts([]); setSel(0); setFocus(null); setBusy({ text: 'Starting…', log: [] });
-    try { const r = await qr().process(paths); setParts(r.parts); setUnknown(r.unknown || []); setLastRun({ seconds: r.seconds, files: r.files }); }
+    setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setBusy({ text: 'Starting…', log: [] });
+    try { const r = await qr().process(paths); setParts(r.parts); setUnknown([...(r.unknown || []), ...(r.other || [])]); setRfqs(r.rfqs || []); setLastRun({ seconds: r.seconds, files: r.files }); }
     catch (e: any) { alert('Processing failed: ' + (e?.message || e)); }
     finally { setBusy(null); }
   }, []);
   (window as any).__qrRun = run; // hooks for automated self-tests
   (window as any).__qrParts = parts;
+  (window as any).__qrRfqs = rfqs;
+  (window as any).__qrUnknown = unknown;
   (window as any).__qrSelect = (i: number, t?: any) => { setSel(i); if (t) setTab(t); };
   (window as any).__qrDialog = setDialog;
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault(); setOver(false);
     const paths = Array.from(e.dataTransfer.files).map((f) => qr().pathForFile(f)).filter(Boolean);
-    run(paths);
+    if (paths.length) return run(paths);
+    // dragged straight from Outlook: no file in the drop, take the selected e-mail(s) from Outlook
+    qr().outlookSelection().then(run).catch((x: any) => alert(String(x?.message || x)));
   };
   const part = parts[sel];
   const updatePart = (fn: (p: Part) => Part) => setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p)));
@@ -63,7 +68,7 @@ export default function App() {
     <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light"
       onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={onDrop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
-        <div className="qr-brand"><span className="qr-brand-badge">QR</span>Quote Request</div>
+        <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
         <TopButton icon="＋" label="Add files" testid="btn-add" onClick={async () => run(await qr().pickFiles())} />
         <TopButton icon="📁" label="Add folder" onClick={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />
         <TopButton icon="❓" label="Questions" testid="btn-questions" disabled={!parts.length} onClick={() => setDialog('questions')} />
@@ -76,13 +81,14 @@ export default function App() {
       {!parts.length ? (
         <div className="qr-drop" data-over={over} data-testid="dropzone">
           <div>
-            <h1>Drop drawings, models or a ZIP here</h1>
-            <div className="qr-muted" style={{ fontSize: 15, marginBottom: 16 }}>PDF drawings, parts lists, STEP / IGES / SLDPRT models, folders and ZIP archives. Processing starts automatically.</div>
+            <h1>Drop drawings, models, ZIP or RAR here</h1>
+            <div className="qr-muted" style={{ fontSize: 15, marginBottom: 16 }}>PDF drawings, parts lists, STEP / IGES / Parasolid models, folders, ZIP / RAR / 7z archives and Outlook e-mails (.msg / .eml, or drag an e-mail straight from Outlook). Processing starts automatically.</div>
             <button className={MRT_BTN_PRIMARY} onClick={async () => run(await qr().pickFiles())}>Choose files…</button>
             {unknown.length > 0 && <div className="qr-muted" style={{ marginTop: 12 }}>Not drawings: {unknown.join(', ')}</div>}
           </div>
         </div>
-      ) : (
+      ) : (<>
+        {rfqs.map((r: any, i: number) => <RfqBar key={i} rfq={r} />)}
         <div className="qr-body">
           <PartsPanel parts={parts} sel={sel} setSel={(i: number) => { setSel(i); setFocus(null); }} unknown={unknown} />
           <div className="qr-panel">
@@ -99,7 +105,7 @@ export default function App() {
           </div>
           {part && <ProblemsPanel part={part} onFocus={(loc: any) => { setTab('drawing'); setFocus(loc); }} updatePart={updatePart} />}
         </div>
-      )}
+      </>)}
       {busy && <div className="qr-busy" data-testid="busy"><div>{busy.text}</div>{busy.progress != null && <div className="qr-bar"><div style={{ width: Math.round(busy.progress * 100) + '%' }} /></div>}</div>}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { setSettings(await qr().setSettings(s)); setDialog(null); }} />}
       {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
@@ -117,7 +123,7 @@ function PartsPanel({ parts, sel, setSel, unknown }: any) {
         const q = p.problems.filter((x: any) => x.severity === 'Question' && x.status !== 'resolved').length;
         const t = p.tasks.filter((x: any) => x.status !== 'done').length;
         return <div key={p.id} className="qr-part" data-active={i === sel} onClick={() => setSel(i)} data-testid="part-item">
-          <div className="qr-row"><span className="pn">{p.partNo || p.drawing.name}</span><span className="qr-muted">rev {p.rev || '-'}</span><span style={{ flex: 1 }} /><Chip t="neutral">{p.customer}</Chip></div>
+          <div className="qr-row"><span className="pn">{p.partNo || p.drawing.name}</span><span className="qr-muted">rev {p.rev || '-'}</span><span style={{ flex: 1 }} />{p.rfq && <span data-testid="part-qty" style={{ fontWeight: 600, marginRight: 6 }}>Qty {p.rfq.qty ?? '?'}{p.rfq.uom && p.rfq.uom !== 'EA' ? ' ' + p.rfq.uom : ''}</span>}<Chip t="neutral">{p.customer}</Chip></div>
           <div className="qr-muted" style={{ margin: '2px 0 4px', fontSize: 12 }}>{p.title}</div>
           <div className="qr-row" style={{ marginBottom: 4 }}>
             {p.status === 'accepted' ? <Chip t="ready">Accepted</Chip> : <Chip t="danger">Rejected</Chip>}
@@ -289,4 +295,18 @@ function SettingsDialog({ settings, onClose, onSave }: any) {
       {s.materials.map((m: any, i: number) => <tr key={i}><td><input type="checkbox" checked={m.enabled !== false} onChange={(e) => { const ms = [...s.materials]; ms[i] = { ...m, enabled: e.target.checked }; set('materials', ms); }} /></td><td>{m.family}</td><td><code style={{ fontSize: 11 }}>{m.re}</code></td></tr>)}
     </tbody></table>
   </Modal>;
+}
+
+function RfqBar({ rfq }: any) {
+  const miss = rfq.match || {};
+  return <div className="qr-rfq" data-testid="rfq-bar">
+    <b>RFQ {rfq.rfq_no || '-'}</b>
+    {rfq.assembly && <span>Assembly {rfq.assembly}</span>}
+    <span>Customer {rfq.customer || 'unknown'}{rfq.intermediary ? ' via ' + rfq.intermediary : ''}</span>
+    <span>From {rfq.original_sender?.name || rfq.sender?.name}{rfq.original_sent ? ', ' + rfq.original_sent : ''}</span>
+    <span>{rfq.rows.length} line(s): {rfq.rows.map((x: any) => x.part_no + ' x' + (x.qty ?? '?')).join(', ')}</span>
+    {miss.rows_without_drawing?.length > 0 && <Chip t="danger">No drawing: {miss.rows_without_drawing.join(', ')}</Chip>}
+    {miss.parts_without_row?.length > 0 && <Chip t="attention">Not in RFQ: {miss.parts_without_row.join(', ')}</Chip>}
+    {rfq.requirements?.length > 0 && <span className="qr-muted" dir="auto" title={rfq.requirements.join('\n')}>Requirements: {rfq.requirements.length} line(s), see tooltip / summary</span>}
+  </div>;
 }

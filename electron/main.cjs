@@ -4,6 +4,8 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { runPipeline } = require('../core/pipeline.cjs');
+const { createMainWindow } = require('./window.cjs');
+const { saveOutlookSelection } = require('../core/email/outlook.cjs');
 const { renderPreview } = require('../core/pdf.cjs');
 const { DEFAULT_ALLOW } = require('../core/analyze.cjs');
 const { questionsHtml, questionsText, buildQuestions } = require('../core/questions.cjs');
@@ -28,29 +30,24 @@ const DEFAULTS = {
 };
 function loadSettings() { try { return { ...DEFAULTS, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) }; } catch { return { ...DEFAULTS }; } }
 function saveSettings(s) { fs.mkdirSync(path.dirname(settingsFile()), { recursive: true }); fs.writeFileSync(settingsFile(), JSON.stringify(s, null, 2)); }
+const sevenZipPath = () => (app.isPackaged ? path.join(process.resourcesPath, '7zip', '7z.exe') : path.join(__dirname, '..', 'vendor', '7zip', '7z.exe'));
 const langPath = () => (app.isPackaged ? path.join(process.resourcesPath, 'ocr') : path.join(__dirname, '..', 'ocr'));
 
 let win = null;
 let lastResult = { parts: [], unknown: [], files: [] };
 
 function createWindow() {
-  win = new BrowserWindow({
-    title: 'QR', width: 1600, height: 980, minWidth: 1100, minHeight: 700, show: false, backgroundColor: '#f1f5f9',
-    icon: path.join(__dirname, '..', 'build', 'icon.png'),
-    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: false },
-  });
-  win.removeMenu();
-  win.on('page-title-updated', (e) => e.preventDefault());
+  win = createMainWindow({ stateFile: path.join(app.getPath('userData'), 'window.json'), maximize: process.env.QR_MAXIMIZE !== '0', icon: path.join(__dirname, '..', 'build', 'icon.png'),
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: false } });
   const devUrl = process.env.QR_DEV_URL;
   if (devUrl) win.loadURL(devUrl); else win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
-  win.once('ready-to-show', () => { if (process.env.QR_MAXIMIZE !== '0') win.maximize(); win.show(); });
 }
 
 const slim = (part) => part; // pipeline already strips tokens from parts
 ipcMain.handle('qr:getSettings', () => loadSettings());
 ipcMain.handle('qr:setSettings', (_e, s) => { const n = { ...loadSettings(), ...s }; saveSettings(n); return n; });
 ipcMain.handle('qr:pickFiles', async () => {
-  const r = await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Drawings, models, ZIP', extensions: ['pdf', 'zip', 'step', 'stp', 'igs', 'iges', 'sldprt', 'x_t'] }, { name: 'All files', extensions: ['*'] }] });
+  const r = await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Drawings, models, ZIP/RAR/7z, e-mails', extensions: ['pdf', 'zip', 'rar', '7z', 'msg', 'eml', 'step', 'stp', 'igs', 'iges', 'sldprt', 'x_t', 'x_b'] }, { name: 'All files', extensions: ['*'] }] });
   return r.canceled ? [] : r.filePaths;
 });
 ipcMain.handle('qr:pickFolder', async () => { const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] }); return r.canceled ? '' : r.filePaths[0]; });
@@ -58,7 +55,7 @@ ipcMain.handle('qr:process', async (e, paths) => {
   const s = loadSettings();
   const emit = (ev) => { try { e.sender.send('qr:event', ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev); } catch {} };
   const t0 = Date.now();
-  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), materials: (s.materials || []).filter((m) => m.enabled !== false) }, emit);
+  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), sevenZip: sevenZipPath(), materials: (s.materials || []).filter((m) => m.enabled !== false) }, emit);
   res.seconds = Math.round((Date.now() - t0) / 1000);
   lastResult = res;
   return res;
@@ -108,6 +105,7 @@ ipcMain.handle('qr:exportSummary', async (_e, parts, kind, target) => {
   }
   return { path: out };
 });
+ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.getPath('temp'), 'qr-outlook', String(Date.now()))));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
 
 app.whenReady().then(createWindow);

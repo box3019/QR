@@ -6,39 +6,16 @@ const crypto = require('crypto');
 const os = require('os');
 const { extractPdf, ocrPage } = require('./pdf.cjs');
 const { analyzePart } = require('./analyze.cjs');
+const { expand } = require('./intake/expand.cjs');
+const { fileKind, modelRank } = require('./intake/classify.cjs');
+const { readEmail } = require('./email/index.cjs');
+const { attachRfqs } = require('./rfq/attach.cjs');
 
 const sha256 = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
-const MODEL_EXT = /\.(stp|step|igs|iges)$/i;
-
-async function unzip(file, outDir) {
-  const yauzl = require('yauzl');
-  const out = [];
-  await new Promise((res, rej) => yauzl.open(file, { lazyEntries: true }, (err, z) => {
-    if (err) return rej(err);
-    z.readEntry();
-    z.on('entry', (e) => {
-      if (/\/$/.test(e.fileName)) return z.readEntry();
-      const dest = path.join(outDir, e.fileName.replace(/\.\.[\\/]/g, ''));
-      fs.mkdirSync(path.dirname(dest), { recursive: true });
-      z.openReadStream(e, (er, s) => { if (er) return rej(er); s.pipe(fs.createWriteStream(dest)).on('finish', () => { out.push(dest); z.readEntry(); }); });
-    });
-    z.on('end', res);
-  }));
-  return out;
-}
-
-async function expand(paths, tmp) {
-  const files = [];
-  for (const p of paths) {
-    const st = fs.statSync(p);
-    if (st.isDirectory()) files.push(...(await expand(fs.readdirSync(p).map((n) => path.join(p, n)), tmp)));
-    else if (/\.zip$/i.test(p)) { const d = path.join(tmp, path.basename(p) + '_' + Date.now()); files.push(...(await expand(await unzip(p, d), tmp))); }
-    else files.push(p);
-  }
-  return files;
-}
+const isModel = (f) => fileKind(f) === 'model';
 
 function classify(pages, name) {
+  if (/\bpart\s*list\b|\bparts\s*list\b/i.test(require('path').basename(String(name)))) return 'partsList';
   const t = pages.map((p) => p.raw).join('\n');
   if (/PARTS LIST/.test(t) && /\bSeq\b/.test(t) && !/\bNOTES\s*:/.test(t) && Math.min(pages[0].width, pages[0].height) < 700) return 'partsList';
   if (/\b(NOTES|TITLE|SCALE|DRAWING|DWG)\b/.test(t) || pages[0].width > 1000) return 'drawing';
@@ -48,7 +25,7 @@ function classify(pages, name) {
 function findModels(partNo, drawingPath, dropped, customer, searchRoots) {
   const log = [];
   const key = String(partNo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const ok = (f) => MODEL_EXT.test(f) && path.basename(f).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(key);
+  const ok = (f) => isModel(f) && path.basename(f).toUpperCase().replace(/[^A-Z0-9]/g, '').includes(key);
   let hit = dropped.filter(ok);
   log.push(`Dropped files: ${hit.length ? 'found' : 'none'}`);
   if (!hit.length && drawingPath) {
@@ -58,11 +35,11 @@ function findModels(partNo, drawingPath, dropped, customer, searchRoots) {
   }
   if (!hit.length) for (const root of searchRoots || []) {
     const dir = path.join(root, customer || '', partNo || '', 'PAS PROGRAMS');
-    try { if (fs.existsSync(dir)) hit = fs.readdirSync(dir).map((n) => path.join(dir, n)).filter((f) => MODEL_EXT.test(f)); } catch {}
+    try { if (fs.existsSync(dir)) hit = fs.readdirSync(dir).map((n) => path.join(dir, n)).filter(isModel); } catch {}
     log.push(`${dir} (read only): ${hit.length ? 'found' : 'none'}`);
     if (hit.length) break;
   }
-  return { models: hit, log };
+  return { models: hit.sort((x, y) => modelRank(x) - modelRank(y)), log };
 }
 
 function stepHeader(f) {
@@ -83,20 +60,22 @@ function locate(pages, pr) {
 
 async function runPipeline(paths, settings, emit = () => {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-'));
-  const files = await expand(paths, tmp);
+  const errors = [];
+  const { files, rfqs } = await expand(paths, tmp, { sevenZip: settings.sevenZip, readEmail, onStatus: (text) => emit({ type: 'status', text }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
+  for (const r of rfqs) emit({ type: 'rfq', rfq: r });
   emit({ type: 'files', files: files.map((f) => ({ path: f, name: path.basename(f) })) });
   const docs = [];
   for (const f of files) {
-    if (!/\.pdf$/i.test(f)) continue;
+    if (fileKind(f) !== 'drawing' || !/\.pdf$/i.test(f.replace(/(\.pdf)+$/i, '.pdf'))) continue;
     try {
       emit({ type: 'status', text: `Reading ${path.basename(f)}` });
       const pages = await extractPdf(f);
       docs.push({ path: f, name: path.basename(f), sha256: sha256(f), pages, kind: classify(pages, f) });
     } catch (e) { emit({ type: 'error', file: f, text: String(e.message || e) }); }
   }
-  const drawings = docs.filter((d) => d.kind === 'drawing');
+  const drawings = docs.filter((d) => d.kind === 'drawing').sort((x, y) => /-pas\b/i.test(x.name) - /-pas\b/i.test(y.name));
   const partsLists = docs.filter((d) => d.kind === 'partsList');
-  const models = files.filter((f) => MODEL_EXT.test(f));
+  const models = files.filter(isModel);
   const parts = [];
   for (const d of drawings) {
     const key = d.pages.map((p) => p.raw).join('\n');
@@ -112,7 +91,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
         if (p.ocr.words.length) p.raw += '\n' + p.ocr.words.filter((w) => w.conf >= 0.6).map((w) => w.text).join(' ');
       } catch (e) { p.ocrError = String((e && e.message) || e); emit({ type: 'status', text: `OCR failed on ${d.name} page ${p.n}: ${p.ocrError}` }); }
     }
-    const pl = partsLists.find((l) => { const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
+    const pl = partsLists.find((l) => { const forPn = (l.name.match(/\bfor\s+([A-Z0-9-]{5,})/i) || [])[1]; if (forPn) return d.name.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(forPn.toUpperCase().replace(/[^A-Z0-9]/g, '')) || key.toUpperCase().includes('ASSEMBLY') && key.includes(forPn.toUpperCase()) && d.name.toUpperCase().includes(forPn.toUpperCase()); const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
     try {
       const a = analyzePart({ drawing: d, partsList: pl, models, settings, library: settings.library || [] });
       const mm = findModels(a.partNo, d.path, models, a.customer, settings.searchRoots);
@@ -120,11 +99,15 @@ async function runPipeline(paths, settings, emit = () => {}) {
       a.modelSearchLog = mm.log;
       for (const pr of a.problems) pr.loc = locate(d.pages, pr);
       for (const p of d.pages) if (p.ocrError) a.problems.unshift({ id: 'OCR' + p.n, severity: 'Info', category: 'OCR warning', message: `OCR failed on sheet ${p.n}: ${p.ocrError}. Only the PDF text layer was analyzed for this sheet.`, suggestion: 'Check the sheet visually; values in outlined/scanned text may be missing.', evidence: [], status: 'open', loc: null });
+      const dup = parts.find((q) => q.partNo && q.partNo === a.partNo && q.rev === a.rev && q.customer === a.customer);
+      if (dup) { (dup.duplicates = dup.duplicates || []).push(d.name); emit({ type: 'status', text: `${d.name}: same drawing as ${dup.drawing.name}, skipped` }); continue; }
       parts.push({ id: 'part' + (parts.length + 1), drawing: { path: d.path, name: d.name, sha256: d.sha256, pages: d.pages.map((p) => ({ n: p.n, width: p.width, height: p.height, quality: p.quality, ocr: p.ocr ? { dpi: p.ocr.dpi, tiles: p.ocr.tiles, seconds: p.ocr.seconds, words: p.ocr.words } : null, ocrError: p.ocrError })) }, partsList: pl ? { path: pl.path, name: pl.name } : null, ...a });
       emit({ type: 'part', part: parts[parts.length - 1] });
     } catch (e) { emit({ type: 'error', file: d.path, text: String(e.stack || e) }); }
   }
   const unknown = docs.filter((d) => d.kind === 'spec').map((d) => d.name);
-  return { parts, unknown, files: files.map((f) => path.basename(f)) };
+  const rfqOut = attachRfqs(parts, rfqs);
+  const other = files.filter((f) => !['drawing', 'model'].includes(fileKind(f))).map((f) => path.basename(f));
+  return { parts, unknown, other, errors, rfqs: rfqOut, files: files.map((f) => path.basename(f)) };
 }
 module.exports = { runPipeline };

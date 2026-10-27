@@ -18,5 +18,6 @@ contextBridge.exposeInMainWorld('qr', {
   questionsPreview: (parts, lang) => ipcRenderer.invoke('qr:questionsPreview', parts, lang),
   exportQuestions: (parts, lang, target) => ipcRenderer.invoke('qr:exportQuestions', parts, lang, target),
   exportSummary: (parts, kind, target) => ipcRenderer.invoke('qr:exportSummary', parts, kind, target),
+  outlookSelection: () => ipcRenderer.invoke('qr:outlookSelection'),
   openPath: (p) => ipcRenderer.invoke('qr:openPath', p),
 });
