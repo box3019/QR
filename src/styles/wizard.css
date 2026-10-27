@@ -155,13 +155,13 @@
 
 
 /* project tabs (MRT workspace tab strip; MRT's tailwind layout classes written out) and one mounted view per project */
-.qr-tabs { display: flex; align-items: center; gap: 0.375rem; flex: 1 1 auto; min-width: 0; overflow-x: auto; }
-.qr-tabs .mrt-workspace-tab { display: flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 18rem; }
-.qr-tabs .mrt-workspace-tab__label { display: inline-flex; align-items: center; gap: 0.4rem; min-width: 0; flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.qr-tabs .mrt-workspace-tab__label bdi { overflow: hidden; text-overflow: ellipsis; }
-.qr-tabs .mrt-workspace-tab__close { flex: 0 0 auto; opacity: 0; transition: opacity 0.12s; }
-.qr-tabs .mrt-workspace-tab:hover .mrt-workspace-tab__close, .qr-tabs .mrt-workspace-tab--active .mrt-workspace-tab__close, .qr-tabs .mrt-workspace-tab__close:focus-visible { opacity: 1; }
-.qr-tabs .mrt-workspace-tab__add { flex: 0 0 auto; }
+.qr-ptabs { display: flex; align-items: center; gap: 0.375rem; flex: 1 1 auto; min-width: 0; overflow-x: auto; }
+.qr-ptabs .mrt-workspace-tab { display: flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 18rem; }
+.qr-ptabs .mrt-workspace-tab__label { display: inline-flex; align-items: center; gap: 0.4rem; min-width: 0; flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qr-ptabs .mrt-workspace-tab__label bdi { overflow: hidden; text-overflow: ellipsis; }
+.qr-ptabs .mrt-workspace-tab__close { flex: 0 0 auto; opacity: 0; transition: opacity 0.12s; }
+.qr-ptabs .mrt-workspace-tab:hover .mrt-workspace-tab__close, .qr-ptabs .mrt-workspace-tab--active .mrt-workspace-tab__close, .qr-ptabs .mrt-workspace-tab__close:focus-visible { opacity: 1; }
+.qr-ptabs .mrt-workspace-tab__add { flex: 0 0 auto; }
 .qr-tab-cust { color: var(--mrt-text-muted, #64748b); font-size: 0.92em; }
 .qr-tab-dirty { color: var(--mrt-accent, #007aff); }
 .qr-tab-dot { flex: 0 0 auto; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: #94a3b8; }
@@ -170,3 +170,6 @@
 .qr-projs { flex: 1 1 auto; min-height: 0; position: relative; display: flex; }
 .qr-proj { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .qr-proj-off { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+
+/* drawing viewer: dragging pans, never selects text */
+[data-testid=drawing-viewport] { user-select: none; -webkit-user-select: none; }

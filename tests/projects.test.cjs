@@ -31,7 +31,7 @@ test('events carry the project id; each project only takes its own', () => {
   const b = src('src/hooks/useBusy.ts'); assert.match(b, /if \(!forJob\(ev, job\)\) return;/); assert.match(src('src/ProjectView.tsx'), /qr\(\)\.process\(paths, id\)/); });
 test('tab drag never imports: internal drag flag and stopPropagation on tab drops', async () => { const g = await load('wizard/dropGuard.mjs');
   assert.strictEqual(g.isExternalDrop(['text/x-qr-tab'], true), false); assert.strictEqual(g.isExternalDrop(['text/x-qr-tab'], false), false);
-  const tb = src('src/components/tabs/TabsBar.tsx'); assert.match(tb, /draggable/); assert.match(tb, /e\.stopPropagation\(\); onMove/); assert.match(tb, /title=\{t\('tab\.add'\)\}/); assert.match(tb, /title=\{t\('tab\.close'\)\}/); });
+  const tb = src('src/components/tabs/TabsBar.tsx'); assert.match(tb, /draggable/); assert.match(tb, /qr-ptabs/); assert.doesNotMatch(src('src/styles/wizard.css'), /\.qr-tabs \{ display: flex; align-items: center; gap: 0\.375rem; flex: 1/, 'must not restyle the viewer tab bar'); assert.match(tb, /e\.stopPropagation\(\); onMove/); assert.match(tb, /title=\{t\('tab\.add'\)\}/); assert.match(tb, /title=\{t\('tab\.close'\)\}/); });
 test('every project stays mounted (own step, parts, viewer position); HE tab labels have no English', () => {
   const a = src('src/App.tsx'); assert.match(a, /P\.list\.map\(\(p\) => <ProjectView/); assert.match(src('src/styles/wizard.css'), /\.qr-proj-off \{ position: absolute; inset: 0; visibility: hidden/);
   const he = require('../src/i18n/he.json'); for (const k of Object.keys(he).filter((k) => k.startsWith('tab.'))) assert.doesNotMatch(he[k], /[A-Za-z]/, k); });

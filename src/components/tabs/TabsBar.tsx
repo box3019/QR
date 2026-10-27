@@ -4,7 +4,7 @@ import { t } from '../../i18n';
 
 export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onMove }: any) {
   const from = useRef(-1); // tab drags are internal: they never reach the import drop handler
-  return <div className="mrt-workspace-tab-strip qr-tabs" dir="ltr" role="tablist" aria-label={t('tab.list')} data-testid="tabs">
+  return <div className="mrt-workspace-tab-strip qr-ptabs" dir="ltr" role="tablist" aria-label={t('tab.list')} data-testid="tabs">
     {tabs.map((tb: any, i: number) => { const on = tb.id === active; const label = tb.label || t('tab.new');
       return <div key={tb.id} className={'mrt-workspace-tab' + (on ? ' mrt-workspace-tab--active' : '')} data-testid="tab" data-id={tb.id} data-status={tb.status} data-active={on} draggable
         onDragStart={(e) => { from.current = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/x-qr-tab', String(i)); }}
