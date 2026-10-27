@@ -4,13 +4,13 @@ import { Chip } from './ui/common';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, tReadiness, setLang, setTextSize, getLang } from './i18n';
 import { FirstRun } from './ui/simple';
-import { ProcessesPanel } from './ui/processes';
 import { Tutorial } from './tutorial/Tutorial';
 import { StepBar } from './wizard/StepBar';
 import { toolbarFor, viewerTabs } from './wizard/steps.mjs';
 import { PartsPanel } from './views/Parts';
 import { ProblemsPanel } from './views/Problems';
 import { SummaryStep } from './views/SummaryStep';
+import { Breakdown } from './views/Breakdown';
 import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
 
 declare global { interface Window { qr: any } }
@@ -114,7 +114,7 @@ export default function App() {
           </div>
         </div>
       </>}
-      {step === 2 && has && <div className="qr-body" data-cols="2">
+      {step === 2 && has && <div className="qr-body">
         <PartsPanel details={details} parts={parts} sel={sel} setSel={pick} unknown={unknown} />
         <div className="qr-panel">
           <div className="qr-tabs">
@@ -127,12 +127,13 @@ export default function App() {
             {part && curTab === 'data' && <DataView part={part} />}
           </div>
         </div>
+        {part && <Breakdown part={part} parts={parts} sel={sel} setSel={pick} details={details} goStep={setStep} onFocus={(f: any) => { setTab('drawing'); setFocus(f); }} />}
       </div>}
       {step === 3 && has && <div className="qr-body" data-cols="2">
         <PartsPanel details={details} parts={parts} sel={sel} setSel={pick} unknown={unknown} />
         {part && <ProblemsPanel details={details} part={part} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} updatePart={updatePart} />}
       </div>}
-      {step === 4 && has && <SummaryStep parts={parts} openDialog={setDialog} />}
+      {step === 4 && has && <SummaryStep parts={parts} openDialog={setDialog} goPart={(i: number) => { pick(i); setStep(2); }} />}
 
       {busy && <div className="qr-busy" data-testid="busy"><div>{busy.text}</div>{busy.progress != null && <div className="qr-bar"><div style={{ width: Math.round(busy.progress * 100) + '%' }} /></div>}</div>}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { setSettings(await qr().setSettings(s)); setDialog(null); }} />}
@@ -192,7 +193,6 @@ function RouteCard({ part }: any) {
         <td>{s.outsourced && <Chip t="info">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></tr>)}</tbody>
     </table>
     {!part.route.length && <div className="qr-muted" style={{ padding: 10 }}>{t('rc.none')}</div>}
-    <ProcessesPanel part={part} />
   </div>;
 }
 

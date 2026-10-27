@@ -1,0 +1,10 @@
+export declare const SECTIONS: { key: string; kind: string; process?: string | null; fields: string[] }[];
+export declare const DETAIL_ONLY: Set<string>;
+export declare function sectionRows(sec: any, page: any): any[];
+export declare const FLAGS: [string, string][];
+export declare function flagKeys(text: string): string[];
+export declare function sectionLine(key: string, page: any, part?: any): string;
+export declare function sectionStds(sec: any, page: any): string[];
+export declare function sectionFlags(sec: any, page: any): string[];
+export declare function sectionAction(flags: string[], empty: boolean): 'upload' | 'ask' | 'confirm';
+export declare function locate(src: string, tokens: any[]): { x: number; y: number; w: number; h: number } | null;
