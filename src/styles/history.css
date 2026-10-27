@@ -10,3 +10,5 @@
 .qr-recent-h { color: var(--mrt-text-muted, #64748b); margin-bottom: 4px; }
 .qr-recent ul { list-style: none; margin: 0; padding: 0; } .qr-recent li { padding: 2px 0; }
 .qr-recent-row { display: flex; gap: 12px; align-items: baseline; width: 100%; } .qr-recent-l { font-weight: 600; }
+.qr-hist .qr-modal-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; }
+.qr-hist-t td:first-child, .qr-hist-t td:nth-child(5), .qr-hist-t td:nth-child(6), .qr-hist-t td:last-child { white-space: nowrap; }
