@@ -70,6 +70,7 @@ export function BlockCard({ block: b, open, onToggle, onAction, state, part }: B
         <div className="qr-block-line" data-testid="block-line">{val || lineText(b, state, part)}</div>
       </div>
       {act && <button type="button" className={MRT_BTN} data-testid={'block-act-' + act.kind} title={t(ACTION[act.kind].tip)} onClick={() => onAction(b)}>{confirmedField ? '✓ ' : ''}{t(ACTION[act.kind].label)}</button>}
+      {!b.details && <span className="qr-block-chev" aria-hidden="true" />}
       {b.details && <button type="button" className="qr-block-chev" data-testid="block-chev" aria-expanded={open} title={t('tip.blkDetails')} onClick={onToggle}>{open ? '▾' : '▸'}</button>}
     </div>
     {open && b.details && (b.details.type === 'fields' ? <div className="qr-blk-det" data-testid="blk-details"><Fields sec={b.details.sec} rows={b.details.rows} details /></div>

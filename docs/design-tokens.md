@@ -49,7 +49,7 @@ QR caps (px, never grow with the text-size setting): wizard step 14px/32px, tabs
 ## Geometry
 | Token | Value |
 |---|---|
-| radius (`--mrt-radius`) | 8px for panels/blocks, 6px for tags and inputs; **no pills** (no 50% or 999px radius; status dots are 8px squares with a 2px radius) |
+| radius (`--mrt-radius`) | 8px for panels and dialogs; 6px (`--qr-btn-radius`) for buttons, tags, inputs and part-card blocks; **no pills** (no 50% or 999px radius; status dots are 8px squares with a 2px radius) |
 | border | 1px solid `--mrt-border`; selected = 1px `--mrt-accent`, no gray fill, no side bars |
 | table cell padding | 8px x 4px (`--mrt-report-cell-px/py`) |
 | row height | 32px controls, list rows about 36px |
@@ -75,3 +75,9 @@ QR caps (px, never grow with the text-size setting): wizard step 14px/32px, tabs
 - Blocks: `src/parts/blocks.mjs` (logic), `src/components/partcard/BlockCard.tsx` (UI).
 - Tiles: `src/ui/Tiles.tsx`; status groups: `src/parts/groups.mjs`.
 - Tests: `tests/design_system.test.cjs`, `tests/blocks.test.cjs`.
+
+## Sources and caveats
+- The MRT tokens are read from MRT's own Priority ERP preset (`mrtLiquidGlass.css` / `qrPalette.css`), not from screenshots.
+- The Priority ERP and CleanMyMac takeaways above are inspiration from the preset and general knowledge of those products; no public screenshots were browsed or copied.
+- Buttons, including the "primary" one, are light slate (white fill, `#334155` border, `#0a1628` text). No blue, no dark fills; colour appears only in the 8px status dot.
+- Deviation (deliberate, 10:29 PM rule "colour only for status"): the primary button no longer uses MRT's blue text/border measured in cmm-pr3; it is the neutral slate pair above. Everything else (radius 6px, height 32px, 14px text, 1px border) is MRT's measured value.

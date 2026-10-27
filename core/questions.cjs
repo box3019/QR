@@ -29,7 +29,7 @@ function buildQuestions(parts, lang = 'he') {
   for (const part of parts) {
     const qs = [];
     for (const p of part.problems.filter((x) => x.severity !== 'Info' && x.status !== 'resolved' && !x.internal)) {
-      if (lang === 'he') qs.push({ severity: p.severity, text: toHebrew(p) || p.message, translated: !!toHebrew(p) });
+      if (lang === 'he') qs.push(p.messageHe ? { severity: p.severity, text: `${p.messageHe} ${p.suggestionHe || ''}`.trim(), translated: true } : { severity: p.severity, text: toHebrew(p) || p.message, translated: !!toHebrew(p) });
       else qs.push({ severity: p.severity, text: `${p.message} ${p.suggestion || ''}`.trim(), translated: true });
     }
     for (const t of part.tasks.filter((x) => x.type === 'uploadDocument' && x.status !== 'done')) qs.push({ severity: 'Document', text: lang === 'he' ? heUpload(t) : enUpload(t), translated: true });

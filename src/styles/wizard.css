@@ -131,7 +131,7 @@
 .qr-import-files { list-style: none; margin: 0; padding: 0; border: 1px solid var(--mrt-ui-border, var(--mrt-border)); border-radius: 6px; overflow: auto; max-height: 60vh; }
 .qr-import-files li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.4rem 0.75rem; border-bottom: 1px solid var(--mrt-ui-border, var(--mrt-border)); min-width: 0; }
 .qr-import-files li:last-child { border-bottom: 0; } .qr-import-files bdi { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qr-import-st { white-space: nowrap; color: #64748b; } .qr-import-st[data-status='reading'] { color: #1d4ed8; } .qr-import-st[data-status='done'] { color: #15803d; } .qr-import-st[data-status='check'] { color: #b45309; font-weight: 500; }
+.qr-import-st { white-space: nowrap; color: #64748b; } .qr-import-st[data-status='reading'] { color: var(--mrt-text); } .qr-import-st[data-status='done'] { color: #15803d; } .qr-import-st[data-status='check'] { color: #b45309; font-weight: 500; }
 
 /* drop choice dialog */
 .qr-modal-back { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.35); display: flex; align-items: center; justify-content: center; z-index: 50; }

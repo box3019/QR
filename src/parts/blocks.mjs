@@ -28,9 +28,11 @@ export function fieldBlocks(part) {
   for (const pg of pages) for (const sec of SECTIONS) {
     const rows = sectionRows(sec, pg);
     if (!rows.length) { if (!none.includes(sec.key)) none.push(sec.key); continue; }
-    const fl = sectionFlags(sec, pg); const value = sectionLine(sec.key, pg, part);
+    const fl = sectionFlags(sec, pg); let value = sectionLine(sec.key, pg, part);
+    const steps = sec.key === 'sequence' ? ((part.route || []).length) : 0;
     const id = `f:${pg.page}:${sec.key}`;
     let status = 'ok', line = null, action = { kind: 'confirm', ok: id };
+    if (sec.key === 'sequence') { value = null; if (steps) line = { key: 'blk.route', vars: { n: steps } }; else { if (!none.includes(sec.key)) none.push(sec.key); continue; } }
     if (fl.includes('noStd')) { status = 'warn'; line = { key: 'blk.noStd' }; action = { kind: 'upload', task: true }; }
     else if (fl.length) { status = 'warn'; line = { key: 'blk.flags', vars: { flags: fl.map((k) => 'bd.flag.' + k) } }; action = { kind: 'ask' }; }
     out.push({ id, kind: 'field', status, titleKey: 'bd.s.' + sec.key, page: pages.length > 1 ? pg.page : null, value, line, action, sec, pg, details: { type: 'fields', sec, pg, rows } });

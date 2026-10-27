@@ -462,7 +462,7 @@
   "blk.notOurs": "לא החומר או התהליך שלנו",
   "blk.notOursLine": "לא מתאים לנו",
   "blk.questions": "שאלות ללקוח",
-  "blk.questionsLine": "{n} פתוחות",
+  "blk.questionsLine": "פתוחות: {n}",
   "blk.allGood": "הכול תקין. אין כאן מה לטפל.",
   "blk.ask": "שאל את הלקוח",
   "blk.confirmed": "אושר",
@@ -495,5 +495,6 @@
   "std.dim.D1": "קוטר פנימי",
   "std.dim.majorIn": "קוטר חיצוני",
   "std.dim.basicMinorIn": "קוטר פנימי",
-  "std.dim.tapDrillMm": "קוטר מקדח"
+  "std.dim.tapDrillMm": "קוטר מקדח",
+  "blk.route": "{n} שלבים"
 }

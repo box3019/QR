@@ -82,3 +82,10 @@ test('i18n: every blk./tile./std.dim. key exists in EN and HE; HE has no Latin l
   const src = ['src/components/partcard/BlockCard.tsx', 'src/parts/blocks.mjs', 'src/ui/Tiles.tsx', 'src/views/Parts.tsx'].map((f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8')).join('\n');
   for (const m of src.matchAll(/'((?:blk|tile|tip\.blk)\.[A-Za-z]+(?:\.[A-Za-z]+)*)'/g)) { assert.ok(en[m[1]] && he[m[1]], m[1]); }
 });
+
+test('HE customer letter uses the localized message with isolates (no English leak)', () => {
+  const { buildQuestions } = require('../core/questions.cjs');
+  const part = { partNo: 'X', rev: 'A', tasks: [], problems: [{ severity: 'Question', status: 'open', message: 'AS5202-03: size: a → b', suggestion: 'Ask', messageHe: 'AS5202-03: גודל', suggestionHe: 'לשאול' }] };
+  const q = buildQuestions([part], 'he')[0].questions[0].text;
+  assert.match(q, /גודל/); assert.doesNotMatch(q, /size/);
+});

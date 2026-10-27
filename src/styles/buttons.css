@@ -18,12 +18,12 @@
   --qr-btn-border: #cbd5e1;
   --qr-btn-bg-hover: #eef2f6;
   --qr-btn-border-hover: #94a3b8;
-  /* primary: same light button, blue text + border accent only (no dark fill: "MRT doesn't want blackness") */
-  --qr-btn-primary-bg: #f8fafc;
-  --qr-btn-primary-fg: #1d4ed8;
-  --qr-btn-primary-border: #2563eb;
-  --qr-btn-primary-bg-hover: #eff6ff;
-  --qr-btn-primary-border-hover: #1d4ed8;
+  /* primary: same light button, neutral slate text + border (no dark fill, no blue) */
+  --qr-btn-primary-bg: #ffffff;
+  --qr-btn-primary-fg: #0a1628;
+  --qr-btn-primary-border: #334155;
+  --qr-btn-primary-bg-hover: #e2e8f0;
+  --qr-btn-primary-border-hover: #0a1628;
   /* states */
   --qr-btn-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1e293b;
   --qr-btn-disabled-opacity: 0.48;

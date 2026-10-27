@@ -4,20 +4,21 @@ const { _electron } = require('playwright'); const path = require('path'); const
 const [exe, out] = process.argv.slice(2); fs.mkdirSync(out, { recursive: true });
 const page = (pn, body) => `<html><body style="font:14px Arial;padding:40px"><h2>PART NO ${pn} REV A</h2><p>TITLE: DEMO PART ${pn}</p>${body}</body></html>`;
 const DOCS = {
-  'SYN_9900-0001_A': page('9900-0001', `<p>MATERIAL: AL 6061-T6 PER AMS-QQ-A-250/11</p><p>NOTES:</p><ol><li>PORT PER AS5202-03 .4375-20 UNF-2B, 2 PLACES</li><li>PORT PER MS33649-08 .3750-24 UNF-2B</li><li>O-RING AS568-012, FKM</li><li>INSTALL KEENSERT MS51830-202</li><li>HELICOIL NASM21209C4-10</li><li>M6x1-6H THRU</li></ol>`),
+  'SYN_9900-0001_A': page('9900-0001', `<p>NOTES:</p><ol><li>MATERIAL: ALUMINUM 6061-T6 BAR PER AMS-QQ-A-250/11</li><li>PORT PER AS5202-03 .4375-20 UNF-2B, 2 PLACES</li><li>PORT PER MS33649-08 .3750-24 UNF-2B</li><li>O-RING AS568-012, FKM</li><li>INSTALL KEENSERT MS51830-202</li><li>HELICOIL NASM21209C4-10</li><li>M6x1-6H THRU</li></ol>`),
   'SYN_9900-0002_A': page('9900-0002', `<p>NOTES:</p><ol><li>BREAK ALL SHARP EDGES</li><li>PAINT PER SPEC 123</li></ol>`),
-  'SYN_9900-0003_A': page('9900-0003', `<p>MATERIAL: AL 6061-T6 PER AMS-QQ-A-250/11</p><p>NOTES:</p><ol><li>ANODIZE PER MIL-A-8625 TYPE II CLASS 1 BLACK</li><li>BREAK ALL SHARP EDGES</li></ol>`),
+  'SYN_9900-0003_A': page('9900-0003', `<p>NOTES:</p><ol><li>MATERIAL: ALUMINUM 6061-T6 BAR PER AMS-QQ-A-250/11</li><li>ANODIZE PER MIL-A-8625 TYPE II CLASS 1 BLACK</li><li>BREAK ALL SHARP EDGES</li></ol>`),
   'SYN_9900-0004_A': page('9900-0004', `<p>MATERIAL: TITANIUM Ti-6Al-4V PER AMS 4911</p><p>NOTES:</p><ol><li>PASSIVATE PER AMS 2700</li></ol>`),
 };
 (async () => {
-  const app = await _electron.launch({ executablePath: exe, args: [], env: { ...process.env, QR_PROFILE_DIR: path.join(out, 'profile') } });
+  const app = await _electron.launch({ executablePath: exe, args: process.env.QR_APP ? [process.env.QR_APP] : [], env: { ...process.env, QR_PROFILE_DIR: path.join(out, 'profile') } });
   const win = await app.firstWindow();
   await app.evaluate(({ BrowserWindow }) => { const w = BrowserWindow.getAllWindows()[0]; w.setSkipTaskbar(true); w.unmaximize(); w.setBounds({ x: -30000, y: -30000, width: 1600, height: 1000 }); });
   const shot = async (n) => { await win.waitForTimeout(500); await win.screenshot({ path: path.join(out, `v016_${n}.png`) }); console.log('shot', n); };
   await win.waitForSelector('[data-testid=first-run]', { timeout: 60000 }); await win.click('[data-testid=first-run-ok]');
   for (const [name, html] of Object.entries(DOCS)) {
     const f = path.join(out, name + '.pdf');
-    await app.evaluate(async ({ BrowserWindow }, [h, p]) => { const w = new BrowserWindow({ show: false }); await w.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(h)); require('fs').writeFileSync(p, await w.webContents.printToPDF({ pageSize: 'A4' })); w.destroy(); }, [html, f]);
+    const b64 = await app.evaluate(async ({ BrowserWindow }, h) => { const w = new BrowserWindow({ show: false }); await w.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(h)); const b = await w.webContents.printToPDF({ pageSize: 'A4' }); w.destroy(); return b.toString('base64'); }, html);
+    fs.writeFileSync(f, Buffer.from(b64, 'base64'));
     win.evaluate((p) => window.__qrRun(p), [f]); await win.waitForTimeout(1500);
     if (await win.$('[data-testid=drop-new]')) await win.click('[data-testid=drop-new]');
     await win.waitForFunction((n) => !document.querySelector('[data-testid=busy]') && (window.__qrParts || []).length >= n, Object.keys(DOCS).indexOf(name) + 1, { timeout: 300000 });
@@ -35,8 +36,8 @@ const DOCS = {
     await win.click('[data-testid=tile-needsDoc]').catch(() => {}); await shot(`list_filter_${l}`); await win.click('[data-testid=tile-needsDoc]').catch(() => {});
     await sel('9900-0001'); await win.evaluate(() => window.__qrStep(3)); await shot(`docs_${l}`);
     await win.evaluate(() => window.__qrStep(4)); await shot(`summary_${l}`);
-    if (await win.$('[data-testid=btn-questions]')) { await win.click('[data-testid=btn-questions]'); await shot(`dialog_questions_${l}`); await win.keyboard.press('Escape'); }
-    if (await win.$('[data-testid=btn-summary]')) { await win.click('[data-testid=btn-summary]'); await shot(`dialog_summary_${l}`); await win.keyboard.press('Escape'); }
+    if (await win.$('[data-testid=btn-questions]')) { await win.click('[data-testid=btn-questions]'); await shot(`dialog_questions_${l}`); await win.mouse.click(5, 5); }
+    if (await win.$('[data-testid=btn-summary]')) { await win.click('[data-testid=btn-summary]'); await shot(`dialog_summary_${l}`); await win.mouse.click(5, 5); }
   }
   // all-good state: only the ready part
   await win.evaluate(() => { window.__qrStep(2); }); await win.click('[data-testid=tile-ready]').catch(() => {}); await shot('list_ready_en');

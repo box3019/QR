@@ -14,7 +14,7 @@ function ProblemLine({ p, onFocus, updatePart }: any) {
   return <div className="qr-prob" data-testid="problem" title={p.loc ? t('wz.tipShowOnDrawing') : undefined} onClick={() => p.loc && onFocus({ ...p.loc, id: p.id, bbox: null })} style={p.status === 'resolved' ? { opacity: .5 } : {}}>
     <div className="qr-row"><Chip t={tone(p.severity)}>{t('sev.' + p.severity)}</Chip><span className="qr-cat">{L(p, 'category')}</span>{p.loc && <span className="qr-muted">{t('pr.sheet', { n: p.loc.page })}</span>}<span style={{ flex: 1 }} />
       {p.severity !== 'Info' && <button className={MRT_ACTION_BTN} title={p.status === 'resolved' ? t('pr.reopen') : t('pr.resolve')} onClick={toggle}>{p.status === 'resolved' ? '↺' : '✓'}</button>}</div>
-    <div className="msg"><bdi>{L(p, 'message')}</bdi>{L(p, 'suggestion') && <span className="qr-muted"> → {L(p, 'suggestion')}</span>}</div>
+    <div className="msg"><bdi>{L(p, 'message')}</bdi>{L(p, 'suggestion') && <span className="qr-muted"> {getLang() === 'he' ? '←' : '→'} {L(p, 'suggestion')}</span>}</div>
   </div>;
 }
 

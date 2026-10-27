@@ -4,7 +4,7 @@
 .qr-hist-body { overflow: auto; padding: 0 12px 12px; }
 .qr-hist-t { width: 100%; border-collapse: collapse; } .qr-hist-t th, .qr-hist-t td { padding: 6px 8px; border-bottom: 1px solid var(--mrt-border, #e2e8f0); text-align: start; vertical-align: middle; }
 .qr-hist-g { display: flex; flex-wrap: wrap; gap: 4px; }
-.qr-hist-open, .qr-recent-row { background: none; border: 0; padding: 0; color: #1d4ed8; cursor: pointer; font: inherit; text-align: start; }
+.qr-hist-open, .qr-recent-row { background: none; border: 0; padding: 0; color: var(--mrt-text); text-decoration: underline; cursor: pointer; font: inherit; text-align: start; }
 .qr-hist-open:hover, .qr-recent-row:hover { text-decoration: underline; }
 .qr-recent { max-width: 640px; margin: 10px auto 0; font-size: 12px; }
 .qr-recent-h { color: var(--mrt-text-muted, #64748b); margin-bottom: 4px; }
