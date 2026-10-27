@@ -1,7 +1,7 @@
 {
   "name": "qr",
   "productName": "QR",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "QR: drawing intake, problems list and route card preview",
   "author": "Alex Krylov <box3019@gmail.com>",
   "private": true,
@@ -78,6 +78,7 @@
     },
     "nsis": {
       "oneClick": false,
+      "runAfterFinish": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "shortcutName": "QR",

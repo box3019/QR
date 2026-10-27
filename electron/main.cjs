@@ -11,12 +11,17 @@ const { DEFAULT_ALLOW } = require('../core/analyze.cjs');
 const { questionsHtml, questionsText, buildQuestions } = require('../core/questions.cjs');
 
 app.setName('QR');
+// Startup log: %APPDATA%\QR\logs\main.log is written on every start so a silent failure is always diagnosable.
+function mainLog(msg) {
+  try { const f = path.join(app.getPath('userData'), 'logs', 'main.log'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.appendFileSync(f, `[${new Date().toISOString()}] [${process.pid}] ${msg}\n`); } catch {}
+}
+mainLog(`start v${app.getVersion()} exe=${process.execPath} packaged=${app.isPackaged}`);
 // Never show the main-process crash dialog: log to %APPDATA%\QR\qr-error.log and keep running.
 function logError(kind, e) {
   try { const f = path.join(app.getPath('userData'), 'qr-error.log'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.appendFileSync(f, `[${new Date().toISOString()}] ${kind}: ${(e && e.stack) || e}\n`); } catch {}
   try { win && win.webContents.send('qr:event', { type: 'error', text: `${kind}: ${(e && e.message) || e}` }); } catch {}
 }
-process.on('uncaughtException', (e) => logError('uncaughtException', e));
+process.on('uncaughtException', (e) => { mainLog('uncaughtException ' + ((e && e.stack) || e)); logError('uncaughtException', e); });
 process.on('unhandledRejection', (e) => logError('unhandledRejection', e));
 const settingsFile = () => path.join(app.getPath('userData'), 'qr-settings.json');
 const DEFAULTS = {
@@ -37,7 +42,7 @@ let win = null;
 let lastResult = { parts: [], unknown: [], files: [] };
 
 function createWindow() {
-  win = createMainWindow({ stateFile: path.join(app.getPath('userData'), 'window.json'), maximize: process.env.QR_MAXIMIZE !== '0', icon: path.join(__dirname, '..', 'build', 'icon.png'),
+  win = createMainWindow({ log: mainLog, stateFile: path.join(app.getPath('userData'), 'window.json'), maximize: process.env.QR_MAXIMIZE !== '0', icon: path.join(__dirname, '..', 'build', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: false } });
   const devUrl = process.env.QR_DEV_URL;
   if (devUrl) win.loadURL(devUrl); else win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
@@ -108,5 +113,11 @@ ipcMain.handle('qr:exportSummary', async (_e, parts, kind, target) => {
 ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.getPath('temp'), 'qr-outlook', String(Date.now()))));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
 
-app.whenReady().then(createWindow);
+// Single instance: a second launch focuses the existing window instead of starting a hidden duplicate.
+if (!app.requestSingleInstanceLock()) { mainLog('another instance holds the lock; exiting'); app.quit(); }
+else {
+  app.on('second-instance', () => { mainLog('second-instance: focusing'); if (win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } else createWindow(); });
+  app.whenReady().then(() => { mainLog('ready'); createWindow(); }).catch((e) => mainLog('whenReady failed ' + e));
+  app.on('window-all-closed', () => app.quit());
+}
 app.on('window-all-closed', () => app.quit());
