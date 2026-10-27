@@ -37,9 +37,28 @@ namespace QR.OutlookAddin {
       return "<customUI xmlns='http://schemas.microsoft.com/office/2009/07/customui'><ribbon><tabs>" + tabs + "</tabs></ribbon>" + menus + "</customUI>";
     }
     const string Tip = " screentip='Send to QR' supertip='Import the open or selected e-mails with their attachments into QR. Starts QR if needed. Nothing is sent.'";
-    static string Group(string gid, string tab, string pos) { return "<tab idMso='" + tab + "'><group id='" + gid + "' label='QR' imageMso='ImportOutlook'" + pos + ">" +
-        "<button id='" + gid + "Btn' label='Send to QR' size='large' showLabel='true' showImage='true' imageMso='ImportOutlook' onAction='OnSend'" + Tip + "/></group></tab>"; }
-    static string Menu(string bid, string menu) { return "<contextMenu idMso='" + menu + "'><menuSeparator id='" + bid + "Sep'/><button id='" + bid + "' label='Send to QR' imageMso='ImportOutlook' onAction='OnSend'" + Tip + "/></contextMenu>"; }
+    static string Group(string gid, string tab, string pos) { return "<tab idMso='" + tab + "'><group id='" + gid + "' label='QR' getImage='GetIcon'" + pos + ">" +
+        "<button id='" + gid + "Btn' label='Send&#160;to&#160;QR' size='large' showLabel='true' showImage='true' getImage='GetIcon' onAction='OnSend'" + Tip + "/></group></tab>"; }
+    static string Menu(string bid, string menu) { return "<contextMenu idMso='" + menu + "'><menuSeparator id='" + bid + "Sep'/><button id='" + bid + "' label='Send&#160;to&#160;QR' getImage='GetIcon' onAction='OnSend'" + Tip + "/></contextMenu>"; }
+    // 32x32 QR icon drawn in code (no resource file): blue tile, white QR-like finder squares. Cached; any failure -> no image.
+    static object icon;
+    public object GetIcon(Office.IRibbonControl control) {
+      try { if (icon == null) icon = Pic.From(DrawIcon()); return icon; } catch (Exception e) { Log("icon error " + e.Message); return null; }
+    }
+    internal static System.Drawing.Bitmap DrawIcon() {
+      var b = new System.Drawing.Bitmap(32, 32, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+      using (var g = System.Drawing.Graphics.FromImage(b)) {
+        g.Clear(System.Drawing.Color.Transparent);
+        using (var blue = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(37, 99, 235))) g.FillRectangle(blue, 1, 1, 30, 30);
+        var w = System.Drawing.Brushes.White; var k = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(37, 99, 235));
+        foreach (var o in new[] { new[] { 4, 4 }, new[] { 18, 4 }, new[] { 4, 18 } }) { g.FillRectangle(w, o[0], o[1], 10, 10); g.FillRectangle(k, o[0] + 2, o[1] + 2, 6, 6); g.FillRectangle(w, o[0] + 4, o[1] + 4, 2, 2); }
+        foreach (var d in new[] { new[] { 18, 18 }, new[] { 22, 18 }, new[] { 26, 18 }, new[] { 20, 22 }, new[] { 24, 22 }, new[] { 18, 26 }, new[] { 22, 26 }, new[] { 26, 26 } }) g.FillRectangle(w, d[0], d[1], 3, 3);
+        k.Dispose();
+      }
+      return b;
+    }
+    sealed class Pic : System.Windows.Forms.AxHost { Pic() : base("") { } public static object From(System.Drawing.Image i) { return GetIPictureDispFromPicture(i); } }
+
     public void OnSend(Office.IRibbonControl control) {
       try {
         Log("send clicked");

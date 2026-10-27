@@ -13,6 +13,6 @@ test('installer never re-enables a disabled add-in', () => { assert.ok(/ReadRegD
   assert.ok(calls.length === 2 && calls.every((i) => i > ifs && i < end), 'add-in keys are written only inside the not-registered branch');
 });
 test('ribbon XML: Home tab, both mail context menus, read window; no insertBeforeMso', () => {
-  for (const s of ['"TabMail"', 'ContextMenuMailItem', 'ContextMenuMultipleItems', 'Microsoft.Outlook.Mail.Read', 'TabReadMessage', "size='large'", "imageMso='ImportOutlook'", '<contextMenus>']) assert.ok(cs.includes(s), s);
+  for (const s of ['"TabMail"', 'ContextMenuMailItem', 'ContextMenuMultipleItems', 'Microsoft.Outlook.Mail.Read', 'TabReadMessage', "size='large'", "getImage='GetIcon'", "label='Send&#160;to&#160;QR'", 'supertip=', '<contextMenus>']) assert.ok(cs.includes(s), s);
   assert.ok(!/insertBeforeMso='/.test(cs)); assert.ok(/Class == 74/.test(cs), 'context menu Selection handled');
 });
