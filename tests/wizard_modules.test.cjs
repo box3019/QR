@@ -26,3 +26,8 @@ test('card has one section component per friend category, in order', async () =>
   assert.deepStrictEqual(b.cardFlags({ problems: [{ severity: 'Info' }, { severity: 'Warning', status: 'open' }] }).length, 1); });
 test('stepper is a vertical rail on the start side', () => { const css = fs.readFileSync(src('styles', 'wizard.css'), 'utf8');
   assert.match(css, /\.qr-wiz \{[^}]*grid-template-columns: min\(17\.5rem/); assert.doesNotMatch(css, /\.qr-stepbar/); assert.doesNotMatch(css, /\.qr-wiz \{[^}]*\bleft\b/); });
+
+test('part card flags use the localized (HE) message, not raw English', () => {
+  const s = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'components', 'partcard', 'PartCard.tsx'), 'utf8');
+  require('assert').ok(/localized\(p, 'message'\)/.test(s) && !/\{p\.message\}/.test(s));
+});
