@@ -145,3 +145,7 @@
 .qr-busy [data-testid=busy-text] { white-space: normal; overflow: visible; text-overflow: clip; max-width: 36rem; }
 .qr-card-nav { position: sticky; bottom: 0; z-index: 1; background: var(--mrt-surface, #fff); margin-top: auto; }
 .qr-card-nav > button { flex: 0 0 auto; min-width: 7rem; }
+
+/* toast sits above the wizard footer, never over its buttons */
+.qr-root .qr-busy { bottom: 4.25rem; }
+
