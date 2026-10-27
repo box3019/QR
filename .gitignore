@@ -4,3 +4,4 @@ release/
 selftest-out/
 *.log
 __pycache__/
+vendor/outlook-addin/*.dll

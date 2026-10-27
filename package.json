@@ -11,9 +11,10 @@
     "build": "vite build",
     "start": "electron ./electron/main.cjs",
     "test:core": "node scripts/test-core.cjs",
-    "dist:win": "vite build && electron-builder --win nsis --x64",
+    "dist:win": "node scripts/build-addin.cjs && vite build && electron-builder --win nsis --x64",
     "selftest": "node scripts/selftest.cjs",
-    "test:unit": "node --test tests/"
+    "test:unit": "node --test tests/",
+    "build:addin": "node scripts/build-addin.cjs"
   },
   "dependencies": {
     "@kenjiuno/msgreader": "^1.29.0",
@@ -62,6 +63,10 @@
       {
         "from": "vendor/7zip",
         "to": "7zip"
+      },
+      {
+        "from": "vendor/outlook-addin",
+        "to": "outlook-addin"
       }
     ],
     "asar": false,
@@ -85,7 +90,8 @@
       "shortcutName": "QR",
       "uninstallDisplayName": "QR",
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "include": "build/installer.nsh"
     }
   }
 }

@@ -121,10 +121,14 @@ ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.g
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
 
 // Single instance: a second launch focuses the existing window instead of starting a hidden duplicate.
+// Outlook 'Send to QR': QR.exe --import <dir> (first launch or a second instance).
+const { importArg, msgFiles } = require('./importArg.cjs');
+let pendingImport = importArg(process.argv);
+function sendImport(dir) { const files = msgFiles(dir); mainLog('import ' + dir + ' files=' + files.length); if (!files.length) return; if (win && !win.isDestroyed() && !win.webContents.isLoading()) win.webContents.send('qr:import', files); else pendingImport = dir; }
 if (!app.requestSingleInstanceLock()) { mainLog('another instance holds the lock; exiting'); app.quit(); }
 else {
-  app.on('second-instance', () => { mainLog('second-instance: focusing'); if (win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } else createWindow(); });
-  app.whenReady().then(() => { mainLog('ready'); createWindow(); }).catch((e) => mainLog('whenReady failed ' + e));
+  app.on('second-instance', (_e, argv) => { const d = importArg(argv || []); if (d) setTimeout(() => sendImport(d), 50); mainLog('second-instance: focusing'); if (win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } else createWindow(); });
+  app.whenReady().then(() => { mainLog('ready'); createWindow(); win.webContents.once('did-finish-load', () => { if (pendingImport) { const d = pendingImport; pendingImport = null; setTimeout(() => sendImport(d), 300); } }); }).catch((e) => mainLog('whenReady failed ' + e));
   app.on('window-all-closed', () => app.quit());
 }
 app.on('window-all-closed', () => app.quit());

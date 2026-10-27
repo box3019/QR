@@ -19,5 +19,6 @@ contextBridge.exposeInMainWorld('qr', {
   exportSummary: (parts, kind, target) => ipcRenderer.invoke('qr:exportSummary', parts, kind, target),
   exportRequirements: (parts, target) => ipcRenderer.invoke('qr:exportRequirements', parts, target),
   outlookSelection: () => ipcRenderer.invoke('qr:outlookSelection'),
+  onImport: (cb) => { const h = (_e, files) => cb(files); ipcRenderer.on('qr:import', h); return () => ipcRenderer.removeListener('qr:import', h); },
   openPath: (p) => ipcRenderer.invoke('qr:openPath', p),
 });

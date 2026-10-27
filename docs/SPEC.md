@@ -177,3 +177,19 @@ CustomerProfile {id, detect{}, routingSource: table|notes|partsList, mapping{}, 
 3. Publish: отдельная Production папка и installer, тот же порядок («Да, выложи в Production»)?
 4. Формат Customer Questions: PDF, Word или текст для email (или все)?
 5. OCR только локально (без облака) — подтверждаем?
+
+## Outlook 2021 "Send to QR" button (v0.1.4)
+
+**What it does.** One ribbon button, "Send to QR", in the Home tab (main window) and the Message tab (an opened e-mail). It works on the open e-mail or on all e-mails selected in the list. One click saves each e-mail as `.msg` (attachments included) into `%TEMP%\qr-outlook\<time>\`, then starts `QR.exe --import <folder>`. If QR is already running, the single-instance lock hands the folder to the open window; otherwise QR starts and imports once the window has loaded. Nothing is sent.
+
+**Choice: per-user COM add-in (plain .NET 4, no VSTO).**
+- `outlook-addin/QRAddin.cs` implements `IDTExtensibility2` + `IRibbonExtensibility` (interfaces declared in the source, no Office interop assemblies needed). It is built by `scripts/build-addin.cjs` with the `csc.exe` that ships in .NET Framework 4, so neither Visual Studio nor the VSTO runtime is needed.
+- The QR NSIS installer (`build/installer.nsh`) registers it under **HKCU only**: `Software\Classes\CLSID\{6C1D5E0A-…}` (InprocServer32 = mscoree.dll + CodeBase to `resources\outlook-addin\QR.OutlookAddin.dll`), in both registry views, and `Software\Microsoft\Office\Outlook\Addins\QR.OutlookAddin` with LoadBehavior 3. It also writes QR's location to `HKCU\Software\QR\ExePath`, which the add-in reads. The uninstaller deletes all these keys.
+- No macros, no admin rights, no Trust Center changes.
+
+**Rejected options.**
+- VSTO: needs Visual Studio to build and the VSTO runtime plus a ClickOnce trust prompt.
+- Web add-in + `qr://` protocol: sideloading needs Exchange/M365 support. A web add-in also cannot save `.msg` with its attachments to disk; it would need Graph/EWS tokens to download them.
+- VBA macro: needs macros enabled.
+
+**Limits.** QR has to be reinstalled after it is moved. If Outlook marks the add-in as slow or disabled, re-enable it in File › Options › Add-ins › COM Add-ins.

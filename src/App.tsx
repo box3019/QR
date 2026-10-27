@@ -60,6 +60,7 @@ export default function App() {
     catch (e: any) { alert(t('err.processing', { text: e?.message || e })); }
     finally { setBusy(null); }
   }, []);
+  useEffect(() => qr().onImport ? qr().onImport((files: string[]) => run(files)) : undefined, [run]); // Outlook 'Send to QR'
   (window as any).__qrRun = run; // hooks for automated self-tests
   (window as any).__qrParts = parts;
   (window as any).__qrRfqs = rfqs;
