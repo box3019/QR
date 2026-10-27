@@ -22,16 +22,19 @@ const SETS = SETS_ALL.filter(([n]) => !ONLY || ONLY.includes(n));
   const win = await app.firstWindow();
   // no setViewportSize: it freezes the page at a fixed size while the real window can be resized
   await win.waitForSelector('[data-testid=dropzone]');
+  if (await win.$('[data-testid=first-run-ok]')) await win.click('[data-testid=first-run-ok]');
   const title = await win.title();
   await win.screenshot({ path: path.join(out, '00_main_empty.png') });
   const summary = { title, sets: {} };
   for (const [name, files] of SETS) {
-    const t0 = Date.now();
+    const t0 = Date.now(); const before = await win.evaluate(() => JSON.stringify((window.__qrParts || []).map((p) => p.partNo)));
     await win.evaluate((p) => window.__qrRun(p), files.map((f) => (path.isAbsolute(f) || f.startsWith('\\\\') ? f : path.join(data, f))));
     // a new set on a loaded job asks Add/Start new (drop guard): each set starts new
-    const st = await win.waitForFunction(() => document.querySelector('[data-testid=drop-choice]') ? 'ask' : (!document.querySelector('[data-testid=busy]') && document.querySelector('[data-testid=parts-panel]') ? 'done' : ''), null, { timeout: 15 * 60 * 1000 });
-    if ((await st.jsonValue()) === 'ask') { await win.click('[data-testid=drop-new]'); await win.waitForTimeout(500); }
-    await win.waitForFunction(() => !document.querySelector('[data-testid=busy]') && document.querySelector('[data-testid=parts-panel]'), null, { timeout: 15 * 60 * 1000 });
+    // a new set on a loaded job asks Add/Start new (drop guard): each set starts new. The previous set may be on Summary, so wait for new parts, then go to Check parts.
+    const ready = () => win.waitForFunction((b) => document.querySelector('[data-testid=drop-choice]') ? 'ask' : (!document.querySelector('[data-testid=busy]') && (window.__qrParts || []).length && JSON.stringify(window.__qrParts.map((p) => p.partNo)) !== b ? 'done' : ''), before, { timeout: 15 * 60 * 1000, polling: 500 });
+    if ((await (await ready()).jsonValue()) === 'ask') { await win.click('[data-testid=drop-new]'); await win.waitForTimeout(500); await ready(); }
+    await win.evaluate(() => window.__qrStep(2));
+    await win.waitForFunction(() => !document.querySelector('[data-testid=busy]') && document.querySelector('[data-testid=parts-panel]'), null, { timeout: 60 * 1000 });
     const parts = await win.evaluate(() => window.__qrParts);
     const rfqs = await win.evaluate(() => window.__qrRfqs || []);
     summary.sets[name] = { rfqs: rfqs.map((r) => ({ rfq_no: r.rfq_no, assembly: r.assembly, customer: r.customer, rows: r.rows.map((x) => x.part_no + ':' + x.qty), match: r.match })), qty: parts.map((p) => p.partNo + ':' + (p.rfq ? p.rfq.qty : '-')), seconds: Math.round((Date.now() - t0) / 1000), parts: parts.map((p) => ({ partNo: p.partNo, rev: p.rev, customer: p.customer, material: p.material, status: p.status, rejectReason: p.rejectReason, readiness: p.readiness, textMode: p.textMode, problems: p.problems.map((x) => ({ severity: x.severity, category: x.category, message: x.message, loc: x.loc })), tasks: p.tasks.map((t) => ({ type: t.type, title: t.title })), threads: p.threads, threadMatches: p.threadMatches, zones: p.zones, route: p.route.map((s) => ({ seq: s.seq, type: s.type, moved: s.moved, blocked: s.blocked, text: s.items.map((i) => i.text).join(' | ').slice(0, 160) })), model: p.model, modelSearchLog: p.modelSearchLog, ocr: p.drawing.pages.map((g) => ({ n: g.n, mode: g.quality.mode, reasons: g.quality.reasons, ocr: g.ocr ? { dpi: g.ocr.dpi, tiles: g.ocr.tiles, seconds: g.ocr.seconds, words: g.ocr.words.length, low: g.ocr.words.filter((w) => w.conf < 0.6).length, sample: g.ocr.words.slice(0, 40).map((w) => w.text + ':' + Math.round(w.conf * 100)) } : null, ocrError: g.ocrError })) })) };
