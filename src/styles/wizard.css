@@ -78,3 +78,5 @@
 .qr-root .qr-bsec button.qr-sec-main { flex: 1 1 15rem; grid-template-columns: minmax(0, 7.5rem) minmax(8rem, 1fr); }
 .qr-root .qr-bsec button.qr-sec-main { grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr); }
 .qr-root .qr-bsec button.qr-sec-main > * { min-width: 0; overflow-wrap: anywhere; }
+.qr-sec-line { container-type: inline-size; }
+@container (max-width: 24rem) { .qr-root .qr-bsec button.qr-sec-main { grid-template-columns: minmax(0, 1fr); flex-basis: 100%; } .qr-root .qr-bsec button.qr-sec-main > :nth-child(n+3) { grid-column: 1; } }
