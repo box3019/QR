@@ -74,7 +74,7 @@ export default function App() {
   const pick = (i: number) => { setSel(i); setFocus(null); };
   const saveSettings = async (s: any) => setSettings(await qr().setSettings(s));
   const assistant = useAssistant(settings, saveSettings);
-  const hint = hintFor(step, { hasParts: has, nParts: parts.length, busy: !!busy, nQuestions: openQuestions(parts) });
+  const hint = hintFor(step, { hasParts: has, nParts: parts.length, busy: !!busy, nQuestions: parts.reduce((n, p) => n + openQuestions(p), 0) });
 
   return (
     <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light" data-step={step}
