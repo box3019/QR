@@ -37,3 +37,12 @@ npm run selftest -- "<path to QR.exe>" <test data dir> <out dir>
 - `docs/SPEC.md` product spec.
 
 QR is a separate project from MRT; it does not reference the MRT repository at build or run time.
+
+## v0.1.4
+- Requirements from drawing notes: JavaScript port of **notes_extractor.py** by Alex's friend (credited in
+  `docs/CREDITS.md`, original in `scripts/friend/`). Processes panel on the route card, material,
+  flagged problems, Export to Excel (Requirements, Summary, Material, Processes, Masking, Process summary).
+- Full Hebrew for problems, references and route lines; tutorial in Hebrew / Russian / English (Help button).
+- Buttons, chips and status labels use QR's own copy of the MRT button values (`src/styles/buttons.css`); no pill shapes.
+- `node scripts/overflow-check.cjs <QR.exe> <data> <out>`: overflow + overlapping-text check, EN/HE, all text sizes, window offscreen.
+- Tests that need customer sample files skip when the files are absent.

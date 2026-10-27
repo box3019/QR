@@ -37,3 +37,11 @@ QR is a standalone Electron app. No ERP, no prices, no MRT code paths or imports
 - `analyze.cjs` (~390 lines) still mixes RAFAEL/ELTA/KLA/ELBIT parsing; split into `core/customers/<name>.cjs` profiles and `core/checks/*.cjs`.
 - `App.tsx` holds all UI components; split into `src/ui/*`.
 - TypeScript migration of `core/` (currently CommonJS + JSDoc).
+
+## Requirements engine (v0.1.4)
+- `core/requirements/` - port of the friend's `notes_extractor.py` (source of truth):
+  `mupdf.cjs` (PyMuPDF-identical text lines via mupdf.js, derotated boxes), `lines.cjs`, `index.cjs` (analyzeFile),
+  `sheets.cjs` (six sheets), `xlsx.cjs` (dependency-free writer), `adapt.cjs` (route, material, problems for QR), `he.cjs` (Hebrew names).
+- `scripts/friend/compare.cjs` - row-by-row diff against the original Python output.
+- `src/styles/buttons.css` - button/badge/chip tokens (values measured from MRT with `scripts/btn-probe`), `tests/btn_tokens.test.cjs`, `tests/no_pills.test.cjs`.
+- `src/tutorial/` - tutorial (HE/RU/EN), `tests/tutorial.test.cjs`.
