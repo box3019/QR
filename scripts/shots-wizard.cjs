@@ -31,5 +31,19 @@ const [exe, data, out] = process.argv.slice(2); fs.mkdirSync(out, { recursive: t
     console.log(lang, 'step2', JSON.stringify(info));
     for (const st of [1, 3, 4]) { await win.evaluate((s) => window.__qrStep(s), st); await win.waitForTimeout(500); await win.screenshot({ path: path.join(out, st === 1 ? `v014_import_done_${lang}.png` : `v014_wizard_step${st}_${lang}.png`) }); if (st === 1) console.log('import done', lang, await win.evaluate(() => JSON.stringify({ drop: !!document.querySelector('[data-testid=dropzone]'), mails: [...document.querySelectorAll('[data-testid=import-mail]')].length, prog: document.querySelector('[data-testid=import-progress]')?.textContent, st: [...document.querySelectorAll('[data-testid=import-files] li')].map((l) => l.dataset.status).join(','), step: document.querySelector('.mrt-wizard-step[data-state=active]')?.textContent }))); }
   }
+  // pan inside the viewer: must scroll only, never import or reset
+  await win.evaluate((i) => { window.__qrSetSettings({ uiLanguage: 'he' }); window.__qrSelect(i, 'drawing'); }, idx); await win.waitForTimeout(800);
+  const vp = await win.$('[data-testid=drawing-viewport]'); const bx = await vp.boundingBox(); const before = await win.evaluate(() => ({ n: window.__qrParts.length, step: document.querySelector('.mrt-wizard-step[data-state=active]')?.textContent }));
+  await win.mouse.move(bx.x + bx.width / 2, bx.y + bx.height / 2); await win.mouse.down(); await win.mouse.move(bx.x + bx.width / 2 - 250, bx.y + bx.height / 2 - 150, { steps: 12 }); await win.mouse.up(); await win.waitForTimeout(800);
+  await win.mouse.move(bx.x + bx.width / 2, bx.y + bx.height / 2); await win.mouse.wheel(0, -300); await win.waitForTimeout(500);
+  await win.screenshot({ path: path.join(out, 'v014_step2_pan_he.png') });
+  const after = await win.evaluate(() => ({ n: window.__qrParts.length, step: document.querySelector('.mrt-wizard-step[data-state=active]')?.textContent, drop: !!document.querySelector('[data-testid=dropzone]'), scroll: [document.querySelector('[data-testid=drawing-viewport]').scrollLeft, document.querySelector('[data-testid=drawing-viewport]').scrollTop], w: document.querySelector('[data-testid=drawing-sheet]')?.style.width }));
+  console.log('PAN', JSON.stringify({ before, after }), before.n === after.n && before.step === after.step && !after.drop ? 'PAN-OK' : 'PAN-FAIL');
+  // later drop while loaded: HE toast on step 2, adds parts, toast gone when done
+  win.evaluate((p) => window.__qrRun(p), [path.join(data, 'KLA_matbug_d.pdf')]);
+  await win.waitForSelector('[data-testid=busy]', { timeout: 60000 }).catch(() => {}); await win.waitForTimeout(1500);
+  await win.screenshot({ path: path.join(out, 'v014_toast_he.png') }); console.log('TOAST', await win.evaluate(() => { const e = document.querySelector('[data-testid=busy-text]'); return e ? JSON.stringify({ text: e.textContent, cut: e.scrollWidth > e.clientWidth }) : 'none'; }));
+  await win.waitForFunction(() => !document.querySelector('[data-testid=import-view][data-active=true]') && !window.__qrBusyActive, null, { timeout: 10 * 60 * 1000 }).catch(() => {}); await win.waitForTimeout(1500);
+  console.log('APPEND', JSON.stringify(await win.evaluate(() => ({ n: window.__qrParts.length, toast: !!document.querySelector('[data-testid=busy]'), choice: !!document.querySelector('[data-testid=drop-choice]') }))));
   await app.close();
 })().catch((e) => { console.error(e); process.exit(1); });

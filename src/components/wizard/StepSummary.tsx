@@ -14,7 +14,7 @@ export function StepSummary({ parts, openDialog, goPart }: any) {
     {flagged.length > 0 && <div className="qr-warnbar" data-testid="sum-flagged"><span>{t('wz.flagged', { n: flagged.length })}</span><button className={MRT_BTN} title={t('tip.goFlagged')} onClick={() => goPart(flagged[0])}>{t('wz.goFlagged')}</button></div>}
     <div className="qr-sum-line" data-testid="sum-totals"><span className="qr-lbl">{t('wz.parts')}</span> <b>{parts.length}</b>{groups.map((g: any) => <span key={g.key} className="qr-sum-g" data-g={g.key}>{t('pg.' + g.key)} {g.items.length}</span>)}<span className="qr-lbl">{t('wz.questions')}</span> <b>{nq}</b></div>
     <Box title={t('wz.secQ')} testid="box-export-questions">
-      <p className="qr-box-text">{t('wz.qText', { n: nq, p: np })}</p>
+      <p className="qr-box-text">{t(nq === 1 && np === 1 ? 'wz.qText1' : 'wz.qText', { n: nq, p: np })}</p>
       <button className={MRT_BTN_PRIMARY} data-testid="btn-questions" title={t('tip.questions')} onClick={() => openDialog('questions')}>{t('wz.qBtn')}</button>
     </Box>
     <Box title={t('wz.secX')} testid="box-export-xlsx">
