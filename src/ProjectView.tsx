@@ -17,12 +17,13 @@ import { openQuestions } from './wizard/summary.mjs';
 import { afterImport } from './wizard/importView.mjs';
 import { dropPlan } from './wizard/dropGuard.mjs';
 import { tabMeta, persisted } from './projects/store.mjs';
+import { useHistoryTouch } from './projects/useHistory';
 import { useBusy } from './hooks/useBusy';
 import { exposeTestHooks } from './hooks/testHooks';
 
 const qr = () => (window as any).qr;
 type Part = any;
-export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, over, onMeta, register }: any) {
+export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, over, onMeta, register, recent, onReopen, onHistory }: any) {
   const I = initial || {};
   const [parts, setParts] = useState((I.parts || []) as Part[]); const [unknown, setUnknown] = useState((I.unknown || []) as string[]);
   const [sel, setSel] = useState(I.sel || 0); const [step, setStep] = useState(I.step || 1); const [tab, setTab] = useState(I.tab || 'drawing');
@@ -47,6 +48,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   useEffect(() => { register(id, run); if (pending && pending.length) run(pending); }, []);
   useEffect(() => { if (busy) return; const h = setTimeout(() => qr().saveProject(id, persisted({ step, parts, rfqs, unknown, lastRun, sel, tab, dirty })).catch(() => {}), 500); return () => clearTimeout(h); }, [busy, step, parts, rfqs, unknown, lastRun, sel, tab, dirty]);
   useEffect(() => { onMeta(id, tabMeta({ parts, rfqs, busy, view, step, lastRun, dirty })); }, [parts, rfqs, busy, view, step, lastRun, dirty]);
+  useHistoryTouch(id, active, busy, parts, rfqs, step, onHistory);
   if (active) exposeTestHooks({ setDetails, setStep, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); if (tb) { setTab(tb); setStep(2); } } });
   const has = parts.length > 0;
   const updatePart = (fn: (p: Part) => Part) => { setDirty(true); setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p))); };
@@ -58,7 +60,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
       <StepHeader step={step} hint={hint} assistant={assistant} />
       <Stepper step={step} setStep={setStep} hasParts={has} />
       <main className="qr-wiz-main">
-        {step === 1 && <StepIntake view={view} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
+        {step === 1 && <StepIntake view={view} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} recent={recent} onReopen={onReopen} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
         {step === 2 && has && <StepCheckParts parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={setStep} />}
         {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} />}
         {step === 4 && has && <StepSummary parts={parts} lang={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} meta={tabMeta({ parts, rfqs })} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => { pick(i); setStep(2); }} />}

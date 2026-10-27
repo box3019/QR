@@ -1,0 +1,12 @@
+/* History dialog and the Step 1 recent list (small, under the drop zone). */
+.qr-hist { width: min(1000px, 94vw); }
+.qr-hist-search { padding: 8px 12px; } .qr-hist-search .qr-input { width: 100%; }
+.qr-hist-body { overflow: auto; padding: 0 12px 12px; }
+.qr-hist-t { width: 100%; border-collapse: collapse; } .qr-hist-t th, .qr-hist-t td { padding: 6px 8px; border-bottom: 1px solid var(--mrt-border, #e2e8f0); text-align: start; vertical-align: middle; }
+.qr-hist-g { display: flex; flex-wrap: wrap; gap: 4px; }
+.qr-hist-open, .qr-recent-row { background: none; border: 0; padding: 0; color: #1d4ed8; cursor: pointer; font: inherit; text-align: start; }
+.qr-hist-open:hover, .qr-recent-row:hover { text-decoration: underline; }
+.qr-recent { max-width: 640px; margin: 10px auto 0; font-size: 12px; }
+.qr-recent-h { color: var(--mrt-text-muted, #64748b); margin-bottom: 4px; }
+.qr-recent ul { list-style: none; margin: 0; padding: 0; } .qr-recent li { padding: 2px 0; }
+.qr-recent-row { display: flex; gap: 12px; align-items: baseline; width: 100%; } .qr-recent-l { font-weight: 600; }

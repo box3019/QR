@@ -22,7 +22,10 @@ export function useProjects() {
     const r = routeOutlook(l.map((p) => ({ id: p.id, ...(m[p.id] || {}) })), key, a);
     if (r.kind === 'focus') setActive(r.id!); else if (r.kind === 'active') runners.current[a]?.(files); else add(files);
   };
-  return { list, active, metas, setActive, add, close, importOutlook, move: (a: number, b: number) => setList((l) => reorder(l, a, b)),
+  /** History: focus the tab when open, else load it from disk into a new tab (same step and state). */
+  const reopen = async (id: string) => { if (S.current.list.some((p) => p.id === id)) { setActive(id); return true; }
+    const data = await qr().loadProject(id).catch(() => null); if (!data) return false; setList((l) => [...l, { id, initial: data }]); setActive(id); return true; };
+  return { list, active, metas, setActive, add, close, importOutlook, reopen, move: (a: number, b: number) => setList((l) => reorder(l, a, b)),
     setMeta: (id: string, m: any) => setMetas((o) => ({ ...o, [id]: m })), register: (id: string, fn: any) => { runners.current[id] = fn; },
     runActive: (paths: string[]) => runners.current[S.current.active]?.(paths) };
 }

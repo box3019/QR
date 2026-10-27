@@ -5,8 +5,9 @@ import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import { RfqBar } from './RfqBar';
 import { ImportView } from './ImportView';
 import { showDrop } from '../../wizard/importView.mjs';
+import { RecentList } from '../history/RecentList';
 
-export function StepIntake({ view, nParts, rfqs, over, details, unknown, onFiles, onFolder }: any) {
+export function StepIntake({ view, nParts, rfqs, over, details, unknown, onFiles, onFolder, recent, onReopen }: any) {
   if (!showDrop(view, nParts)) return <div className="qr-step-intake">{view && <ImportView view={view} />}</div>;
   return <div className="qr-step-intake">
     {rfqs.map((r: any, i: number) => <RfqBar key={i} rfq={r} />)}
@@ -20,5 +21,6 @@ export function StepIntake({ view, nParts, rfqs, over, details, unknown, onFiles
         {details && unknown.length > 0 && <div className="qr-muted" style={{ marginTop: 12 }}>{t('drop.notDrawings', { list: unknown.join(', ') })}</div>}
       </div>
     </div>
+    {recent && recent.length > 0 && <RecentList items={recent} onOpen={onReopen} />}
   </div>;
 }
