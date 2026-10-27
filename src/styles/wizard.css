@@ -149,3 +149,7 @@
 /* toast sits above the wizard footer, never over its buttons */
 .qr-root .qr-busy { bottom: 4.25rem; }
 
+
+/* settings chips: never squeezed to a column at huge text */
+.qr-chip { flex: 0 0 auto; white-space: nowrap; max-width: 100%; }
+
