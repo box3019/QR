@@ -23,10 +23,16 @@
 !macro customInstall
   WriteRegStr HKCU "Software\QR" "ExePath" "$INSTDIR\QR.exe"
   WriteRegStr HKCU "Software\QR" "InstallDir" "$INSTDIR"
+  ; Register the Outlook add-in only when it is not registered yet: an existing registration (its CodeBase, e.g.
+  ; %LOCALAPPDATA%\QR\OutlookAddin, and its LoadBehavior) is never rewritten by an install or a test install.
   SetRegView 64
-  !insertmacro QrAddinKeys
-  SetRegView 32
-  !insertmacro QrAddinKeys
+  ClearErrors
+  ReadRegStr $1 HKCU "Software\Classes\CLSID\${QR_CLSID}\InprocServer32" "CodeBase"
+  ${If} ${Errors}
+    !insertmacro QrAddinKeys
+    SetRegView 32
+    !insertmacro QrAddinKeys
+  ${EndIf}
   SetRegView lastused
 !macroend
 !macro QrAddinDel

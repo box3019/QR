@@ -18,17 +18,28 @@ namespace QR.OutlookAddin {
     public void OnStartupComplete(ref Array custom) { try { Log("startup complete"); } catch { } }
     public void OnBeginShutdown(ref Array custom) { }
 
+    // One XML per ribbon id. Explorer: Home tab group + right-click menus for one or several mails. Read window: Message tab.
+    // In the Simplified Ribbon, custom groups appear on Home (or in its "..." overflow); the context menu works in both layouts.
     public string GetCustomUI(string id) {
       try {
-        string tabs = id == "Microsoft.Outlook.Explorer" ? Btn("qrExp", "TabMail", true)
-          : id == "Microsoft.Outlook.Mail.Read" ? Btn("qrRead", "TabReadMessage", false) : null;
-        Log("ribbon " + id + (tabs == null ? " (none)" : ""));
-        return tabs == null ? null : "<customUI xmlns='http://schemas.microsoft.com/office/2009/07/customui'><ribbon><tabs>" + tabs + "</tabs></ribbon></customUI>";
+        string xml = UiFor(id);
+        Log("ribbon " + id + (xml == null ? " (not ours, nothing added)" : " ok"));
+        return xml;
       } catch (Exception e) { Log("ribbon error " + e); return null; }
     }
-    static string Btn(string gid, string tab, bool before) { return "<tab idMso='" + tab + "'><group id='" + gid + "' label='QR'" + (before ? " insertBeforeMso='GroupMoveActions'" : "") + ">" +
-        "<button id='" + gid + "Btn' label='Send to QR' size='large' imageMso='ImportOutlook' onAction='OnSend' screentip='Send to QR' supertip='Import the open or selected e-mails with their attachments into QR. Starts QR if needed. Nothing is sent.'/></group></tab>"; }
-
+    internal static string UiFor(string id) {
+      string tabs, menus = "";
+      if (id == "Microsoft.Outlook.Explorer") {
+        tabs = Group("qrExp", "TabMail", ""); // no insertBeforeMso: a wrong idMso there makes Office drop the whole XML silently
+        menus = "<contextMenus>" + Menu("qrCtx1", "ContextMenuMailItem") + Menu("qrCtxN", "ContextMenuMultipleItems") + "</contextMenus>";
+      } else if (id == "Microsoft.Outlook.Mail.Read") tabs = Group("qrRead", "TabReadMessage", "");
+      else return null;
+      return "<customUI xmlns='http://schemas.microsoft.com/office/2009/07/customui'><ribbon><tabs>" + tabs + "</tabs></ribbon>" + menus + "</customUI>";
+    }
+    const string Tip = " screentip='Send to QR' supertip='Import the open or selected e-mails with their attachments into QR. Starts QR if needed. Nothing is sent.'";
+    static string Group(string gid, string tab, string pos) { return "<tab idMso='" + tab + "'><group id='" + gid + "' label='QR' imageMso='ImportOutlook'" + pos + ">" +
+        "<button id='" + gid + "Btn' label='Send to QR' size='large' showLabel='true' showImage='true' imageMso='ImportOutlook' onAction='OnSend'" + Tip + "/></group></tab>"; }
+    static string Menu(string bid, string menu) { return "<contextMenu idMso='" + menu + "'><menuSeparator id='" + bid + "Sep'/><button id='" + bid + "' label='Send to QR' imageMso='ImportOutlook' onAction='OnSend'" + Tip + "/></contextMenu>"; }
     public void OnSend(Office.IRibbonControl control) {
       try {
         Log("send clicked");
@@ -39,8 +50,11 @@ namespace QR.OutlookAddin {
         Action<dynamic> save = (m) => { try { if ((int)m.Class != 43) return; n++; string s = (string)(m.Subject ?? "mail");
           foreach (var c in Path.GetInvalidFileNameChars()) s = s.Replace(c, '_'); if (s.Length > 80) s = s.Substring(0, 80);
           m.SaveAs(Path.Combine(dir, n + " " + s + ".msg"), 9); } catch (Exception e) { Log("save error " + e.Message); } };
-        bool isInspector = false; try { object probe = ctx.CurrentItem; isInspector = probe != null; } catch { }
-        if (isInspector) save(ctx.CurrentItem); else { dynamic sel = ctx.Selection; for (int i = 1; i <= (int)sel.Count; i++) save(sel[i]); }
+        dynamic sel = null; object one = null;
+        try { if ((int)ctx.Class == 74) sel = ctx; } catch { }                       // 74 = olSelection (right-click menu)
+        if (sel == null) { try { one = ctx.CurrentItem; } catch { } }               // Inspector (opened e-mail)
+        if (sel == null && one == null) sel = ctx.Selection;                       // Explorer (Home tab)
+        if (one != null) save(one); else for (int i = 1; i <= (int)sel.Count; i++) save(sel[i]);
         Log("saved " + n + " -> " + dir);
         if (n == 0) { Msg("Select one or more e-mails first."); return; }
         var exe = Registry.GetValue(@"HKEY_CURRENT_USER\Software\QR", "ExePath", null) as string;
