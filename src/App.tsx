@@ -5,6 +5,8 @@ import SettingsDialog from './settings/SettingsDialog';
 import { t, tReadiness, setLang, setTextSize, getLang } from './i18n';
 import { PlainStatusBadge, FirstRun } from './ui/simple';
 import { ProcessesPanel } from './ui/processes';
+import { groupParts } from './parts/groups.mjs';
+import { PartGroup } from './parts/PartGroup';
 import { Tutorial } from './tutorial/Tutorial';
 
 declare global { interface Window { qr: any } }
@@ -135,7 +137,7 @@ function PartsPanel({ parts, sel, setSel, unknown, details }: any) {
   return <div className="qr-panel" data-testid="parts-panel">
     <div className="qr-panel-h">{t('parts.title')} <span className="qr-muted">({parts.length})</span></div>
     <div className="qr-scroll">
-      {parts.map((p: Part, i: number) => {
+      {groupParts(parts).map((g: any) => <PartGroup key={g.key} k={g.key} n={g.items.length}>{g.items.map(({ part: p, index: i }: any) => {
         const b = p.problems.filter((x: any) => x.severity === 'Blocker' && x.status !== 'resolved').length;
         const q = p.problems.filter((x: any) => x.severity === 'Question' && x.status !== 'resolved').length;
         const tk = p.tasks.filter((x: any) => x.status !== 'done').length;
@@ -153,7 +155,7 @@ function PartsPanel({ parts, sel, setSel, unknown, details }: any) {
             {details && <Chip t={p.textMode === 'Text' ? 'neutral' : 'info'}>{p.textMode === 'Text' ? t('parts.textPdf') : p.textMode === 'OCR' ? t('parts.ocr') : t('parts.textOcr')}</Chip>}
           </div>
         </div>;
-      })}
+      })}</PartGroup>)}
       {unknown.length > 0 && <div className="qr-part qr-muted">{t('parts.other', { list: unknown.join(', ') })}</div>}
     </div>
   </div>;

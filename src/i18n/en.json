@@ -261,5 +261,11 @@
  "pp.specs": "Specs",
  "pp.details": "Values",
  "top.help": "Help",
- "tip.help": "Step-by-step tutorial (Hebrew, Russian, English)"
+ "tip.help": "Step-by-step tutorial (Hebrew, Russian, English)",
+ "pg.ready": "Fits us",
+ "pg.needsDoc": "Needs document",
+ "pg.needsAnswer": "Needs customer answer",
+ "pg.notOurs": "Not our material / process",
+ "pg.collapse": "Collapse this group",
+ "pg.expand": "Expand this group"
 }

@@ -7,5 +7,6 @@ import './styles/qr.css';
 import './styles/fit.css';
 import './styles/shape.css';
 import './styles/buttons.css';
+import './styles/groups.css';
 import App from './App';
 createRoot(document.getElementById('root')!).render(<App />);
