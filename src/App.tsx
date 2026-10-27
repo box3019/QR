@@ -1,3 +1,4 @@
+import { Ico } from './components/Ico';
 // QR window shell: top bar with project tabs, settings/help, and one ProjectView per open project (kept mounted so each keeps its own state).
 import React, { useEffect, useState } from 'react';
 import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
@@ -45,11 +46,11 @@ export default function App() {
       <div className="qr-topbar mrt-workspace-topbar-chrome">
         <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
         <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
-        {bar.details && <TopButton icon="??" label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
+        {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
-        <TopButton icon={'\u23f2'} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
-        <TopButton icon="?" label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
-        <TopButton icon="?" label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => setDialog('tutorial')} />
+        <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
+        <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
+        <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => setDialog('tutorial')} />
       </div>
       <div className="qr-projs">
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
