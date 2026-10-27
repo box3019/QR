@@ -2,13 +2,13 @@ import React from 'react';
 import { MRT_BTN_PRIMARY } from './mrtButtons';
 import { t } from '../i18n';
 
-import { plainStatus } from '../parts/groups.mjs';
+import { plainStatus, DOT } from '../parts/groups.mjs';
 export { plainStatus };
 export type PlainStatus = 'ready' | 'needsAnswer' | 'needsDoc' | 'notOurs';
 const TONE: Record<PlainStatus, string> = { ready: 'ready', needsAnswer: 'attention', needsDoc: 'info', notOurs: 'danger' };
 export function PlainStatusBadge({ part }: { part: any }) {
   const s = plainStatus(part);
-  return <span className="qr-status" data-tone={TONE[s]} data-testid="plain-status" data-status={s} title={t("ps." + s)}>{t('ps.' + s)}</span>;
+  return <span className="qr-status qr-tag" data-tone={TONE[s]} data-testid="plain-status" data-status={s} title={t('ps.' + s)}><i className="qr-dot" data-s={DOT[s]} aria-hidden="true" />{t('tile.' + s)}</span>;
 }
 
 /** First-run overlay: 3 steps, dismissed once. */

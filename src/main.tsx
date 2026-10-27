@@ -15,3 +15,4 @@ import App from './App';
 createRoot(document.getElementById('root')!).render(<App />);
 import './styles/tour.css';
 import './styles/caps.css';
+import './styles/system.css';

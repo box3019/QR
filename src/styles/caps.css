@@ -4,9 +4,3 @@
 .qr-ai-avatar svg, .qr-ai-avatar img { width: 24px !important; height: 24px !important; }
 .qr-pgroup-h { font-size: 14px !important; min-height: 32px !important; max-height: 32px !important; padding-block: 0 !important; }
 .qr-tab { font-size: 14px !important; min-height: 32px !important; max-height: 32px !important; padding-block: 0 !important; }
-.qr-std { border: 1px solid #e5e7eb; border-radius: 6px; padding: 6px 8px; margin: 6px 0; background: #fff; }
-.qr-std-row { padding: 4px 0; border-top: 1px solid #f1f5f9; }
-.qr-std-dims { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; }
-.qr-std-flag { color: #b91c1c; font-size: 13px; }
-.qr-std-newer { color: #a16207; }
-.qr-std-btns { display: flex; gap: 6px; margin-top: 4px; }

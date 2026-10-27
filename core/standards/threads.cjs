@@ -1,6 +1,8 @@
 'use strict';
 // Screw threads: parse inch (UNC/UNF/UNEF/UNJC/UNJF/UNJ) and metric (M/MJ) callouts; basic sizes in inch and mm.
 const NUM = { '0': 0.06, '1': 0.073, '2': 0.086, '3': 0.099, '4': 0.112, '5': 0.125, '6': 0.138, '8': 0.164, '10': 0.19, '12': 0.216 };
+/** '.3750' -> '0.3750' everywhere in a display string. */
+const lz = (x) => String(x).replace(/(^|[^\d])\.(\d)/g, (_, a, b) => a + '0.' + b);
 const r3 = (x) => Math.round(x * 1000) / 1000, r4 = (x) => Math.round(x * 10000) / 10000;
 function diaInch(s) {
   s = String(s).replace(/^#/, '');
@@ -19,7 +21,7 @@ function parseThread(raw) {
     const d = diaInch(m[1]); if (!(d > 0)) return null; const tpi = +m[2]; const p = 1 / tpi;
     const series = m[3], j = series.startsWith('UNJ');
     const minorInt = d - 1.08253 * p; // basic internal minor (UN); UNJ internal minor is larger (0.9743p)
-    return { system: 'inch', raw: s, dia: r4(d), tpi, series, j, cls: m[4] || '', mm: { major: r3(d * 25.4), pitch: r3(25.4 / tpi), minor: r3((j ? d - 0.97428 * p : minorInt) * 25.4), tapDrill: r3((d - p) * 25.4) } };
+    const sz = /^\./.test(m[1]) ? '0' + m[1] : m[1]; return { system: 'inch', raw: `${sz}-${m[2]} ${series}${m[4] ? '-' + m[4] : ''}`, dia: r4(d), tpi, series, j, cls: m[4] || '', mm: { major: r3(d * 25.4), pitch: r3(25.4 / tpi), minor: r3((j ? d - 0.97428 * p : minorInt) * 25.4), tapDrill: r3((d - p) * 25.4) } };
   }
   m = s.match(/^(MJ|M)\s*(\d{1,3}(?:\.\d+)?)\s*[X×]\s*(\d(?:\.\d+)?)(?:\s*-\s*(\d[GH](?:\d[GH])?))?/);
   if (m) {
@@ -36,4 +38,4 @@ function compareThreads(drawing, required) {
   if (drawing.cls && required.cls && drawing.cls !== required.cls) out.push({ type: 'class', drawing: drawing.cls, required: required.cls });
   return out;
 }
-module.exports = { parseThread, compareThreads, diaInch };
+module.exports = { lz, parseThread, compareThreads, diaInch };

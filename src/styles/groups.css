@@ -1,16 +1,7 @@
-/* Parts list status groups. Button radius (no pills), subtle status accent on the inline-start edge. */
-.qr-pgroup { margin-block-end: 0.9rem; }
-.qr-pgroup + .qr-pgroup { padding-block-start: 0.25rem; }
-.qr-pgroup-h { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.25rem; padding: 0.35rem 0.6rem;
-  border: 1px solid #cbd5e1; border-inline-start: 4px solid var(--pg-accent, #94a3b8); border-radius: var(--qr-btn-radius, 8px);
-  background: var(--pg-bg, #f8fafc); color: #0f172a; font: inherit; font-weight: 600; text-align: start; cursor: pointer; }
-.qr-pgroup-h:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1e293b; }
+/* Parts list status groups: structure only; look is in system.css (identical headers, status only as a dot). */
+.qr-pgroup-h { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.25rem; padding: 0.35rem 0.6rem; font: inherit; text-align: start; cursor: pointer; }
+.qr-pgroup-h:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--mrt-accent, #334155); }
 .qr-pgroup-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.qr-pgroup-n { min-width: 1.75rem; padding: 0 0.4rem; border: 1px solid var(--pg-accent, #94a3b8); border-radius: var(--qr-btn-radius, 8px); text-align: center; font-variant-numeric: tabular-nums; }
+.qr-pgroup-n { text-align: center; font-variant-numeric: tabular-nums; }
 .qr-pgroup-caret { width: 1em; text-align: center; }
 [dir='rtl'] .qr-pgroup-caret { transform: scaleX(-1); }
-.qr-pgroup-body { padding-block-start: 0.4rem; }
-.qr-pgroup[data-status='ready'] { --pg-accent: #15803d; --pg-bg: #f0fdf4; }
-.qr-pgroup[data-status='needsDoc'] { --pg-accent: #1d4ed8; --pg-bg: #eff6ff; }
-.qr-pgroup[data-status='needsAnswer'] { --pg-accent: #b45309; --pg-bg: #fffbeb; }
-.qr-pgroup[data-status='notOurs'] { --pg-accent: #b91c1c; --pg-bg: #fef2f2; }

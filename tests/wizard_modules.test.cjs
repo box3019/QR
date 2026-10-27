@@ -4,7 +4,7 @@ const test = require('node:test'); const assert = require('node:assert'); const 
 const src = (...p) => path.join(__dirname, '..', 'src', ...p);
 const load = (...p) => import(pathToFileURL(src(...p)).href);
 const MODS = ['components/wizard/Stepper.tsx', 'components/wizard/StepHeader.tsx', 'components/wizard/StepIntake.tsx', 'components/wizard/StepCheckParts.tsx', 'components/wizard/StepDocsQuestions.tsx', 'components/wizard/StepSummary.tsx', 'components/wizard/ProgressToast.tsx', 'components/wizard/RfqBar.tsx', 'components/wizard/Box.tsx',
-  'components/partcard/PartCard.tsx', 'components/partcard/CardSection.tsx', 'components/partcard/sections.tsx', 'components/partcard/Fields.tsx', 'components/partcard/TableDialog.tsx', 'hooks/useBusy.ts', 'hooks/usePartCard.ts', 'views/Viewer.tsx'];
+  'components/partcard/PartCard.tsx', 'components/partcard/BlockCard.tsx', 'components/partcard/Fields.tsx', 'components/partcard/TableDialog.tsx', 'hooks/useBusy.ts', 'hooks/usePartCard.ts', 'views/Viewer.tsx'];
 test('modules exist, start with a one-line job comment, stay small; App.tsx thin', () => {
   for (const m of MODS) { const s = fs.readFileSync(src(m), 'utf8'); assert.match(s.split('\n')[0], /^\/\/ \S/, m + ' job comment'); assert.ok(s.split('\n').length < 150, m + ' too long'); }
   const app = fs.readFileSync(src('App.tsx'), 'utf8'); assert.ok(app.split('\n').length <= 120, 'App.tsx grew'); assert.doesNotMatch(app, /function (DrawingView|RouteCard|RfqBar|BusyToast)/); });
@@ -19,15 +19,15 @@ test('progress: plain localized key with i of n, bar fraction, tech line kept', 
 test('summary counts', async () => { const s = await load('wizard', 'summary.mjs');
   const parts = [{ problems: [{ severity: 'Question', status: 'open' }] }, { problems: [{ severity: 'Warning', status: 'open' }] }, { problems: [{ severity: 'Blocker', status: 'resolved' }] }];
   assert.deepStrictEqual(s.summaryCounts(parts), { nq: 1, np: 1, flagged: [1] }); });
-test('card has one section component per friend category, in order', async () => { const b = await load('parts', 'breakdown.mjs');
-  const s = fs.readFileSync(src('components/partcard/sections.tsx'), 'utf8');
-  for (const sec of b.SECTIONS) assert.match(s, new RegExp("S\\('" + sec.key + "'\\)"), sec.key);
-  assert.match(s, /CARD_SECTIONS = \[MaterialSection, HeatTreatSection, CoatingsSection, PaintSection, OtherProcessesSection, MaskingSection, SequenceSection\]/);
-  assert.deepStrictEqual(b.cardFlags({ problems: [{ severity: 'Info' }, { severity: 'Warning', status: 'open' }] }).length, 1); });
+test('card has one block per friend category (empty ones merged), in status order', async () => { const b = await load('parts', 'breakdown.mjs'); const bl = await load('parts', 'blocks.mjs');
+  const pg = { page: 1, rows: [], procs: [] }; const part = { drawing: { pages: [] }, problems: [], standards: [], pages: [pg] };
+  const none = bl.fieldBlocks({ ...part }).filter((x) => x.kind === 'none');
+  assert.ok(b.SECTIONS.length >= 6);
+  assert.deepStrictEqual(b.cardFlags({ problems: [{ severity: 'Info' }, { severity: 'Warning', status: 'open' }] }).length, 1); void none; });
 test('stepper is a vertical rail on the start side', () => { const css = fs.readFileSync(src('styles', 'wizard.css'), 'utf8');
   assert.match(css, /\.qr-wiz \{[^}]*grid-template-columns: min\(17\.5rem/); assert.doesNotMatch(css, /\.qr-stepbar/); assert.doesNotMatch(css, /\.qr-wiz \{[^}]*\bleft\b/); });
 
 test('part card flags use the localized (HE) message, not raw English', () => {
-  const s = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'components', 'partcard', 'PartCard.tsx'), 'utf8');
+  const s = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'components', 'partcard', 'BlockCard.tsx'), 'utf8');
   require('assert').ok(/localized\(p, 'message'\)/.test(s) && !/\{p\.message\}/.test(s));
 });

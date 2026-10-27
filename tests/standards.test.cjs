@@ -65,7 +65,7 @@ test('report has a standards section', () => {
   assert.match(h, /Standards/); assert.match(h, /9\.246 mm/);
 });
 test('Keensert MS51830 table: cross-checked rows and unverified single-source rows', () => {
-  const r = bundledRow('MS51830', '202'); assert.ok(r); assert.strictEqual(r.verified, true); assert.strictEqual(r.dims.tapDrill.in, '.332'); assert.strictEqual(r.dims.csk.in, '.385');
+  const r = bundledRow('MS51830', '202'); assert.ok(r); assert.strictEqual(r.verified, true); assert.strictEqual(r.dims.tapDrill.in, '0.332'); assert.strictEqual(r.dims.csk.in, '0.385');
   const u = bundledRow('MS51830', '108'); assert.ok(u); assert.strictEqual(u.verified, false);
   assert.strictEqual(Object.keys(J('ms51830.json').rows).length, 16);
 });

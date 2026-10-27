@@ -6,7 +6,7 @@ const scan = () => { const vis = (e) => { const r = e.getBoundingClientRect(); c
   const own = (e) => [...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('').trim();
   const bold = [], sent = [];
   for (const e of document.querySelectorAll('body *')) { if (!vis(e)) continue; const tx = own(e); if (!tx) continue;
-    if (e.closest('canvas,svg,.qr-viewer,[data-testid=assistant-bubble],[role=dialog],.qr-prob,.qr-card-flags,[data-testid=bd-detail],table')) continue;
+    if (e.closest('canvas,svg,.qr-viewer,[data-testid=assistant-bubble],[role=dialog],.qr-prob,[data-testid=bd-detail],table')) continue;
     const w = +getComputedStyle(e).fontWeight; const cls = (e.className && e.className.baseVal === undefined ? e.className : '') || e.tagName.toLowerCase();
     const ALLOW = ['qr-brand-badge', 'qr-wiz-title', 'qr-panel-h', 'qr-pgroup-name', 'pn', 'qr-pn', 'qr-box-title', 'qr-bsec-h'];
     if (w >= 600 && !ALLOW.includes(cls.split(' ')[0]) && !(cls.startsWith('mrt-wizard-step-label') && e.closest('[aria-current=step]'))) bold.push(cls.split(' ')[0] + ':' + tx.slice(0, 30));

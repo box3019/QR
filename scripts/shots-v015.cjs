@@ -11,7 +11,7 @@ const SYN = `<html><body style="font:14px Arial;padding:40px"><h2>PART NO 9900-0
   const shot = async (n) => { await win.waitForTimeout(500); await win.screenshot({ path: path.join(out, `v015_${n}.png`) }); console.log('shot', n); };
   await win.waitForSelector('[data-testid=first-run]', { timeout: 60000 });
   for (const l of ['he', 'ru', 'en']) {
-    await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x === 'he' ? 'he' : 'en' }), l); await win.selectOption('[data-testid=tutorial-lang]', l);
+    await win.selectOption('[data-testid=tutorial-lang]', l);
     while (await win.$('[data-testid=tutorial-prev]:not([disabled])')) await win.click('[data-testid=tutorial-prev]');
     const want = [1, 4, 9]; let i = 1;
     for (const w of want) { while (i < w) { await win.click('[data-testid=tutorial-next]'); i++; } await shot(`tour_${l}_${w}`); }
@@ -25,10 +25,10 @@ const SYN = `<html><body style="font:14px Arial;padding:40px"><h2>PART NO 9900-0
   await win.evaluate(() => window.__qrStep(4)); await shot('summary_he');
   const parts = await win.evaluate(() => window.__qrParts);
   console.log('pdf', JSON.stringify(await win.evaluate(([p, t]) => window.qr.exportReport(p, 'he', { rfq: 'DEMO', customer: 'KLA' }, t), [parts, path.join(out, 'report_he.pdf')])));
-  if (await win.$('[data-testid=btn-history]')) { await win.click('[data-testid=btn-history]'); await shot('history_he'); await win.click('[data-testid=history-close]'); }
+  if (await win.$('[data-testid=btn-history]')) { await win.click('[data-testid=btn-history]'); await shot('history_he'); await win.keyboard.press('Escape'); }
   // synthetic drawing with standard callouts
   const syn = path.join(out, 'SYNTH_9900-0001_A.pdf');
-  await app.evaluate(async ({ BrowserWindow }, [html]) => { const w = new BrowserWindow({ show: false }); await w.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html)); const b = await w.webContents.printToPDF({ pageSize: 'A4' }); w.destroy(); return Buffer.from(b).toString('base64'); }, [SYN, syn]).then((b64) => fs.writeFileSync(syn, Buffer.from(b64, 'base64')));
+  await app.evaluate(async ({ BrowserWindow }, [html, f]) => { const w = new BrowserWindow({ show: false }); await w.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html)); require('fs').writeFileSync(f, await w.webContents.printToPDF({ pageSize: 'A4' })); w.destroy(); }, [SYN, syn]);
   const before = await win.evaluate(() => (window.__qrParts || []).length);
   win.evaluate((p) => window.__qrRun(p), [syn]);
   await win.waitForTimeout(1500);
@@ -36,7 +36,7 @@ const SYN = `<html><body style="font:14px Arial;padding:40px"><h2>PART NO 9900-0
   await win.waitForFunction(() => !document.querySelector('[data-testid=busy]') && (window.__qrParts || []).some((p) => (p.standards || []).length), null, { timeout: 300000 });
   const st = await win.evaluate(() => (window.__qrParts || []).flatMap((p) => (p.standards || []).map((s) => ({ std: s.std, dash: s.dash, status: s.status, flags: (s.flags || []).map((f) => f.type) }))));
   console.log('standards', JSON.stringify(st));
-  for (const l of ['he', 'en']) { await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x }), l); await win.evaluate(() => { window.__qrStep(2); const i = (window.__qrParts || []).findIndex((p) => (p.standards || []).length); window.__qrSelect && window.__qrSelect(i, 'drawing'); }); await win.waitForSelector('[data-testid=standards-panel]', { timeout: 30000 }).catch(() => console.log('no standards-panel')); const el = await win.$('[data-testid=standards-panel]'); if (el) { await el.scrollIntoViewIfNeeded(); } await shot('std_card_' + l); }
+  for (const l of ['he', 'en']) { await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x }), l); await win.evaluate(() => { window.__qrStep(2); window.__qrSelect && window.__qrSelect(0, 'drawing'); }); await win.waitForSelector('[data-testid=block][data-kind=standard]', { timeout: 30000 }).catch(() => console.log('no standards-panel')); const el = await win.$('[data-testid=block][data-kind=standard]'); if (el) { await el.scrollIntoViewIfNeeded(); } await shot('std_card_' + l); }
   await win.evaluate(() => window.__qrStep(3)); await shot('std_step3_he');
   const p2 = await win.evaluate(() => window.__qrParts);
   console.log('pdf2', JSON.stringify(await win.evaluate(([p, t]) => window.qr.exportReport(p, 'he', { rfq: 'DEMO', customer: 'DEMO' }, t), [p2, path.join(out, 'report_std_he.pdf')])));

@@ -24,7 +24,7 @@ const [exe, data, out] = process.argv.slice(2); fs.mkdirSync(out, { recursive: t
     await win.evaluate((l) => window.__qrSetSettings({ uiLanguage: l }), lang);
     await win.evaluate((i) => { window.__qrDetails(false); window.__qrSelect(i, 'drawing'); }, idx);
     await win.waitForTimeout(600);
-    const sec = await win.$('[data-testid=bd-coatings][data-empty=false] [data-testid=bd-open-coatings]') || await win.$('[data-testid^=bd-][data-empty=false] [data-testid^=bd-open-]');
+    const sec = await win.$('[data-testid=block][data-kind=field] [data-testid=block-chev]');
     if (sec) { await sec.click(); await win.waitForTimeout(1500); }
     await win.screenshot({ path: path.join(out, `v014_wizard_step2_${lang}.png`) });
     const info = await win.evaluate(() => ({ dir: document.documentElement.dir, of: document.querySelector('[data-testid=card-of]')?.textContent, secs: [...document.querySelectorAll('[data-testid=processes-panel] section.qr-bsec')].map((s) => s.dataset.testid + (s.dataset.empty === 'true' ? '(empty)' : '')), focus: !!document.querySelector('[data-kind=focus]') }));
