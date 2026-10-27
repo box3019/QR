@@ -496,5 +496,5 @@
   "std.dim.majorIn": "Major diameter",
   "std.dim.basicMinorIn": "Minor diameter",
   "std.dim.tapDrillMm": "Tap drill",
-  "blk.route": "{n} steps"
+  "blk.route": "Steps: {n}"
 }

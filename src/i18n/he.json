@@ -496,5 +496,5 @@
   "std.dim.majorIn": "קוטר חיצוני",
   "std.dim.basicMinorIn": "קוטר פנימי",
   "std.dim.tapDrillMm": "קוטר מקדח",
-  "blk.route": "{n} שלבים"
+  "blk.route": "שלבים: {n}"
 }
