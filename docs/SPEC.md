@@ -193,3 +193,31 @@ CustomerProfile {id, detect{}, routingSource: table|notes|partsList, mapping{}, 
 - VBA macro: needs macros enabled.
 
 **Limits.** QR has to be reinstalled after it is moved. If Outlook marks the add-in as slow or disabled, re-enable it in File › Options › Add-ins › COM Add-ins.
+
+## Wizard (approved design, v0.1.4)
+Source: ref/paperless/analysis.md, "Proposal for QR" (approved by Alex). Header on every step: QR, RFQ/customer, the step bar (1 Intake, 2 Check parts, 3 Documents & questions, 4 Summary; any step is clickable once there are parts), Settings, Help. One hint line and one main button per step. Secondary things open on demand. No prices.
+
+- **Step 1, Intake:** a big drop zone (e-mail / RAR / ZIP / PDF) and "Choose files". The customer is detected automatically. The log and OCR settings sit behind Details. The main button is "Next".
+- **Step 2, Check parts:** three columns.
+  - Left: the parts list grouped by status (Ready / Needs document / Needs customer answer / Not ours) with counters.
+  - Centre: the drawing.
+  - Right: the part card, with the part number (bold) and rev, and "part i of n".
+  - The card shows, in fixed order:
+    - flags on top (red if blocking, amber if warning);
+    - then the friend's (notes_extractor.py) sections: Material, Heat treat, Coatings (in order), Paint, Other processes (only if any), Masking (method, areas, before/SEQ), Operation sequence (routing table, numbered).
+  - Each section is one line: `LABEL value [standard] flags`. An empty section shows in grey as "not on drawing"; it is never hidden.
+  - Clicking a section expands all of the friend's fields for it, and zooms and highlights the source text on the drawing.
+  - Each section has exactly one action: Confirm, Add question (flagged or missing), or Upload standard (NO STANDARD).
+  - Raw NOTES rows and the friend's Excel are behind "Show table".
+  - The card footer has "◀ Previous" and "Next part ▶". On the last part, the button becomes "Next: documents & questions".
+- **Step 3, Documents & questions:** two boxes, "To upload (n)" and "Questions for the customer (n)". References and info are behind "Show references".
+- **Step 4, Summary:**
+  - an amber bar "n parts with open flags → Go to part";
+  - a totals line (parts, per-group counts, questions);
+  - two main exports: Questions and Excel (the friend's format);
+  - the full report is behind "Show report".
+- **Typography:** labels are small grey caps (400). Values are regular (400). Bold (600) is only for part numbers and section or status headers. Line-height is 1.55.
+- **Tests:**
+  - tests/friend_fields_ui.test.cjs checks that every column the friend's script writes (Material, Processes, Masking, Process summary) maps to a field that the card renders, with EN and HE labels.
+  - The parity check (scripts/friend/compare.cjs) must stay at 0 differences.
+
