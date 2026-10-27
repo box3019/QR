@@ -3,3 +3,4 @@ dist/
 release/
 selftest-out/
 *.log
+__pycache__/
