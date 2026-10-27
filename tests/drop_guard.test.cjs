@@ -1,0 +1,25 @@
+'use strict';
+// Internal drags (panning the drawing) never import; a drop while a job is open adds to it; another RFQ asks first.
+const test = require('node:test'); const assert = require('node:assert'); const fs = require('fs'); const path = require('path'); const { pathToFileURL } = require('url');
+const load = () => import(pathToFileURL(path.join(__dirname, '..', 'src', 'wizard', 'dropGuard.mjs')).href);
+const src = (f) => fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8');
+test('internal drag does not import; external files and Outlook do', async () => { const m = await load();
+  assert.strictEqual(m.isExternalDrop(['text/uri-list', 'text/html'], false), false);
+  assert.strictEqual(m.isExternalDrop(['Files'], true), false, 'an image dragged inside the app may carry Files: still internal');
+  assert.strictEqual(m.isExternalDrop([], false), false);
+  assert.strictEqual(m.isExternalDrop(['Files'], false), true);
+  assert.strictEqual(m.isExternalDrop(['FileGroupDescriptorW', 'FileContents'], false), true); });
+test('App: drop handler checks isExternalDrop and marks internal drags', () => { const a = src('hooks/useDrop.ts'); assert.match(src('App.tsx'), /useDrop\(/);
+  assert.match(a, /isExternalDrop\(/); assert.match(a, /addEventListener\('dragstart'/);
+  assert.match(a, /if \(!ext\) return;/); assert.doesNotMatch(a.slice(a.indexOf('onDragOver'), a.indexOf('onDrop =')), /run\(|setStep|reset/, 'dragover only shows the overlay'); });
+test('drop while loaded adds, never replaces; other RFQ asks', async () => { const m = await load();
+  assert.strictEqual(m.dropPlan(false, [], [{ rfq_no: '1' }]), 'new');
+  assert.strictEqual(m.dropPlan(true, [{ rfq_no: '1' }], []), 'append');
+  assert.strictEqual(m.dropPlan(true, [{ rfq_no: '1' }], [{ rfq_no: '1' }]), 'append');
+  assert.strictEqual(m.dropPlan(true, [{ rfq_no: '1' }], [{ rfq_no: '2' }]), 'ask');
+  const a = src('App.tsx'); assert.match(a, /dropPlan\(/); assert.match(a, /\[\.\.\.prev, \.\.\.r\.parts\]/); assert.doesNotMatch(a, /reset\(\); start\(\)/); });
+test('viewer: left-drag pans, wheel zooms, double-click fits; images not draggable', async () => { const m = await load(); const v = src('views/Viewer.tsx');
+  assert.deepStrictEqual(m.panTo({ left: 100, top: 50 }, 30, -20), { left: 70, top: 70 });
+  assert.ok(m.zoomStep(1, -100) > 1 && m.zoomStep(1, 100) < 1); assert.strictEqual(m.zoomStep(8, -1), 8); assert.strictEqual(m.fitZoom(750, 1500), 0.5);
+  assert.match(v, /draggable=\{false\}/); assert.match(v, /onDragStart=\{\(e\) => e\.preventDefault\(\)\}/); assert.match(v, /onDoubleClick=/); assert.match(v, /'wheel'/);
+  const pan = v.slice(v.indexOf('// pan'), v.indexOf('// end pan')); assert.ok(pan.length > 20); assert.doesNotMatch(pan, /run\(|setParts|import/, 'panning only scrolls'); });

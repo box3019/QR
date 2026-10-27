@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Chip } from '../ui/common';
 import { t, tReadiness, getLang } from '../i18n';
+import { zoomStep, fitZoom, panTo } from '../wizard/dropGuard.mjs';
 
 const qr = () => (window as any).qr;
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
@@ -16,7 +17,16 @@ export function DrawingView({ part, focus, details }: any) {
   useEffect(() => { if (focus?.page) setPage(focus.page); }, [focus]);
   useEffect(() => { let live = true; setImg(null); qr().preview(part.drawing.path, page, 2600).then((r: any) => live && setImg(r)); return () => { live = false; }; }, [part.drawing.path, page]);
   const pg = part.drawing.pages.find((p: any) => p.n === page) || part.drawing.pages[0];
-  const W = 1500; // displayed width
+  const [zoom, setZoom] = useState(1);
+  const W = Math.round(1500 * zoom); // displayed width
+  // wheel (and Ctrl+wheel) = zoom; passive:false so the page does not scroll instead
+  useEffect(() => { const el = ref.current; if (!el) return; const h = (e: WheelEvent) => { e.preventDefault(); setZoom((z) => zoomStep(z, e.deltaY)); }; el.addEventListener('wheel', h, { passive: false }); return () => el.removeEventListener('wheel', h); }, [img]);
+  // pan: left-drag moves the scroll position only
+  const drag = useRef(null as null | { x: number; y: number; left: number; top: number });
+  const onDown = (e: React.MouseEvent) => { if (e.button !== 0 || !ref.current) return; e.preventDefault(); drag.current = { x: e.clientX, y: e.clientY, left: ref.current.scrollLeft, top: ref.current.scrollTop }; };
+  const onMove = (e: React.MouseEvent) => { const d = drag.current; if (!d || !ref.current) return; const p = panTo(d, e.clientX - d.x, e.clientY - d.y); ref.current.scrollLeft = p.left; ref.current.scrollTop = p.top; };
+  const onUp = () => { drag.current = null; };
+  // end pan
   const k = img ? W / img.width : 1;
   useEffect(() => { if (img && focus && ref.current) { const el = ref.current.querySelector('[data-kind="focus"]') as HTMLElement; el?.scrollIntoView({ block: 'center', inline: 'center' }); } }, [img, focus]);
   const marks = part.problems.filter((p: any) => p.loc && p.loc.page === page);
@@ -28,10 +38,10 @@ export function DrawingView({ part, focus, details }: any) {
       {details && <span className="qr-muted">{t('dw.text', { mode: pg?.quality?.mode })}{pg?.quality?.reasons?.length ? ` (${pg.quality.reasons.join(', ')})` : ''}{pg?.ocr ? ' · ' + t('dw.ocrInfo', { dpi: pg.ocr.dpi, words: pg.ocr.words.length, sec: pg.ocr.seconds }) : ''}{pg?.ocrError ? ' · ' + t('dw.ocrError', { text: pg.ocrError }) : ''}</span>}
       {details && <label className="qr-row" style={{ marginInlineStart: 'auto' }}><input type="checkbox" checked={showOcr} onChange={(e) => setShowOcr(e.target.checked)} /> {t('dw.ocrWords')}</label>}
     </div>
-    <div ref={ref} style={{ overflow: 'auto' }} dir="ltr">
+    <div ref={ref} style={{ overflow: 'auto', cursor: drag.current ? 'grabbing' : 'grab' }} dir="ltr" data-testid="drawing-viewport" onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onDragStart={(e) => e.preventDefault()} onDoubleClick={() => ref.current && setZoom(fitZoom(ref.current.clientWidth, 1500))}>
       {!img ? <div className="qr-muted" style={{ padding: 20 }}>{t('dw.rendering')}</div> :
         <div className="qr-sheet" style={{ width: W }} data-testid="drawing-sheet">
-          <img src={img.png} style={{ width: W }} />
+          <img src={img.png} style={{ width: W }} draggable={false} />
           {ocrWords.map((w: any, i: number) => <div key={'o' + i} className="qr-mark" data-kind="ocr" title={`OCR "${w.text}" ${Math.round(w.conf * 100)}%`} style={{ left: w.x * k, top: w.y * k, width: w.w * k, height: w.h * k, opacity: w.conf < 0.6 ? 1 : 0.5 }} />)}
           {marks.map((m: any) => <div key={m.id} className="qr-mark" data-kind={focus && focus.id === m.id ? 'focus' : m.severity} title={m.message} style={{ left: m.loc.x * k - 4, top: m.loc.y * k - 4, width: m.loc.w * k + 8, height: m.loc.h * k + 8 }} />)}
           {focus && focus.bbox && focus.page === page && <div className="qr-mark" data-kind="focus" style={{ left: focus.bbox.x * k - 4, top: focus.bbox.y * k - 4, width: focus.bbox.w * k + 8, height: focus.bbox.h * k + 8 }} />}

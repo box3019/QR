@@ -19,6 +19,9 @@ import { hintFor } from './wizard/hints.mjs';
 import { openQuestions } from './wizard/summary.mjs';
 import { useBusy } from './hooks/useBusy';
 import { afterImport } from './wizard/importView.mjs';
+import { dropPlan } from './wizard/dropGuard.mjs';
+import { useDrop } from './hooks/useDrop';
+import { DropChoice } from './components/wizard/DropChoice';
 import { exposeTestHooks } from './hooks/testHooks';
 import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
 
@@ -50,12 +53,15 @@ export default function App() {
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
   const { busy, view, start, stop, clear } = useBusy((p) => setParts((ps) => [...ps, p]));
   const partsRef = useRef([] as Part[]); partsRef.current = parts; const queue = useRef(Promise.resolve() as Promise<any>);
-
+  const rfqsRef = useRef([] as any[]); rfqsRef.current = rfqs; const [ask, setAsk] = useState(null as any);
   const reset = () => { clear(); setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setStep(1); };
   // A drop while something is loaded or loading is added to it (queued); otherwise a fresh run. Step 1 shows the import view.
   const runOne = async (paths: string[]) => {
-    const prev = partsRef.current; const append = prev.length > 0; start(append);
-    try { const r = await qr().process(paths); const all = [...prev, ...r.parts]; setParts(all); setUnknown((u) => [...(append ? u : []), ...(r.unknown || []), ...(r.other || [])]);
+    const prev = partsRef.current; let append = prev.length > 0; start(append);
+    try { const r = await qr().process(paths);
+      // never replace an open job silently: same RFQ adds; another RFQ asks Add to current / Start new
+      if (append && dropPlan(true, rfqsRef.current, r.rfqs) === 'ask') append = (await new Promise<'append' | 'new'>((res) => setAsk(() => res))) === 'append';
+      setAsk(null); const all = append ? [...prev, ...r.parts] : r.parts; if (!append) { setSel(0); setFocus(null); } setParts(all); setUnknown((u) => [...(append ? u : []), ...(r.unknown || []), ...(r.other || [])]);
       setRfqs((x) => [...(append ? x : []), ...(r.rfqs || [])]); setLastRun((l: any) => ({ seconds: r.seconds, files: [...(append && l ? l.files : []), ...r.files] }));
       if (all.length) { setStep((s) => afterImport(s, all.length)); setTab('drawing'); } }
     catch (e: any) { alert(t('err.processing', { text: e?.message || e })); }
@@ -64,14 +70,7 @@ export default function App() {
   const run = useCallback((paths: string[]) => { if (!paths || !paths.length) return; queue.current = queue.current.then(() => runOne(paths)); return queue.current; }, []);
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => run(files)) : undefined, [run]); // Outlook 'Send to QR'
 
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setOver(false);
-    const paths = Array.from(e.dataTransfer.files).map((f) => qr().pathForFile(f)).filter(Boolean);
-    if (paths.length) return run(paths);
-    // dragged straight from Outlook: no file in the drop, take the selected e-mail(s) from Outlook
-    if (settings && settings.outlookDrag === false) return;
-    qr().outlookSelection().then(run).catch((x: any) => alert(String(x?.message || x)));
-  };
+  const drop = useDrop(run, settings, setOver);
   exposeTestHooks({ setDetails, setStep, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); if (tb) { setTab(tb); setStep(2); } } });
   const has = parts.length > 0;
   const bar = toolbarFor(step, has);
@@ -83,7 +82,7 @@ export default function App() {
 
   return (
     <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light" data-step={step}
-      onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={onDrop}>
+      {...drop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
         <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
         <div style={{ flex: 1 }} />
@@ -105,7 +104,8 @@ export default function App() {
         <WizardFooter step={step} setStep={setStep} hasParts={has} onCancel={() => confirm(t('wz.cancelAsk')) && reset()} onClose={() => window.close()} />
       </div>
 
-      {busy && step !== 1 && <ProgressToast busy={busy} details={details} />}
+      {ask && <DropChoice onChoose={(c: 'append' | 'new') => ask(c)} />}
+      {busy && view?.active && step !== 1 && <ProgressToast busy={busy} details={details} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} />}
       {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
       {settings && !settings.firstRunDone && !parts.length && !busy && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
