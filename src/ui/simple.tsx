@@ -14,7 +14,7 @@ export function plainStatus(part: any): PlainStatus {
 const TONE: Record<PlainStatus, string> = { ready: 'ready', needsAnswer: 'attention', needsDoc: 'info', notOurs: 'danger' };
 export function PlainStatusBadge({ part }: { part: any }) {
   const s = plainStatus(part);
-  return <span className="qr-status" data-tone={TONE[s]} data-testid="plain-status" data-status={s}>{t('ps.' + s)}</span>;
+  return <span className="qr-status" data-tone={TONE[s]} data-testid="plain-status" data-status={s} title={t("ps." + s)}>{t('ps.' + s)}</span>;
 }
 
 /** First-run overlay: 3 steps, dismissed once. */

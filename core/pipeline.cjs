@@ -1,4 +1,5 @@
 'use strict';
+const { problem } = require('./i18n/messages.cjs');
 // Ingest -> extract -> (OCR fallback) -> classify -> match drawing/parts list/model -> analyze.
 const fs = require('fs');
 const path = require('path');
@@ -9,6 +10,7 @@ const { analyzePart } = require('./analyze.cjs');
 const { expand } = require('./intake/expand.cjs');
 const { fileKind, modelRank } = require('./intake/classify.cjs');
 const { readEmail } = require('./email/index.cjs');
+const { analyzeFile } = require('./requirements/index.cjs');
 const { attachRfqs } = require('./rfq/attach.cjs');
 
 const sha256 = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
@@ -93,12 +95,14 @@ async function runPipeline(paths, settings, emit = () => {}) {
     }
     const pl = partsLists.find((l) => { const forPn = (l.name.match(/\bfor\s+([A-Z0-9-]{5,})/i) || [])[1]; if (forPn) return d.name.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(forPn.toUpperCase().replace(/[^A-Z0-9]/g, '')) || key.toUpperCase().includes('ASSEMBLY') && key.includes(forPn.toUpperCase()) && d.name.toUpperCase().includes(forPn.toUpperCase()); const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
     try {
-      const a = analyzePart({ drawing: d, partsList: pl, models, settings, library: settings.library || [] });
+      let requirements = [];
+      try { requirements = await analyzeFile(d.path, d.pages); } catch (e) { emit({ type: 'status', text: `Requirements extraction failed on ${d.name}: ${e.message || e}` }); }
+      const a = analyzePart({ drawing: d, partsList: pl, models, settings, library: settings.library || [], requirements });
       const mm = findModels(a.partNo, d.path, models, a.profile, settings.searchRoots);
       a.model = mm.models[0] ? { path: mm.models[0], ...stepHeader(mm.models[0]) } : null;
       a.modelSearchLog = mm.log;
       for (const pr of a.problems) pr.loc = locate(d.pages, pr);
-      for (const p of d.pages) if (p.ocrError) a.problems.unshift({ id: 'OCR' + p.n, severity: 'Info', category: 'OCR warning', message: `OCR failed on sheet ${p.n}: ${p.ocrError}. Only the PDF text layer was analyzed for this sheet.`, suggestion: 'Check the sheet visually; values in outlined/scanned text may be missing.', evidence: [], status: 'open', loc: null });
+      for (const p of d.pages) if (p.ocrError) a.problems.unshift({ id: 'OCR' + p.n, ...problem('Info', 'OCR warning', 'ocr.failed', { n: p.n, err: p.ocrError }), evidence: [], status: 'open', loc: null });
       const dup = parts.find((q) => q.partNo && q.partNo === a.partNo && q.rev === a.rev && q.customer === a.customer);
       if (dup) { (dup.duplicates = dup.duplicates || []).push(d.name); emit({ type: 'status', text: `${d.name}: same drawing as ${dup.drawing.name}, skipped` }); continue; }
       parts.push({ id: 'part' + (parts.length + 1), drawing: { path: d.path, name: d.name, sha256: d.sha256, pages: d.pages.map((p) => ({ n: p.n, width: p.width, height: p.height, quality: p.quality, ocr: p.ocr ? { dpi: p.ocr.dpi, tiles: p.ocr.tiles, seconds: p.ocr.seconds, words: p.ocr.words } : null, ocrError: p.ocrError })) }, partsList: pl ? { path: pl.path, name: pl.name } : null, ...a });

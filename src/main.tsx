@@ -4,5 +4,8 @@ import './styles/base.css';
 import './styles/mrtLiquidGlass.css';
 import './styles/qrPalette.css';
 import './styles/qr.css';
+import './styles/fit.css';
+import './styles/shape.css';
+import './styles/buttons.css';
 import App from './App';
 createRoot(document.getElementById('root')!).render(<App />);

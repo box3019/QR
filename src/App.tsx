@@ -4,11 +4,15 @@ import { Chip, Modal } from './ui/common';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, tReadiness, setLang, setTextSize, getLang } from './i18n';
 import { PlainStatusBadge, FirstRun } from './ui/simple';
+import { ProcessesPanel } from './ui/processes';
+import { Tutorial } from './tutorial/Tutorial';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
 type Part = any;
 
+/** Hebrew display field when HE is active (core adds xxxHe fields). */
+const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
 const tone = (sev: string) => (sev === 'Blocker' ? 'danger' : sev === 'Question' ? 'attention' : 'info');
 const readinessTone = (r: string) => (/^Ready/.test(r) ? 'ready' : /Blocked/.test(r) ? 'danger' : /n\/a/.test(r) ? 'neutral' : 'attention');
 
@@ -25,7 +29,7 @@ export default function App() {
   const [tab, setTab] = useState<'drawing' | 'route' | 'model' | 'data'>('drawing');
   const [busy, setBusy] = useState<{ text: string; progress?: number; log: string[] } | null>(null);
   const [over, setOver] = useState(false);
-  const [dialog, setDialog] = useState<null | 'settings' | 'questions' | 'summary'>(null);
+  const [dialog, setDialog] = useState<null | 'settings' | 'questions' | 'summary' | 'tutorial'>(null);
   const [focus, setFocus] = useState<any>(null);
   const [lastRun, setLastRun] = useState<any>(null);
   const [rfqs, setRfqs] = useState<any[]>([]);
@@ -85,6 +89,7 @@ export default function App() {
         <TopButton icon="🔍" label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />
         {details && lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: parts.length, files: lastRun.files.length, sec: lastRun.seconds })}</span>}
         <TopButton icon="⚙" label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
+        <TopButton icon="?" label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => setDialog('tutorial')} />
       </div>
 
       {!parts.length ? (
@@ -120,6 +125,7 @@ export default function App() {
       {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
       {settings && !settings.firstRunDone && !parts.length && !busy && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'summary' && <SummaryDialog parts={parts} onClose={() => setDialog(null)} />}
+      {dialog === 'tutorial' && <Tutorial lang0={getLang()} onClose={() => setDialog(null)} />}
     </div>
   );
 }
@@ -138,9 +144,9 @@ function PartsPanel({ parts, sel, setSel, unknown, details }: any) {
           <div className="qr-muted" style={{ margin: '2px 0 4px', fontSize: '0.75rem' }}>{p.title}</div>
           <div className="qr-row" style={{ marginBottom: 4 }}>
             <PlainStatusBadge part={p} />
-            <span style={{ fontSize: '0.75rem' }}>{p.material?.normalized || t('parts.noMaterial')}</span>
+            <span style={{ fontSize: '0.75rem' }}>{L(p.material, 'normalized') || t('parts.noMaterial')}</span>
           </div>
-          {p.status !== 'accepted' && p.rejectReason && <div style={{ color: '#991b1b', fontSize: '0.75rem', marginBottom: 4 }}>{getLang() === 'he' && p.rejectReasonHe ? p.rejectReasonHe : p.rejectReason}</div>}
+          {p.status !== 'accepted' && p.rejectReason && <div style={{ color: '#991b1b', fontSize: '0.75rem', marginBottom: 4 }}>{L(p, 'rejectReason')}</div>}
           <div className="qr-row">
             {details && <Chip t={readinessTone(p.readiness)}>{tReadiness(p.readiness)}</Chip>}
             {details && b > 0 && <Chip t="danger">{t('parts.blockers', { n: b })}</Chip>}{details && q > 0 && <Chip t="attention">{t('parts.questions', { n: q })}</Chip>}{details && tk > 0 && <Chip t="info">{t('parts.tasks', { n: tk })}</Chip>}
@@ -189,18 +195,19 @@ function DrawingView({ part, focus, details }: any) {
 function RouteCard({ part }: any) {
   return <div className="qr-route-card" data-testid="route-card">
     <div className="head">
-      <div><b>{t('rc.part')}</b><span className="qr-ltr">{part.partNo}</span></div><div><b>{t('rc.rev')}</b>{part.rev || '-'}</div><div><b>{t('rc.customer')}</b>{part.customer}</div><div><b>{t('rc.material')}</b><span className="qr-ltr">{part.material?.normalized || '—'}</span></div>
-      <div style={{ gridColumn: 'span 2' }}><b>{t('rc.title')}</b>{part.title}</div><div><b>{t('rc.source')}</b>{part.routeSource}</div><div><b>{t('rc.status')}</b>{tReadiness(part.readiness)} · {t('rc.readOnly')}</div>
+      <div><b>{t('rc.part')}</b><span className="qr-ltr">{part.partNo}</span></div><div><b>{t('rc.rev')}</b>{part.rev || '-'}</div><div><b>{t('rc.customer')}</b>{part.customer}</div><div><b>{t('rc.material')}</b><span>{L(part.material, 'normalized') || '—'}</span></div>
+      <div style={{ gridColumn: 'span 2' }}><b>{t('rc.title')}</b>{part.title}</div><div><b>{t('rc.source')}</b>{L(part, 'routeSource')}</div><div><b>{t('rc.status')}</b>{tReadiness(part.readiness)} · {t('rc.readOnly')}</div>
     </div>
     <table className="qr-table">
       <thead><tr><th style={{ width: 50 }}>{t('rc.step')}</th><th style={{ width: 120 }}>{t('rc.operation')}</th><th>{t('rc.instructions')}</th><th style={{ width: 170 }}>{t('rc.specs')}</th><th style={{ width: 110 }}>{t('rc.src')}</th><th style={{ width: 90 }}>{t('rc.flags')}</th></tr></thead>
       <tbody>{part.route.map((s: any, i: number) => <tr key={i} style={s.blocked ? { background: '#fff7ed' } : {}}>
-        <td>{s.seq}</td><td style={{ textTransform: 'capitalize' }}>{s.type}{s.title ? <div className="qr-muted">{s.title}</div> : null}</td>
-        <td>{s.items.map((it: any, j: number) => <div key={j}>{it.seq && it.seq !== s.seq ? <b>{it.seq} </b> : null}{it.text}</div>)}</td>
-        <td>{(s.specRefs || []).join(', ')}</td><td>{s.source}</td>
+        <td>{s.seq}</td><td style={{ textTransform: 'capitalize' }}>{L(s, 'type')}{s.title ? <div className="qr-muted">{L(s, 'title')}</div> : null}</td>
+        <td>{s.items.map((it: any, j: number) => <div key={j}>{it.seq && it.seq !== s.seq ? <b>{it.seq} </b> : null}<bdi>{L(it, 'text')}</bdi></div>)}</td>
+        <td>{(s.specRefs || []).join(', ')}</td><td>{L(s, 'source')}</td>
         <td>{s.outsourced && <Chip t="info">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></tr>)}</tbody>
     </table>
     {!part.route.length && <div className="qr-muted" style={{ padding: 10 }}>{t('rc.none')}</div>}
+    <ProcessesPanel part={part} />
   </div>;
 }
 
@@ -217,7 +224,7 @@ function ModelView({ part }: any) {
 function DataView({ part }: any) {
   return <div style={{ padding: 12 }}>
     <div className="qr-kv" style={{ marginBottom: 12 }}>
-      <div>{t('dv.material')}</div><div>{part.material?.normalized} <span className="qr-muted">({part.material?.source}{part.material?.raw ? `: "${part.material.raw}"` : ''}) · {part.material?.family}</span></div>
+      <div>{t('dv.material')}</div><div>{L(part.material, 'normalized')} <span className="qr-muted">({L(part.material, 'source')}{part.material?.raw ? `: "${part.material.raw}"` : ''}) · {part.material?.family}</span></div>
       <div>{t('dv.bomSource')}</div><div>{part.bomSource || '—'}</div><div>{t('dv.partsList')}</div><div>{part.partsList?.name || '—'}</div>
     </div>
     {part.zones && <><h4>{t('dv.zones')}</h4><table className="qr-table"><thead><tr><th>{t('dv.note')}</th><th>{t('dv.text')}</th><th>{t('dv.perSheet')}</th><th>{t('dv.total')}</th></tr></thead><tbody>{part.zones.map((z: any) => <tr key={z.note}><td>{z.note}</td><td>{z.text}</td><td>{Object.entries(z.perSheet).map(([s, c]) => t('dv.sheetN', { s, c })).join(', ') || '—'}</td><td>{z.total}</td></tr>)}</tbody></table></>}
@@ -230,9 +237,9 @@ function DataView({ part }: any) {
 function ProblemLine({ p, onFocus, updatePart }: any) {
   const toggle = (e: any) => { e.stopPropagation(); updatePart((pt: any) => { const x = pt.problems.find((y: any) => y.id === p.id); x.status = x.status === 'resolved' ? 'open' : 'resolved'; return pt; }); };
   return <div className="qr-prob" data-testid="problem" onClick={() => p.loc && onFocus({ ...p.loc, id: p.id, bbox: null })} style={p.status === 'resolved' ? { opacity: .5 } : {}}>
-    <div className="qr-row"><Chip t={tone(p.severity)}>{t('sev.' + p.severity)}</Chip><b>{p.category}</b>{p.loc && <span className="qr-muted">{t('pr.sheet', { n: p.loc.page })}</span>}<span style={{ flex: 1 }} />
+    <div className="qr-row"><Chip t={tone(p.severity)}>{t('sev.' + p.severity)}</Chip><b>{L(p, 'category')}</b>{p.loc && <span className="qr-muted">{t('pr.sheet', { n: p.loc.page })}</span>}<span style={{ flex: 1 }} />
       {p.severity !== 'Info' && <button className={MRT_ACTION_BTN} title={p.status === 'resolved' ? t('pr.reopen') : t('pr.resolve')} onClick={toggle}>{p.status === 'resolved' ? '↺' : '✓'}</button>}</div>
-    <div className="msg">{getLang() === 'he' && p.messageHe ? p.messageHe : <>{p.message}{p.suggestion && <span className="qr-muted"> → {p.suggestion}</span>}</>}</div>
+    <div className="msg"><bdi>{L(p, 'message')}</bdi>{L(p, 'suggestion') && <span className="qr-muted"> → {L(p, 'suggestion')}</span>}</div>
   </div>;
 }
 
@@ -253,13 +260,13 @@ function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
       {info.length > 0 && <details className="qr-info-group" data-testid="info-group"><summary>{t('pr.info', { n: info.length })}</summary>{info.map((p: any) => <ProblemLine key={p.id} p={p} onFocus={onFocus} updatePart={updatePart} />)}</details>}
       <div className="qr-sec">{t('pr.uploads', { n: uploads.filter((x: any) => x.status !== 'done').length })}</div>
       {uploads.map((tk: any) => <div key={tk.id} className="qr-prob" data-testid="task">
-        <div className="qr-row"><Chip t={tk.status === 'done' ? 'ready' : 'info'}>{tk.status === 'done' ? t('pr.uploaded') : t('pr.upload')}</Chip><b className="qr-ltr">{tk.refNumber}</b><span className="qr-muted">{getLang() === 'he' ? '' : tk.title.replace(/^Upload \S+ /, '') + ' · '}{t('pr.blocks', { n: tk.blocks })}</span></div>
+        <div className="qr-row"><Chip t={tk.status === 'done' ? 'ready' : 'info'}>{tk.status === 'done' ? t('pr.uploaded') : t('pr.upload')}</Chip><b className="qr-ltr">{tk.refNumber}</b><span className="qr-muted">{L(tk, 'title').replace(/^\S+ \S+ /, '')} · {t('pr.blocks', { n: L(tk, 'blocks') })}</span></div>
         <div className="qr-row" style={{ marginTop: 4 }}><button className={MRT_ACTION_BTN} title={t('tip.attach')} onClick={async () => { const f = tk.status === 'done' ? [] : await qr().pickFiles(); updatePart((pt: any) => { const x = pt.tasks.find((y: any) => y.id === tk.id); if (x.status === 'done') { x.status = 'open'; x.file = ''; } else if (f.length) { x.status = 'done'; x.file = f[0]; } return pt; }); }}>{tk.status === 'done' ? t('pr.undo') : t('pr.attach')}</button>{tk.file && <span className="qr-muted">{tk.file}</span>}</div>
       </div>)}
       {details && verify.length > 0 && <details className="qr-info-group"><summary>{t('pr.verify', { n: verify.length })}</summary>
-        {verify.map((tk: any) => <div key={tk.id} className="qr-prob" onClick={() => onFocus({ page: tk.page, bbox: tk.bbox, id: tk.id })}><div className="msg" dir="auto">{tk.title}</div></div>)}</details>}
+        {verify.map((tk: any) => <div key={tk.id} className="qr-prob" onClick={() => onFocus({ page: tk.page, bbox: tk.bbox, id: tk.id })}><div className="msg">{L(tk, 'title')}</div></div>)}</details>}
       <div className="qr-sec">{t('pr.refs')}</div>
-      {part.refs.map((r: any, i: number) => <div key={i} className="qr-prob" style={{ cursor: 'default' }}><div className="qr-row"><Chip t={r.kind === 'public' ? 'neutral' : r.kind === 'vendor' ? 'info' : 'attention'}>{r.kind}</Chip><b className="qr-ltr">{r.number}</b></div><div className="qr-muted" style={{ fontSize: '0.75rem' }}>{r.description}</div></div>)}
+      {part.refs.map((r: any, i: number) => <div key={i} className="qr-prob" style={{ cursor: 'default' }}><div className="qr-row"><Chip t={r.kind === 'public' ? 'neutral' : r.kind === 'vendor' ? 'info' : 'attention'}>{t('ref.' + r.kind)}</Chip><b className="qr-ltr">{r.number}</b></div><div className="qr-muted" style={{ fontSize: '0.75rem' }}>{L(r, 'description')}{r.owner ? ' · ' + L(r, 'owner') : ''}</div></div>)}
     </div>
   </div>;
 }
@@ -288,7 +295,7 @@ function SummaryDialog({ parts, onClose }: any) {
     <button className={MRT_BTN} title={t('tip.csv')} onClick={async () => { const r = await qr().exportSummary(parts, 'csv'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.csv')}</button>
     <button className={MRT_BTN_PRIMARY} title={t('tip.pdf')} onClick={async () => { const r = await qr().exportSummary(parts, 'pdf'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.pdf')}</button></>}>
     <table className="qr-table"><thead><tr><th>{t('rc.part')}</th><th>{t('rc.rev')}</th><th>{t('rc.customer')}</th><th>{t('rc.material')}</th><th>{t('rc.status')}</th><th>{t('sum.readiness')}</th><th>{t('sum.blockers')}</th><th>{t('sum.questions')}</th><th>{t('sum.tasks')}</th><th>{t('sum.model')}</th></tr></thead>
-      <tbody>{parts.map((p: Part) => <tr key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{p.material?.normalized}</td><td><PlainStatusBadge part={p} /></td><td>{tReadiness(p.readiness)}</td>
+      <tbody>{parts.map((p: Part) => <tr key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{L(p.material, 'normalized')}</td><td><PlainStatusBadge part={p} /></td><td>{tReadiness(p.readiness)}</td>
         <td>{p.problems.filter((x: any) => x.severity === 'Blocker').length}</td><td>{p.problems.filter((x: any) => x.severity === 'Question').length}</td><td>{p.tasks.filter((x: any) => x.status !== 'done').length}</td><td>{p.model ? t('sum.found') : '—'}</td></tr>)}</tbody></table>
   </Modal>;
 }

@@ -109,6 +109,14 @@ ipcMain.handle('qr:exportSummary', async (_e, parts, kind, target) => {
   }
   return { path: out };
 });
+ipcMain.handle('qr:exportRequirements', async (_e, parts, target) => {
+  const { buildSheets } = require('../core/requirements/sheets.cjs'); const { writeXlsx } = require('../core/requirements/xlsx.cjs');
+  const pages = (parts || []).flatMap((p) => (p.requirements || []).map((r) => ({ file: p.drawing.name, ...r })));
+  const out = await pickSave('QR_Requirements.xlsx', [{ name: 'Excel', extensions: ['xlsx'] }], target);
+  if (!out) return null;
+  fs.writeFileSync(out, writeXlsx(buildSheets(pages)));
+  return { path: out };
+});
 ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.getPath('temp'), 'qr-outlook', String(Date.now()))));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
 

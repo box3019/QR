@@ -1,0 +1,411 @@
+{
+ "_source": "Ported 1:1 from notes_extractor.py (friend of Alex Krylov). Regenerate with scripts/friend/gen-rules.py.",
+ "NUM": {
+  "src": "^\\d{1,3}(\\.\\d{1,3})*$",
+  "i": false
+ },
+ "ANCHOR": {
+  "src": "^\\s*(GENERAL\\s+)?(NOTES?|REMARKS?|הערות|הערה)\\s*[:：]?\\s*$",
+  "i": true
+ },
+ "CATS": [
+  [
+   "Material",
+   "MATERIAL|ALLOY|ALUM\\b|ALUMIN|STEEL|TITAN|BRASS|COPPER|6061|7075|304|316|17-4|ASTM B|AMS \\d"
+  ],
+  [
+   "Cleaning",
+   "CLEAN|DEGREAS|ALKALINE|RINSE"
+  ],
+  [
+   "Coating",
+   "COAT|ANODI|PLATING|PLATED|PASSIV|ALODINE|CHEM FILM|PAINT|PRIMER|OXIDE|SURFACE TREATMENT"
+  ],
+  [
+   "Heat treat",
+   "HEAT TREAT|HARDEN|HRC|TEMPER|ANNEAL|STRESS RELIEF|THERMAL"
+  ],
+  [
+   "Marking",
+   "ENGRAV|LASER MARK|ETCH|STAMP|MARKING|MARK PART|IDENTIFICATION|TRACEABIL|MIL-STD-130"
+  ],
+  [
+   "Masking",
+   "MASK|DO NOT (COAT|PLATE)|FREE OF (PAINT|COAT|PLATING)"
+  ],
+  [
+   "Machining",
+   "MACHIN|BURR|RADII|RADIUS|DEBURR|BREAK.*EDGE"
+  ],
+  [
+   "Assembly",
+   "INSTALL|INSERT|HELICOIL"
+  ],
+  [
+   "Inspection",
+   "INSPECT|CMM|NDT|X-RAY|FIRST ARTICLE|GAUGE|SAMPLING|QUALITY ASSURANCE|AQL"
+  ],
+  [
+   "Packing",
+   "PACK|SHIPMENT|PRESERV"
+  ]
+ ],
+ "STD_RE": {
+  "src": "\\b(?:SAE-)?(?:AMS|FED)-STD-\\d+[A-Z]?|\\b(?:SAE-)?AMS[- ]?(?:QQ-[A-Z]-)?\\d+(?:/\\d+)?[A-Z]?|\\bASTM[- ]?[A-Z]\\s?\\d+[A-Z]?|\\bMIL-[A-Z]+-\\d+[A-Z]?|\\bQQ-[A-Z]-\\d+(?:/\\d+)?|\\b(?:EN|DIN|ISO|JIS|GOST)[- ]?\\d+[\\d\\-]*",
+  "i": true
+ },
+ "PER_RE": {
+  "src": "\\bPER\\s+([A-Z0-9][A-Z0-9./\\-]*)",
+  "i": true
+ },
+ "AL_RE": {
+  "src": "\\b([1-8]\\d{3})(?:\\s*-?\\s*(T\\d{1,5}|O|H\\d{2,3}))?\\b",
+  "i": false
+ },
+ "STEEL_RE": {
+  "src": "\\b(304L?|316L?|321|303|410|420|430|17-4\\s?PH|15-5\\s?PH|13-8\\s?MO|4130|4140|4340|1018|1045|8620)\\b",
+  "i": true
+ },
+ "TI_RE": {
+  "src": "\\bTI-?6AL-?4V\\b|\\bGR(?:ADE)?\\.?\\s?\\d+\\b",
+  "i": true
+ },
+ "TEMPER_RE": {
+  "src": "\\b(H\\d{3,4}|ANNEALED|SOLUTION TREATED)\\b",
+  "i": true
+ },
+ "FORM_RE": {
+  "src": "\\b(PLATE|SHEET|ROD|BAR|TUBE|TUBING|PIPE|ANGLE|CHANNEL|EXTRUSION|FORGING|CASTING|STRIP|WIRE|BILLET|BLOCK)\\b",
+  "i": true
+ },
+ "DIM_RE": {
+  "src": "\\b(L|W|T|H|D|DIA|OD|ID)\\s*=\\s*([\\d.]+)",
+  "i": true
+ },
+ "UNIT_RE": {
+  "src": "\\b(INCH(?:ES)?|MM)\\b|\\bIN\\b",
+  "i": true
+ },
+ "CATNO_RE": {
+  "src": "(\\d{6,})\\s+([\\d.]+)\\s*([A-Za-z]{1,4})?",
+  "i": false
+ },
+ "HT_GENERAL": "Heat treat (general)",
+ "HT_TYPES": [
+  [
+   "Stress relief",
+   "STRESS[- ]RELIEF|STRESS RELIEV"
+  ],
+  [
+   "Annealing",
+   "ANNEAL"
+  ],
+  [
+   "Solution + aging",
+   "SOLUTION TREAT|\\bAGING\\b|AGE[- ]HARDEN|\\bAGED\\b"
+  ],
+  [
+   "Normalizing",
+   "NORMALI[SZ]"
+  ],
+  [
+   "Carburizing",
+   "CARBURI[SZ]"
+  ],
+  [
+   "Nitriding",
+   "NITRID"
+  ],
+  [
+   "Hardening",
+   "HARDEN|QUENCH"
+  ],
+  [
+   "Tempering",
+   "\\bTEMPER(?:ING|ED)?\\b"
+  ],
+  [
+   "Heat treat (general)",
+   "HEAT[- ]?TREAT|\\bHR[CB]\\b|AMS[- ]?2759|H-6875"
+  ]
+ ],
+ "COAT_TYPES": [
+  [
+   "Anodize",
+   "ANODI[SZ]\\w*|MIL-A-8625|MIL-A-63576|AMS[- ]?24(?:68|69|7[0-2])"
+  ],
+  [
+   "Conversion coating (chem film)",
+   "CONVERSION COAT\\w*|CHEM(?:ICAL)?[- ]FILM|ALODINE|IRIDITE|\\bCHROMATE\\b|MIL-(?:DTL|C)-5541|AMS[- ]?2473"
+  ],
+  [
+   "Electroless nickel",
+   "ELECTROLESS[- ]NI(?:CKEL)?\\b|\\bNI-?P\\b|AMS[- ]?2404|(?:MIL|AMS)-C-26074|ASTM[- ]?B733"
+  ],
+  [
+   "Nickel plating (electrolytic/unspecified)",
+   "(?<!ELECTROLESS )(?<!ELECTROLESS-)(?<!ZINC-)(?<!ZINC )NICKEL(?!\\s+ALLOY)|QQ-N-290|AMS[- ]?2403"
+  ],
+  [
+   "Zinc-nickel",
+   "ZINC[- ]NICKEL|\\bZN-?NI\\b|ASTM[- ]?B841"
+  ],
+  [
+   "Zinc plating",
+   "\\bZINC\\b(?![- ]NICKEL)|ASTM[- ]?B633|QQ-Z-325|AMS[- ]?2402"
+  ],
+  [
+   "Cadmium plating",
+   "CADMIUM|QQ-P-416|ASTM[- ]?B766|AMS[- ]?2400"
+  ],
+  [
+   "Chrome plating",
+   "HARD CHROM\\w*|CHROME PLAT\\w*|CHROMIUM PLAT\\w*|\\bCHROME\\b|AMS[- ]?2460|QQ-C-320"
+  ],
+  [
+   "Tin plating",
+   "\\bTIN PLAT\\w*|MIL-T-10727|ASTM[- ]?B545"
+  ],
+  [
+   "Silver plating",
+   "SILVER PLAT\\w*|QQ-S-365|AMS[- ]?2410"
+  ],
+  [
+   "Gold plating",
+   "GOLD PLAT\\w*|MIL-G-45204|ASTM[- ]?B488"
+  ],
+  [
+   "Copper plating",
+   "COPPER PLAT\\w*|AMS[- ]?2418"
+  ],
+  [
+   "Passivation",
+   "PASSIVAT\\w*|AMS[- ]?2700|ASTM[- ]?A967|QQ-P-35"
+  ],
+  [
+   "Black oxide",
+   "BLACK OXIDE|MIL-(?:DTL|C)-13924"
+  ],
+  [
+   "Phosphate",
+   "PHOSPHAT\\w*|MIL-(?:DTL|P)-16232|TT-C-490"
+  ],
+  [
+   "Dry film / PTFE",
+   "PTFE|TEFLON|DRY FILM|SOLID FILM LUBRICANT|MIL-(?:PRF|L)-(?:46010|8937)"
+  ],
+  [
+   "Plating (unspecified metal)",
+   "PLATING|PLATED|ELECTROPLAT\\w*"
+  ],
+  [
+   "Electroless (other)",
+   "ELECTROLESS"
+  ]
+ ],
+ "PLATING_SPECIFIC": [
+  "Cadmium plating",
+  "Chrome plating",
+  "Copper plating",
+  "Electroless nickel",
+  "Gold plating",
+  "Nickel plating (electrolytic/unspecified)",
+  "Silver plating",
+  "Tin plating",
+  "Zinc plating",
+  "Zinc-nickel"
+ ],
+ "SUPPRESS": {
+  "Electroless nickel": [
+   "Electroless (other)"
+  ],
+  "Zinc-nickel": [
+   "Zinc plating"
+  ]
+ },
+ "PAINT_TYPES": [
+  [
+   "Powder coat",
+   "POWDER[- ]COAT"
+  ],
+  [
+   "Primer",
+   "PRIMER"
+  ],
+  [
+   "Top coat / paint",
+   "TOP ?COAT|FINISH COAT|ENAMEL|LACQUER|POLYURETHANE|\\bPAINT"
+  ]
+ ],
+ "STRONG_RE": {
+  "src": "ANODI|COATING|COATED|PLATING|PLATED|PAINT|PRIMER|HEAT[- ]?TREAT|PASSIVAT|MASK|CONVERSION|CHEM FILM|ALODINE",
+  "i": true
+ },
+ "SEQ_RE": {
+  "src": "\\b(?:AFTER|BEFORE|PRIOR TO|FOLLOWING)\\s+(?:THE\\s+)?(?:HEAT[- ]?TREAT\\w*|HARDEN\\w*|ANODI[SZ]\\w*|PLAT\\w*|PAINT\\w*|COAT\\w*|SURFACE TREATMENT|FINISH\\w*)",
+  "i": true
+ },
+ "MASK_RE": {
+  "src": "\\bMASK(?:ED|ING)?\\b|FREE (?:OF|FROM) (?:PAINT|COAT\\w*|PLAT\\w*|ANODI\\w*)|DO NOT (?:COAT|PLATE|PAINT|ANODI[SZ]E)|NO (?:COATING|PLATING|PAINT|ANODI[SZ]\\w*) (?:IN|ON|AT|ALLOWED)|NOT TO BE (?:COATED|PLATED|PAINTED|ANODI[SZ]ED)|(?:EXCEPT|EXCLUDING|EXCLUDE)\\s+(?:FOR\\s+)?(?:THE\\s+)?(?:THREAD\\w*|HOLE\\w*|BORE\\w*|AREA\\w*|SURFACE\\w*)|\\bUNCOATED\\b|\\bUNPLATED\\b|\\bUNANODI[SZ]ED\\b|\\bUNPAINTED\\b",
+  "i": true
+ },
+ "MASK_METHODS": [
+  [
+   "Tape",
+   "\\bTAPE\\b"
+  ],
+  [
+   "Plug",
+   "\\bPLUG\\w*"
+  ],
+  [
+   "Cap / boot",
+   "\\bCAPS?\\b|\\bCAPPED\\b|\\bBOOTS?\\b"
+  ],
+  [
+   "Lacquer / stop-off",
+   "LACQUER|STOP[- ]?OFF"
+  ],
+  [
+   "Wax",
+   "\\bWAX\\b"
+  ]
+ ],
+ "MASK_AREAS": [
+  [
+   "Threads",
+   "THREAD"
+  ],
+  [
+   "Holes",
+   "\\bHOLES?\\b"
+  ],
+  [
+   "Bores",
+   "\\bBORES?\\b"
+  ],
+  [
+   "Internal surfaces",
+   "INTERNAL (?:SURFACE|AREA)"
+  ],
+  [
+   "Contact surfaces",
+   "CONTACT (?:SURFACE|AREA)"
+  ],
+  [
+   "Grounding / electrical",
+   "GROUND|ELECTRICAL"
+  ],
+  [
+   "Sealing surfaces",
+   "SEAL(?:ING)? SURFACE"
+  ],
+  [
+   "Datum",
+   "\\bDATUM"
+  ],
+  [
+   "Area per drawing",
+   "AREAS?\\s+(?:MARKED|SHOWN|INDICATED)|AS SHOWN|PER (?:VIEW|DETAIL|SECTION)"
+  ]
+ ],
+ "MASK_TARGET": [
+  [
+   "Anodize",
+   "ANODI[SZ]"
+  ],
+  [
+   "Conversion coating",
+   "CONVERSION|CHEM(?:ICAL)?[- ]FILM|ALODINE"
+  ],
+  [
+   "Plating",
+   "\\bPLAT(?:E|ED|ING)\\b|NICKEL"
+  ],
+  [
+   "Paint",
+   "PAINT|PRIM(?:ER|ING)|POWDER"
+  ],
+  [
+   "Coating",
+   "\\bCOAT(?:ED|ING)?\\b"
+  ]
+ ],
+ "LOC_RE": {
+  "src": "\\b(?:PER|SEE|IN)\\s+(?:VIEW|DETAIL|SECTION|ZONE|SHEET)\\b|\\bAS SHOWN\\b|\\bAREA\\s+[A-Z0-9]\\b",
+  "i": true
+ },
+ "ASM_RE": {
+  "src": "\\bINSTALL|\\bINSERT",
+  "i": true
+ },
+ "LAYER_WORDS": {
+  "src": "FOLLOWED BY|\\bTHEN\\b|\\bOVER\\b|UNDER-?PLAT|\\bSTRIKE\\b",
+  "i": true
+ },
+ "TOTAL_PAREN": {
+  "src": "\\([^)]*\\bTOTAL\\b[^)]*\\)",
+  "i": true
+ },
+ "LETTER": {
+  "src": "^([A-Z])\\s*[\\.\\)]\\s+(.*)",
+  "i": false
+ },
+ "TYPE_RE": {
+  "src": "\\bTYPE\\s*([IVX]+[ABC]?|\\d+[A-Z]?)\\b",
+  "i": true
+ },
+ "CLASS_RE": {
+  "src": "\\bCLASS\\s*(\\d+[A-Z]?|[A-Z](?![A-Z]))",
+  "i": true
+ },
+ "THK_RE": {
+  "src": "(\\d+(?:\\.\\d+)?(?:\\s*(?:-|–|TO)\\s*\\d+(?:\\.\\d+)?)?)\\s*(MICRONS?|MICROMETERS?|[µμ]M|MILS?(?![-\\w])|MM\\b|INCH(?:ES)?\\b)(?:\\s+(MIN(?:IMUM)?|MAX(?:IMUM)?)\\b)?",
+  "i": true
+ },
+ "COATS_RE": {
+  "src": "\\b(ONE|TWO|THREE|[1-3])\\s+COATS?\\b",
+  "i": true
+ },
+ "COLOR_NUM": {
+  "src": "\\bCOLOU?R\\s*(?:NO\\.?\\s*)?#?\\s*(\\d{4,5}[A-Z]?)",
+  "i": true
+ },
+ "COLOR_WORD": {
+  "src": "\\b(BLACK|WHITE|CLEAR|NATURAL|GREEN|GREY|GRAY|BLUE|RED|OLIVE DRAB|TAN|YELLOW|GOLD|ORANGE|SILVER)\\b",
+  "i": true
+ },
+ "HARD_RE": {
+  "src": "(\\d{2}(?:\\s*[-–]\\s*\\d{2})?)\\s*(HR[CB])\\b|\\b(HR[CB])\\s*[:=]?\\s*(\\d{2}(?:\\s*[-–]\\s*\\d{2})?)",
+  "i": true
+ },
+ "CASE_RE": {
+  "src": "CASE\\s+DEPTH\\s*[:=]?\\s*([\\d.]+(?:\\s*[-–]\\s*[\\d.]+)?\\s*(?:MM|INCH(?:ES)?|MICRONS?)?)",
+  "i": true
+ },
+ "TEMP_RE": {
+  "src": "(?<![\\w.\\-])(?:(NOT EXCEED|MAX(?:IMUM)?|MIN(?:IMUM)?|AT|UP TO)\\s+)?(\\d{2,4}(?:\\s*[-–]\\s*\\d{2,4})?)\\s*(?:°|º|DEG\\.?|DEGREES)?\\s*([CF])\\b",
+  "i": true
+ },
+ "NUMWORD": {
+  "ONE": "1",
+  "TWO": "2",
+  "THREE": "3"
+ },
+ "ANOD_TYPES": {
+  "I": "chromic",
+  "IB": "low-voltage chromic",
+  "IC": "non-chromic",
+  "II": "sulfuric",
+  "IIB": "thin sulfuric",
+  "III": "hard anodize"
+ },
+ "CONV_TYPES": {
+  "I": "hexavalent chromium",
+  "II": "non-hexavalent"
+ },
+ "CONV_CLASSES": {
+  "1A": "max corrosion protection",
+  "3": "electrical contact"
+ }
+}

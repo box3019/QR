@@ -1,0 +1,7 @@
+/* One shape for every control: the MRT "Attach document" rectangle (thin dark border, small radius). No pills.
+   tests/no_pills.test.cjs fails on 999px / 9999px / 50% radius unless the line is marked circle. */
+/* --qr-radius is defined in buttons.css (= MRT button radius). */
+button, select, input, textarea, .mrt-btn, .qr-chip, .qr-status, .qr-badge, .qr-tab, .qr-settings-tab, .qr-input,
+[class*="rounded-"]:is(button, span, a) { border-radius: var(--qr-radius) !important; }
+.qr-tab { border-radius: var(--qr-radius) var(--qr-radius) 0 0 !important; }
+.qr-chip, .qr-badge { border: 1px solid rgba(15, 23, 42, .35); line-height: normal; }

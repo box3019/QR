@@ -14,7 +14,7 @@
 .qr-part .pn { font-weight: 700; font-size: 0.875rem; }
 .qr-muted { color: var(--mrt-text-muted, #64748b); }
 .qr-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.qr-chip { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 1px 8px; font-size: 0.6875rem; font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
+.qr-chip { display: inline-flex; align-items: center; gap: 4px; border-radius: var(--qr-radius); padding: 1px 6px; font-size: 0.6875rem; font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
 .qr-chip[data-tone='ready'] { background: #dcfce7; color: #166534; border-color: #86efac; }
 .qr-chip[data-tone='attention'] { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
 .qr-chip[data-tone='danger'] { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
@@ -97,7 +97,7 @@ html, body, #root { height: 100%; width: 100%; overflow: hidden; }
 [dir='rtl'] .qr-chip-x { padding: 0 2px 0 0; }
 
 /* plain status + first run + big buttons */
-.qr-status { display: inline-block; padding: .2rem .7rem; border-radius: 999px; font-weight: 700; font-size: .9rem; color: #fff; }
+.qr-status { display: inline-block; padding: .15rem .5rem; border-radius: var(--qr-radius); border: 1px solid rgba(15,23,42,.35); font-weight: 600; font-size: .8125rem; color: #fff; }
 .qr-status[data-tone='ready'] { background: #15803d; } .qr-status[data-tone='attention'] { background: #b45309; }
 .qr-status[data-tone='info'] { background: #1d4ed8; } .qr-status[data-tone='danger'] { background: #b91c1c; }
 .qr-big { font-size: 1.15rem !important; padding: .7rem 1.6rem !important; height: auto !important; }
@@ -106,4 +106,4 @@ html, body, #root { height: 100%; width: 100%; overflow: hidden; }
 .qr-firstrun h2 { margin: 0 0 1rem; }
 .qr-firstrun ol { list-style: none; padding: 0; margin: 0 0 1.2rem; display: grid; gap: .9rem; }
 .qr-firstrun li { display: flex; gap: .8rem; align-items: flex-start; }
-.qr-step { flex: none; width: 2rem; height: 2rem; border-radius: 50%; background: #334155; color: #fff; display: grid; place-items: center; font-weight: 700; }
+.qr-step { flex: none; width: 2rem; height: 2rem; border-radius: 50%; /* circle */ background: #334155; color: #fff; display: grid; place-items: center; font-weight: 700; }

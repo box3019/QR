@@ -1,0 +1,27 @@
+/* fit.css — loaded last. Controls size to their text: no fixed px heights/widths on buttons, chips, tabs, selects.
+   Buttons wrap and grow; chips/badges stay on one line with an ellipsis (full text in the title tooltip). */
+button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
+  height: auto !important; min-height: 2.1em !important; min-width: 0 !important; max-width: 100%;
+  line-height: normal !important; font-size: 0.8125rem !important;
+  padding-block: 0.3em !important; padding-inline: 0.75em !important;
+  white-space: normal !important; overflow-wrap: anywhere; text-align: center; box-sizing: border-box;
+}
+.qr-settings-tab { text-align: start; font-size: 0.875rem !important; }
+.qr-tab { font-size: 0.875rem !important; }
+.qr-topbar .mrt-topbar-cmd { height: auto !important; min-height: 3.1em !important; min-width: 4.6em !important; padding: 0.25em 0.6em !important; font-size: 0.6875rem !important; }
+.qr-topbar { height: auto !important; min-height: 0 !important; flex-wrap: wrap; }
+.qr-topbar .mrt-topbar-cmd .ico { font-size: 1.15em; line-height: 1; }
+.qr-brand-badge { width: 1.75em; height: 1.75em; }
+.qr-chip, .qr-status, .qr-badge {
+  height: auto !important; line-height: normal !important; max-width: 100%; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-block: 0.12em !important; box-sizing: border-box;
+}
+select, .qr-input, select.qr-input {
+  height: auto !important; min-height: 2.1em; line-height: normal !important; font: inherit; font-size: 0.875rem;
+  padding: 0.25em 0.5em !important; padding-inline-end: 1.9em !important; max-width: 100%; box-sizing: border-box; width: auto;
+}
+.qr-modal-f, .qr-row { flex-wrap: wrap; }
+summary { line-height: normal; }
+/* v0.1.4 overflow fixes: editable chips wrap instead of clipping; selects never narrower than their own text. */
+.qr-chips-edit .qr-chip { white-space: normal; overflow-wrap: anywhere; text-overflow: clip; }
+select, select.qr-input { min-width: max-content; }

@@ -67,5 +67,5 @@ function questionsText(parts, lang = 'he') {
 const SAMPLE = { message: 'Insert quantity 10 in the table, 8 holes on the view.', suggestion: 'Confirm the quantity.' };
 const sampleQuestion = (lang) => (lang === 'he' ? toHebrew(SAMPLE) : `${SAMPLE.message} ${SAMPLE.suggestion}`);
 /** Adds messageHe (Hebrew UI text) to each problem that has a translation. Mutates and returns the part. */
-function localizePart(part) { if (part && part.rejectReason) { const h = toHebrew({ message: part.rejectReason }); if (h) part.rejectReasonHe = h; } for (const p of (part && part.problems) || []) { const h = toHebrew(p); if (h) p.messageHe = h; } return part; }
+const { localizePart } = require('./i18n/localize.cjs');
 module.exports = { buildQuestions, questionsHtml, questionsText, sampleQuestion, toHebrew, localizePart };
