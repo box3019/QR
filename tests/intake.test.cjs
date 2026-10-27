@@ -4,7 +4,7 @@ const { flattenSingleFolder } = require('../core/intake/archive.cjs');
 const { expand } = require('../core/intake/expand.cjs');
 const FIX = process.env.QR_FIXTURES || 'C:\\Users\\AlexK\\agent-tools\\qr-testdata\\fixtures';
 test('classify by name, doubled extensions, spaces', () => {
-  assert.equal(realExt('A-pas.pdf.PDF'), '.pdf'); assert.equal(fileKind('BO27516A-A-PD-BO27516A_A.pdf.PDF'), 'drawing');
+  assert.equal(realExt('A-pas.pdf.PDF'), '.pdf'); assert.equal(fileKind('XY10002A-A-PD-XY10002A_A.pdf.PDF'), 'drawing');
   assert.equal(fileKind('x.pdf.pdf'), 'drawing'); assert.equal(fileKind('My part rev A.STEP'), 'model');
   assert.equal(fileKind('a.x_t'), 'model'); assert.equal(fileKind('a.pas'), 'other'); assert.equal(fileKind('a_36.xls'), 'other');
   assert.equal(fileKind('a.RAR'), 'archive'); assert.equal(fileKind('b.7z'), 'archive'); assert.equal(fileKind('m.msg'), 'email');

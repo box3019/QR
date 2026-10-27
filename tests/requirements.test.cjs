@@ -20,7 +20,7 @@ const notesPage = () => linesFromPymupdf([
   L('3.  MASK THREADS BEFORE ANODIZE', 20, 52), L('4.  PAINT PER MIL-PRF-85285 TWO COATS COLOR 36375 AFTER ANODIZE', 20, 66), L('5.  ALODINE ALL OVER', 20, 80)]);
 const tablePage = () => linesFromPymupdf([
   L('No.', 100, 10, 20), L('DESCRIPTION', 130, 10, 80), L('20 MATERIAL', 100, 30, 80), L('20.1', 100, 44, 20), L('ALUMINUM ALLOY 6061-T651 PLATE PER AMS-QQ-A-250/11', 130, 44),
-  L('50 SURFACE TREATMENT', 100, 58, 120), L('50.1', 100, 72, 20), L('CHROMIC ANODIZING WITH WATER SEALING, 3 µm MIN. THICK PER PS-111.21', 130, 72)]);
+  L('50 SURFACE TREATMENT', 100, 58, 120), L('50.1', 100, 72, 20), L('CHROMIC ANODIZING WITH WATER SEALING, 3 µm MIN. THICK PER PS-900.', 130, 72)]);
 
 test('categories follow the friend table (case-sensitive, many per line)', () => {
   assert.deepStrictEqual(classify('MASK THREADS BEFORE ANODIZE'), ['Coating', 'Masking']);
