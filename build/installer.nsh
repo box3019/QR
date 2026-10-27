@@ -13,7 +13,12 @@
   WriteRegStr HKCU "Software\Classes\QR.OutlookAddin\CLSID" "" "${QR_CLSID}"
   WriteRegStr HKCU "Software\Microsoft\Office\Outlook\Addins\QR.OutlookAddin" "FriendlyName" "Send to QR"
   WriteRegStr HKCU "Software\Microsoft\Office\Outlook\Addins\QR.OutlookAddin" "Description" "Import the open or selected e-mails into QR"
-  WriteRegDWORD HKCU "Software\Microsoft\Office\Outlook\Addins\QR.OutlookAddin" "LoadBehavior" 3
+  ; Never re-enable: keep the LoadBehavior Outlook or the user set (an add-in disabled after a crash stays off).
+  ClearErrors
+  ReadRegDWORD $0 HKCU "Software\Microsoft\Office\Outlook\Addins\QR.OutlookAddin" "LoadBehavior"
+  ${If} ${Errors}
+    WriteRegDWORD HKCU "Software\Microsoft\Office\Outlook\Addins\QR.OutlookAddin" "LoadBehavior" 3
+  ${EndIf}
 !macroend
 !macro customInstall
   WriteRegStr HKCU "Software\QR" "ExePath" "$INSTDIR\QR.exe"
@@ -30,9 +35,12 @@
   DeleteRegKey HKCU "Software\Microsoft\Office\Outlook\Addins\QR.OutlookAddin"
 !macroend
 !macro customUnInstall
-  SetRegView 64
-  !insertmacro QrAddinDel
-  SetRegView 32
-  !insertmacro QrAddinDel
-  DeleteRegKey HKCU "Software\QR"
+  ; An update runs the old uninstaller first: keep the registration (and the user's LoadBehavior) then.
+  ${IfNot} ${isUpdated}
+    SetRegView 64
+    !insertmacro QrAddinDel
+    SetRegView 32
+    !insertmacro QrAddinDel
+    DeleteRegKey HKCU "Software\QR"
+  ${EndIf}
 !macroend
