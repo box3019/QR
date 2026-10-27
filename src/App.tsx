@@ -5,7 +5,7 @@ import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, setLang, setTextSize, getLang } from './i18n';
 import { FirstRun } from './ui/simple';
-import { Tutorial } from './tutorial/Tutorial';
+import { Tour } from './tutorial/Tour';
 import { toolbarFor } from './wizard/steps.mjs';
 import { useAssistant } from './hooks/useAssistant';
 import { useDrop } from './hooks/useDrop';
@@ -26,6 +26,8 @@ export default function App() {
   const [settings, setSettings] = useState<any>(null);
   const [over, setOver] = useState(false);
   const [dialog, setDialog] = useState<null | 'settings' | 'tutorial' | 'history'>(null);
+  const [tourStage, setTourStage] = useState(0);
+  useEffect(() => { const h = (e: any) => { setTourStage(e.detail?.stage || 0); setDialog('tutorial'); }; window.addEventListener('qr:tour', h); return () => window.removeEventListener('qr:tour', h); }, []);
   const [hist, setHist] = useState([] as any[]);
   useEffect(() => { qr().listHistory?.().then(setHist).catch(() => {}); }, []);
   const [details, setDetails] = useState(false);
@@ -50,16 +52,16 @@ export default function App() {
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
         <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
         <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
-        <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => setDialog('tutorial')} />
+        <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => { setTourStage(0); setDialog('tutorial'); }} />
       </div>
       <div className="qr-projs">
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
           details={details} setDetails={setDetails} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
       </div>
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} />}
-      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
+      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={getLang()} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}
-      {dialog === 'tutorial' && <Tutorial lang0={getLang()} onClose={() => setDialog(null)} />}
+      {dialog === 'tutorial' && <Tour lang0={getLang()} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
     </div>
   );
 }
