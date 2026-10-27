@@ -9,6 +9,13 @@ const { DEFAULT_ALLOW } = require('../core/analyze.cjs');
 const { questionsHtml, questionsText, buildQuestions } = require('../core/questions.cjs');
 
 app.setName('QR');
+// Never show the main-process crash dialog: log to %APPDATA%\QR\qr-error.log and keep running.
+function logError(kind, e) {
+  try { const f = path.join(app.getPath('userData'), 'qr-error.log'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.appendFileSync(f, `[${new Date().toISOString()}] ${kind}: ${(e && e.stack) || e}\n`); } catch {}
+  try { win && win.webContents.send('qr:event', { type: 'error', text: `${kind}: ${(e && e.message) || e}` }); } catch {}
+}
+process.on('uncaughtException', (e) => logError('uncaughtException', e));
+process.on('unhandledRejection', (e) => logError('unhandledRejection', e));
 const settingsFile = () => path.join(app.getPath('userData'), 'qr-settings.json');
 const DEFAULTS = {
   textSize: 'normal',
@@ -51,7 +58,7 @@ ipcMain.handle('qr:process', async (e, paths) => {
   const s = loadSettings();
   const emit = (ev) => { try { e.sender.send('qr:event', ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev); } catch {} };
   const t0 = Date.now();
-  const res = await runPipeline(paths, { ...s, langPath: langPath(), materials: (s.materials || []).filter((m) => m.enabled !== false) }, emit);
+  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), materials: (s.materials || []).filter((m) => m.enabled !== false) }, emit);
   res.seconds = Math.round((Date.now() - t0) / 1000);
   lastResult = res;
   return res;

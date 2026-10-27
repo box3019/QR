@@ -5,13 +5,16 @@ const fs = require('fs');
 const path = require('path');
 const [exe, data, out] = process.argv.slice(2);
 fs.mkdirSync(out, { recursive: true });
-const SETS = [
+const ONLY = process.env.QR_SETS ? process.env.QR_SETS.split(',') : null;
+const SETS_ALL = [
   ['bq', ['BQ43596A_d.pdf', ...(fs.existsSync(path.join(data, 'BQ43596A_step')) ? ['BQ43596A_step'] : [])]],
   ['elta', ['ELTA_ex1.pdf', 'ELTA_ex2.pdf']],
   ['kla', ['KLA_matbug_d.pdf']],
   ['kla_ex3', ['KLA_ex3.pdf']],
   ['elbit_ex4', ['ELBIT_ex4.pdf']],
+  ['elta_1096B020', ['\\\\fileserver-sr\\erp$\\Drawings\\ELTA\\1096B020-001\\Revision_B']], // read-only folder
 ];
+const SETS = SETS_ALL.filter(([n]) => !ONLY || ONLY.includes(n));
 (async () => {
   const app = await _electron.launch({ executablePath: exe, args: [], env: { ...process.env, QR_MAXIMIZE: '0' } });
   const win = await app.firstWindow();
@@ -22,7 +25,7 @@ const SETS = [
   const summary = { title, sets: {} };
   for (const [name, files] of SETS) {
     const t0 = Date.now();
-    await win.evaluate((p) => window.__qrRun(p), files.map((f) => path.join(data, f)));
+    await win.evaluate((p) => window.__qrRun(p), files.map((f) => (path.isAbsolute(f) || f.startsWith('\\\\') ? f : path.join(data, f))));
     await win.waitForFunction(() => !document.querySelector('[data-testid=busy]') && document.querySelector('[data-testid=parts-panel]'), null, { timeout: 15 * 60 * 1000 });
     const parts = await win.evaluate(() => window.__qrParts);
     summary.sets[name] = { seconds: Math.round((Date.now() - t0) / 1000), parts: parts.map((p) => ({ partNo: p.partNo, rev: p.rev, customer: p.customer, material: p.material, status: p.status, rejectReason: p.rejectReason, readiness: p.readiness, textMode: p.textMode, problems: p.problems.map((x) => ({ severity: x.severity, category: x.category, message: x.message, loc: x.loc })), tasks: p.tasks.map((t) => ({ type: t.type, title: t.title })), threads: p.threads, threadMatches: p.threadMatches, zones: p.zones, route: p.route.map((s) => ({ seq: s.seq, type: s.type, moved: s.moved, blocked: s.blocked, text: s.items.map((i) => i.text).join(' | ').slice(0, 160) })), model: p.model, modelSearchLog: p.modelSearchLog, ocr: p.drawing.pages.map((g) => ({ n: g.n, mode: g.quality.mode, reasons: g.quality.reasons, ocr: g.ocr ? { dpi: g.ocr.dpi, tiles: g.ocr.tiles, seconds: g.ocr.seconds, words: g.ocr.words.length, low: g.ocr.words.filter((w) => w.conf < 0.6).length, sample: g.ocr.words.slice(0, 40).map((w) => w.text + ':' + Math.round(w.conf * 100)) } : null, ocrError: g.ocrError })) })) };

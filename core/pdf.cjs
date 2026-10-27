@@ -88,7 +88,23 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
   const overlap = 120;
   const { createWorker } = require('tesseract.js');
   const langPath = opts.langPath || path.join(__dirname, '..', 'ocr');
-  const worker = await createWorker('eng', 1, { langPath, cachePath: opts.cachePath || require('os').tmpdir(), gzip: true, logger: () => {} });
+  // Offline only. In Electron tesseract.js treats any langPath as a URL and fetches it ("Only absolute URLs are
+  // supported"), but it always reads <cachePath>/eng.traineddata from disk first. So the bundled data is unpacked
+  // once into a local cache folder (absolute path, works from UNC/asar installs) and no URL is ever used.
+  const fsx = require('fs');
+  const cacheDir = opts.cachePath || path.join(require('os').tmpdir(), 'qr-ocr-cache');
+  const cached = path.join(cacheDir, 'eng.traineddata');
+  if (!fsx.existsSync(cached) || fsx.statSync(cached).size < 1e6) {
+    fsx.mkdirSync(cacheDir, { recursive: true });
+    const raw = path.join(langPath, 'eng.traineddata');
+    const buf = fsx.existsSync(raw) ? fsx.readFileSync(raw) : require('zlib').gunzipSync(fsx.readFileSync(path.join(langPath, 'eng.traineddata.gz')));
+    fsx.writeFileSync(cached + '.tmp', buf); fsx.renameSync(cached + '.tmp', cached);
+  }
+  let workerError = null;
+  const worker = await createWorker('eng', 1, { langPath: cacheDir, cachePath: cacheDir, cacheMethod: 'readOnly', gzip: false, logger: () => {}, errorHandler: (e) => { workerError = e; } });
+  const words = [];
+  let tiles = [];
+  try {
   await worker.setParameters({ tessedit_pageseg_mode: '11', preserve_interword_spaces: '1' });
   const { createCanvas } = require('@napi-rs/canvas');
   const doc = await openPdf(file);
@@ -96,8 +112,6 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
   const scale = dpi / 72;
   const vp = page.getViewport({ scale });
   const W = Math.ceil(vp.width), H = Math.ceil(vp.height);
-  const words = [];
-  const tiles = [];
   for (let ty = 0; ty < H; ty += tile - overlap) for (let tx = 0; tx < W; tx += tile - overlap) tiles.push([tx, ty]);
   let done = 0;
   for (const [tx, ty] of tiles) {
@@ -133,8 +147,9 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
     done++;
     opts.onProgress && opts.onProgress(done / tiles.length);
   }
-  await worker.terminate();
+  if (workerError) throw workerError;
   await doc.destroy();
+  } finally { await worker.terminate().catch(() => {}); }
   // dedupe tile overlaps, then drop OCR words covered by real text
   const out = [];
   for (const w of words) {

@@ -106,11 +106,11 @@ async function runPipeline(paths, settings, emit = () => {}) {
       emit({ type: 'status', text: `OCR ${d.name} page ${p.n} (${p.quality.reasons.join(', ')}) at ${settings.ocrDpi || 400} DPI` });
       try {
         const t0 = Date.now();
-        p.ocr = await ocrPage(d.path, p.n, p.tokens, { dpi: settings.ocrDpi || 400, langPath: settings.langPath, onProgress: (x) => emit({ type: 'progress', file: d.name, page: p.n, value: x }) });
+        p.ocr = await ocrPage(d.path, p.n, p.tokens, { dpi: settings.ocrDpi || 400, langPath: settings.langPath, cachePath: settings.ocrCachePath, onProgress: (x) => emit({ type: 'progress', file: d.name, page: p.n, value: x }) });
         p.ocr.seconds = Math.round((Date.now() - t0) / 1000);
         p.tokens = p.tokens.concat(p.ocr.words);
         if (p.ocr.words.length) p.raw += '\n' + p.ocr.words.filter((w) => w.conf >= 0.6).map((w) => w.text).join(' ');
-      } catch (e) { p.ocrError = String(e.message || e); }
+      } catch (e) { p.ocrError = String((e && e.message) || e); emit({ type: 'status', text: `OCR failed on ${d.name} page ${p.n}: ${p.ocrError}` }); }
     }
     const pl = partsLists.find((l) => { const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
     try {
@@ -119,6 +119,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
       a.model = mm.models[0] ? { path: mm.models[0], ...stepHeader(mm.models[0]) } : null;
       a.modelSearchLog = mm.log;
       for (const pr of a.problems) pr.loc = locate(d.pages, pr);
+      for (const p of d.pages) if (p.ocrError) a.problems.unshift({ id: 'OCR' + p.n, severity: 'Info', category: 'OCR warning', message: `OCR failed on sheet ${p.n}: ${p.ocrError}. Only the PDF text layer was analyzed for this sheet.`, suggestion: 'Check the sheet visually; values in outlined/scanned text may be missing.', evidence: [], status: 'open', loc: null });
       parts.push({ id: 'part' + (parts.length + 1), drawing: { path: d.path, name: d.name, sha256: d.sha256, pages: d.pages.map((p) => ({ n: p.n, width: p.width, height: p.height, quality: p.quality, ocr: p.ocr ? { dpi: p.ocr.dpi, tiles: p.ocr.tiles, seconds: p.ocr.seconds, words: p.ocr.words } : null, ocrError: p.ocrError })) }, partsList: pl ? { path: pl.path, name: pl.name } : null, ...a });
       emit({ type: 'part', part: parts[parts.length - 1] });
     } catch (e) { emit({ type: 'error', file: d.path, text: String(e.stack || e) }); }

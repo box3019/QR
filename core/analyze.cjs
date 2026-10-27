@@ -317,7 +317,7 @@ function analyzePart({ drawing, partsList, models, settings, library }) {
   for (const { b, ins } of inserts) {
     const calls = vt.filter((v) => v.insert);
     const want = ins.required;
-    const hit = calls.find((v) => v.thread === want);
+    const hit = calls.find((v) => v.thread === want) || vt.find((v) => v.thread === want); // callout present, insert note may be elsewhere
     if (hit) continue;
     const insertCalls = calls.length ? calls : vt;
     if (ins.outer && insertCalls.length) {
