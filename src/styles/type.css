@@ -15,3 +15,11 @@
 .qr-root .qr-route-card .head b { font-weight: 400; }
 .qr-root .qr-row { row-gap: 0.35rem; }
 .qr-root .qr-modal-h { font-weight: 600; }
+
+/* v0.1.4 typography, less bold (SPEC: 600 only for part numbers, section/status headers; MRT wizard title 16px/600 on a 14px base). */
+.qr-root .qr-wiz-title { font-size: 1.143em !important; font-weight: 600 !important; }
+.qr-root .mrt-btn, .qr-root button.mrt-btn, .qr-root .qr-hdr-btn span, .qr-root .ico { font-weight: 500 !important; }
+.qr-root .mrt-wizard-step-marker { font-weight: 500 !important; }
+.qr-root .mrt-wizard-step .mrt-wizard-step-label { font-weight: 500 !important; }
+.qr-root .mrt-wizard-step[aria-current='step'] .mrt-wizard-step-label { font-weight: 600 !important; }
+.qr-root .qr-status, .qr-root .qr-tab, .qr-root .qr-ltr, .qr-root .qr-pgroup-caret, .qr-root .qr-pgroup-n, .qr-root .qr-sum-line b, .qr-root .qr-chev { font-weight: 400 !important; }.qr-root header button span, .qr-root header button .ico { font-weight: 400 !important; }
