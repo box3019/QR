@@ -5,7 +5,7 @@ import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, setLang, setTextSize, getLang } from './i18n';
 import { FirstRun } from './ui/simple';
-import { Tour } from './tutorial/Tour';
+import { Tour } from './tutorial/TourView';
 import { toolbarFor } from './wizard/steps.mjs';
 import { useAssistant } from './hooks/useAssistant';
 import { useDrop } from './hooks/useDrop';
