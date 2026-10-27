@@ -71,3 +71,6 @@
 .qr-step-intake .qr-drop { flex: 1; }
 .qr-rail .mrt-wizard-step-marker { border-radius: 50%; } /* circle: MRT step badge 1:1 */
 .qr-rail .mrt-wizard-steps { max-height: none; border-bottom: 0; border-inline-end: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); }
+.qr-root .qr-drop-btns button.qr-blue, .qr-root .qr-drop-btns button.qr-blue:not(:disabled) { background: #2563eb !important; background-color: #2563eb !important; background-image: none !important; border-color: #1d4ed8 !important; color: #fff !important; }
+.qr-root .qr-drop-btns button.qr-blue:hover:not(:disabled) { background-color: #1d4ed8 !important; }
+.qr-root .qr-bsec button.qr-sec-main { height: auto !important; min-height: 0; max-height: none; white-space: normal; overflow: visible; line-height: 1.35; }
