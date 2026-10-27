@@ -76,3 +76,5 @@
 .qr-root .qr-bsec button.qr-sec-main { height: auto !important; min-height: 0; max-height: none; white-space: normal; overflow: visible; line-height: 1.35; }
 .qr-sec-line { flex-wrap: wrap; }
 .qr-root .qr-bsec button.qr-sec-main { flex: 1 1 15rem; grid-template-columns: minmax(0, 7.5rem) minmax(8rem, 1fr); }
+.qr-root .qr-bsec button.qr-sec-main { grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr); }
+.qr-root .qr-bsec button.qr-sec-main > * { min-width: 0; overflow-wrap: anywhere; }
