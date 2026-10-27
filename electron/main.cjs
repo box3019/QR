@@ -141,7 +141,7 @@ ipcMain.handle('qr:std:confirm', (_e, s, customer) => require('../core/standards
 ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: [{ name: 'PDF', extensions: ['pdf'] }, { name: 'All files', extensions: ['*'] }] });
   if (r.canceled) return null;
-  return require('../core/standards/index.cjs').uploadStandard(app.getPath('userData'), { id: s.std, rev: s.rev || '', customer, file: r.filePaths[0], owner, paid: s.paid });
+  return require('../core/standards/index.cjs').uploadStandard(app.getPath('userData'), { id: s.std, rev: s.rev || '', customer, file: r.filePaths[0], owner, paid: s.paid }, async (f) => (await require('../core/pdf.cjs').extractPdf(f)).pages.map((p) => p.raw || '').join('\n'));
 });
 ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));

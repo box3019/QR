@@ -3,7 +3,8 @@
 // (2) the customer's own documents (scoped to that customer), (3) public online source (identifier only; never for paid standards).
 const fs = require('fs'); const path = require('path');
 const { defOf, tableDef, isPaid, norm } = require('./defs.cjs');
-const { bundledRow } = require('./tables.cjs');
+const { bundledRow, stiRow } = require('./tables.cjs');
+const stiKey = (raw) => { const m = String(raw || '').match(/(\d+\/\d+|#?\d{1,2})\s*-\s*(\d{2})\s*(UNC|UNF)/i); return m ? `${m[1].replace('#', '')}-${m[2]} ${m[3].toUpperCase()}` : ''; };
 const { parseThread, compareThreads } = require('./threads.cjs');
 function walk(dir, depth = 3, out = []) { if (depth < 0) return out; let es = []; try { es = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
   for (const e of es) { const p = path.join(dir, e.name); if (e.isDirectory()) walk(p, depth - 1, out); else if (/\.(pdf|tif|tiff|png|jpg)$/i.test(e.name)) out.push(p); } return out; }
@@ -19,11 +20,11 @@ async function resolveCallout(c, ctx) {
   const have = store.findDoc(docId, customer) || (d && d.sameAs ? null : null);
   if (have) r.doc = have;
   const mem = store.getResolution(stdId, r.dash, customer);
-  const bun = bundledRow(stdId, r.dash);
+  const bun = bundledRow(stdId, r.dash) || (c.kind === 'insert-coil' ? stiRow(stiKey(c.raw)) : null);
   const ext = store.getTable(docId, customer);
   if (mem) { r.row = mem.row; r.dims = mem.row.dims || null; r.status = 'resolved'; r.source = 'memory'; }
   else if (bun) { r.row = bun.row; r.dims = bun.dims; r.status = bun.verified ? 'resolved' : 'needsConfirm'; r.source = 'library'; r.tableRev = bun.rev; r.tableSource = bun.source; }
-  else if (ext && ext.rows && ext.rows[r.dash]) { r.row = ext.rows[r.dash]; r.dims = ext.rows[r.dash].dims || null; r.status = 'needsConfirm'; r.source = 'upload'; }
+  else if (ext && ext.rows && ext.rows[r.dash]) { r.row = ext.rows[r.dash]; r.dims = ext.rows[r.dash].dims || Object.fromEntries(Object.entries(ext.rows[r.dash]).filter(([k, v]) => k !== 'verified' && Number.isFinite(parseFloat(v))).map(([k, v]) => [k, { raw: v }])); r.status = 'needsConfirm'; r.source = 'upload'; }
   if (!r.doc) {
     const f = findCustomerDoc(docId, customerFiles);
     if (f) { r.doc = store.putDoc({ id: docId, rev: revFromName(f), customer, file: f, source: 'customer:' + f }); if (!r.source) { r.source = 'customer'; r.status = 'needsConfirm'; } }

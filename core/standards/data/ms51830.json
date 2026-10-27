@@ -1,0 +1,151 @@
+{
+"id": "MS51830",
+"rev": "hole preparation per NASA/JSC PRC-9006 App. A",
+"source": "NASA/JSC PRC-9006 Appendix A (public) cross-checked with Howmet Keysert/Keenserts catalog 2023 (public). Rows with one source are marked unverified.",
+"units": "inch",
+"columns": [
+"tapDrill",
+"csk",
+"minFullThread"
+],
+"rows": {
+"101": {
+"internal": "2-56 UNJC-3B",
+"external": "8-32 UNC-3A",
+"tapDrill": ".135",
+"csk": ".166",
+"minFullThread": ".140",
+"note": "drill .133-.137 (NASA) / .134 (Howmet)"
+},
+"102": {
+"internal": "4-40 UNJC-3B",
+"external": "10-32 UNF-2A",
+"tapDrill": ".162",
+"csk": ".194",
+"minFullThread": ".160",
+"note": "drill .160-.164 / .161"
+},
+"103": {
+"internal": "6-32 UNJC-3B",
+"external": "12-28 UNF-2A",
+"tapDrill": ".189",
+"csk": ".220",
+"minFullThread": ".160",
+"note": "drill .186-.191 / .187"
+},
+"104": {
+"internal": "8-32 UNJC-3B",
+"external": "1/4-28 UNF-2A",
+"tapDrill": ".229",
+"csk": ".255",
+"minFullThread": ".210",
+"note": "drill .227-.231 / .228"
+},
+"201": {
+"internal": "10-32 UNJF-3B",
+"external": "5/16-18",
+"tapDrill": ".272",
+"csk": ".323",
+"minFullThread": ".370",
+"note": "drill .271 / .272"
+},
+"202": {
+"internal": "1/4-28 UNJF-3B",
+"external": "3/8-16",
+"tapDrill": ".332",
+"csk": ".385",
+"minFullThread": ".430",
+"note": "drill .331 / .332"
+},
+"105": {
+"internal": "10-24",
+"external": "5/16-18",
+"tapDrill": ".276",
+"csk": ".323",
+"minFullThread": ".370",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"106": {
+"internal": "1/4-20",
+"external": "3/8-16",
+"tapDrill": ".336",
+"csk": ".385",
+"minFullThread": ".430",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"107": {
+"internal": "",
+"external": "7/16-14",
+"tapDrill": ".401",
+"csk": ".447",
+"minFullThread": ".500",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"108": {
+"internal": "",
+"external": "1/2-13",
+"tapDrill": ".457",
+"csk": ".510",
+"minFullThread": ".560",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"109": {
+"internal": "",
+"external": "9/16-12",
+"tapDrill": ".521",
+"csk": ".572",
+"minFullThread": ".620",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"110": {
+"internal": "",
+"external": "5/8-11",
+"tapDrill": ".583",
+"csk": ".635",
+"minFullThread": ".680",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"203": {
+"internal": "5/16-24",
+"external": "7/16-14",
+"tapDrill": ".396",
+"csk": ".447",
+"minFullThread": ".500",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"204": {
+"internal": "",
+"external": "1/2-13",
+"tapDrill": ".452",
+"csk": ".510",
+"minFullThread": ".560",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"205": {
+"internal": "",
+"external": "9/16-12",
+"tapDrill": ".515",
+"csk": ".572",
+"minFullThread": ".620",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+},
+"206": {
+"internal": "",
+"external": "5/8-11",
+"tapDrill": ".577",
+"csk": ".635",
+"minFullThread": ".680",
+"verified": false,
+"note": "single source (NASA PRC-9006); confirm"
+}
+}
+}

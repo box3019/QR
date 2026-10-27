@@ -37,5 +37,10 @@ async function attachStandards(part, text, ctx) {
 /** The user confirms a resolved row once; it is remembered for every later drawing. */
 function confirmStandard(base, s, customer) { const store = openStore(base); return store.confirm(s.std, s.dash, s.paid ? '' : customer, { ...(s.row || {}), dims: s.dims }, { source: s.source, rev: s.tableRev || (s.doc && s.doc.rev) || '' }); }
 /** Upload of a standard's document (licensed copy or customer doc): store once, link to the part. */
-function uploadStandard(base, { id, rev, customer, file, owner, paid }) { const store = openStore(base); const e = store.putDoc({ id, rev, customer: paid ? '' : customer, file, source: 'upload' }); if (owner) store.link(owner, e.key); return { ...e, file: store.blobPath(e) }; }
-module.exports = { attachStandards, confirmStandard, uploadStandard, detectCallouts, openStore };
+async function uploadStandard(base, { id, rev, customer, file, owner, paid }, readText) {
+  const store = openStore(base); const sc = paid ? '' : customer; const e = store.putDoc({ id, rev, customer: sc, file, source: 'upload' }); if (owner) store.link(owner, e.key);
+  let rows = {}; try { const text = readText ? await readText(file) : ''; rows = extractTables(text); if (Object.keys(rows).length) store.putTable(id, rev || '', sc, rows, { source: 'upload:' + e.key, verified: false }); } catch {}
+  return { ...e, file: store.blobPath(e), tableRows: Object.keys(rows).length };
+}
+const { extractTables } = require('./extract.cjs');
+module.exports = { extractTables, attachStandards, confirmStandard, uploadStandard, detectCallouts, openStore };

@@ -32,7 +32,7 @@ function parseThread(raw) {
 function compareThreads(drawing, required) {
   const out = []; if (!drawing || !required) return out;
   if (drawing.system !== required.system || Math.abs((drawing.dia || 0) - (required.dia || 0)) > 0.002 || (drawing.tpi || drawing.pitch) !== (required.tpi || required.pitch)) out.push({ type: 'size', drawing: drawing.raw, required: required.raw });
-  else if (drawing.j !== required.j || (drawing.series.replace('J', '') !== required.series.replace('J', ''))) out.push({ type: 'series', drawing: drawing.series, required: required.series + (required.cls ? ' ' + required.cls : '') });
+  if (drawing.system === required.system && (drawing.j !== required.j || (drawing.series || '').replace('J', '') !== (required.series || '').replace('J', ''))) out.push({ type: 'series', drawing: drawing.series, required: required.series + (required.cls ? ' ' + required.cls : '') });
   if (drawing.cls && required.cls && drawing.cls !== required.cls) out.push({ type: 'class', drawing: drawing.cls, required: required.cls });
   return out;
 }

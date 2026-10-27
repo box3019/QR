@@ -50,7 +50,7 @@ test('store: once per checksum, customer scope first, confirm remembered', () =>
 });
 test('attach: resolved port with flags, needsDoc tasks, kit questions', async () => {
   const part = { partNo: 'P1', customer: 'KLA', problems: [], tasks: [] };
-  const out = await S.attachStandards(part, 'PORT AS5202-03 .4375-20 UNF-2B\nINSERT MS51830-202', { base: tmp(), problem });
+  const out = await S.attachStandards(part, 'PORT AS5202-03 .4375-20 UNF-2B\nINSERT NASM33537-202', { base: tmp(), problem });
   const port = out.find((r) => r.std === 'AS5202'); assert.strictEqual(port.status, 'resolved');
   assert.ok(part.problems.some((p) => p.key === 'std.kit.fitting'));
   assert.ok(part.tasks.some((t) => t.std && t.type === 'uploadDocument'));
@@ -63,4 +63,33 @@ test('export copies linked docs once', () => {
 test('report has a standards section', () => {
   const h = require('../core/report.cjs').reportHtml([{ partNo: 'P', standards: [{ std: 'AS568', dash: '012', status: 'resolved', dims: { ID: { mm: 9.246, in: '0.364' } }, flags: [] }], problems: [], tasks: [] }], 'en');
   assert.match(h, /Standards/); assert.match(h, /9\.246 mm/);
+});
+test('Keensert MS51830 table: cross-checked rows and unverified single-source rows', () => {
+  const r = bundledRow('MS51830', '202'); assert.ok(r); assert.strictEqual(r.verified, true); assert.strictEqual(r.dims.tapDrill.in, '.332'); assert.strictEqual(r.dims.csk.in, '.385');
+  const u = bundledRow('MS51830', '108'); assert.ok(u); assert.strictEqual(u.verified, false);
+  assert.strictEqual(Object.keys(J('ms51830.json').rows).length, 16);
+});
+test('Helicoil STI table: agreeing rows verified, differing rows not', () => {
+  const { stiRow } = require(D + '/tables.cjs');
+  const a = stiRow('1/4-20 UNC'); assert.strictEqual(a.verified, true); assert.strictEqual(a.dims.drillIn.in, '0.2656');
+  assert.strictEqual(stiRow('1/4-28 UNF').verified, false); assert.strictEqual(Object.keys(J('helicoil_sti.json').rows).length, 23);
+});
+test('Helicoil callout resolves STI hole by thread on the same line', async () => {
+  const part = { partNo: 'P2', customer: 'X', problems: [], tasks: [] };
+  const out = await S.attachStandards(part, 'INSTALL HELICOIL MS21209C1/4-20 UNC', { base: tmp(), problem });
+  const h = out.find((r) => r.kind === 'insert-coil'); assert.ok(h); assert.ok(h.dims && h.dims.drillIn, JSON.stringify(h));
+});
+test('UNJ and MJ minor diameters are computed and labeled', () => {
+  const q = Object.values(J('un_tap.json').rows).find((r) => r.majorIn === 0.25 && r.tpi === 20); assert.ok(Math.abs(q.unjMinorMinIn - 0.2013) < 0.0002);
+  const m = J('iso_m.json').rows['M6x1']; assert.ok(Math.abs(m.mjD1min - 5.026) < 0.001); assert.strictEqual(m.mjVerified, false);
+});
+test('UNF vs UNJF is flagged even when the size differs too', () => {
+  const f = compareThreads(parseThread('.4375-20 UNF-2B'), parseThread('.3750-24 UNJF-3B')).map((x) => x.type);
+  assert.ok(f.includes('size')); assert.ok(f.includes('series')); assert.ok(f.includes('class'));
+});
+test('table extraction from uploaded text, stored and used for the next drawing', async () => {
+  const rows = S.extractTables('TABLE 1\n-012  .364  .005  .070  .003\n  13 .426 .005 .070 .003\nNOTES 1 2'); assert.deepStrictEqual(Object.keys(rows).sort(), ['012', '13']); assert.strictEqual(rows['012'].c1, '.364');
+  const b = tmp(); const f = path.join(b, 'XYZ-100.pdf'); fs.writeFileSync(f, 'x');
+  const e = await S.uploadStandard(b, { id: 'XYZ-100', rev: 'C', customer: 'ACME', file: f }, async () => '07 .5 .25\n');
+  assert.strictEqual(e.tableRows, 1); assert.ok(openStore(b).getTable('XYZ-100', 'ACME'));
 });

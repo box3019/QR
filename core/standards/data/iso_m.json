@@ -1,7 +1,7 @@
 {
 "id": "ISO-M",
 "rev": "ISO 261 / ISO 724 basic; tap drill D-P (ISO 2306 practice)",
-"source": "Computed from ISO 724 basic-profile formulas; pitches per ISO 261 preferred series. Computed values, not transcribed. MJ uses the same D/P with a rounded root (ISO 5855); MJ minor limits need the standard.",
+"source": "Computed from ISO 724 basic-profile formulas; pitches per ISO 261 preferred series. Computed values, not transcribed. MJ uses the same D/P with a rounded root (ISO 5855); MJ minor limits need the standard. MJ D1 min = D - 0.974279P is computed and marked unverified.",
 "verified": true,
 "rows": {
 "M1.6x0.35": {
@@ -10,7 +10,9 @@
 "coarse": true,
 "D1": 1.221,
 "tapDrill": 1.25,
-"computed": true
+"computed": true,
+"mjD1min": 1.259,
+"mjVerified": false
 },
 "M2x0.4": {
 "D": 2,
@@ -18,7 +20,9 @@
 "coarse": true,
 "D1": 1.567,
 "tapDrill": 1.6,
-"computed": true
+"computed": true,
+"mjD1min": 1.61,
+"mjVerified": false
 },
 "M2.5x0.45": {
 "D": 2.5,
@@ -26,7 +30,9 @@
 "coarse": true,
 "D1": 2.013,
 "tapDrill": 2.05,
-"computed": true
+"computed": true,
+"mjD1min": 2.062,
+"mjVerified": false
 },
 "M3x0.5": {
 "D": 3,
@@ -34,7 +40,9 @@
 "coarse": true,
 "D1": 2.459,
 "tapDrill": 2.5,
-"computed": true
+"computed": true,
+"mjD1min": 2.513,
+"mjVerified": false
 },
 "M4x0.7": {
 "D": 4,
@@ -42,7 +50,9 @@
 "coarse": true,
 "D1": 3.242,
 "tapDrill": 3.3,
-"computed": true
+"computed": true,
+"mjD1min": 3.318,
+"mjVerified": false
 },
 "M5x0.8": {
 "D": 5,
@@ -50,7 +60,9 @@
 "coarse": true,
 "D1": 4.134,
 "tapDrill": 4.2,
-"computed": true
+"computed": true,
+"mjD1min": 4.221,
+"mjVerified": false
 },
 "M6x1": {
 "D": 6,
@@ -58,7 +70,9 @@
 "coarse": true,
 "D1": 4.917,
 "tapDrill": 5,
-"computed": true
+"computed": true,
+"mjD1min": 5.026,
+"mjVerified": false
 },
 "M8x1.25": {
 "D": 8,
@@ -66,7 +80,9 @@
 "coarse": true,
 "D1": 6.647,
 "tapDrill": 6.75,
-"computed": true
+"computed": true,
+"mjD1min": 6.782,
+"mjVerified": false
 },
 "M8x1": {
 "D": 8,
@@ -74,7 +90,9 @@
 "coarse": false,
 "D1": 6.917,
 "tapDrill": 7,
-"computed": true
+"computed": true,
+"mjD1min": 7.026,
+"mjVerified": false
 },
 "M10x1.5": {
 "D": 10,
@@ -82,7 +100,9 @@
 "coarse": true,
 "D1": 8.376,
 "tapDrill": 8.5,
-"computed": true
+"computed": true,
+"mjD1min": 8.539,
+"mjVerified": false
 },
 "M10x1.25": {
 "D": 10,
@@ -90,7 +110,9 @@
 "coarse": false,
 "D1": 8.647,
 "tapDrill": 8.75,
-"computed": true
+"computed": true,
+"mjD1min": 8.782,
+"mjVerified": false
 },
 "M10x1": {
 "D": 10,
@@ -98,7 +120,9 @@
 "coarse": false,
 "D1": 8.917,
 "tapDrill": 9,
-"computed": true
+"computed": true,
+"mjD1min": 9.026,
+"mjVerified": false
 },
 "M12x1.75": {
 "D": 12,
@@ -106,7 +130,9 @@
 "coarse": true,
 "D1": 10.106,
 "tapDrill": 10.25,
-"computed": true
+"computed": true,
+"mjD1min": 10.295,
+"mjVerified": false
 },
 "M12x1.5": {
 "D": 12,
@@ -114,7 +140,9 @@
 "coarse": false,
 "D1": 10.376,
 "tapDrill": 10.5,
-"computed": true
+"computed": true,
+"mjD1min": 10.539,
+"mjVerified": false
 },
 "M12x1.25": {
 "D": 12,
@@ -122,7 +150,9 @@
 "coarse": false,
 "D1": 10.647,
 "tapDrill": 10.75,
-"computed": true
+"computed": true,
+"mjD1min": 10.782,
+"mjVerified": false
 },
 "M14x2": {
 "D": 14,
@@ -130,7 +160,9 @@
 "coarse": true,
 "D1": 11.835,
 "tapDrill": 12,
-"computed": true
+"computed": true,
+"mjD1min": 12.051,
+"mjVerified": false
 },
 "M14x1.5": {
 "D": 14,
@@ -138,7 +170,9 @@
 "coarse": false,
 "D1": 12.376,
 "tapDrill": 12.5,
-"computed": true
+"computed": true,
+"mjD1min": 12.539,
+"mjVerified": false
 },
 "M16x2": {
 "D": 16,
@@ -146,7 +180,9 @@
 "coarse": true,
 "D1": 13.835,
 "tapDrill": 14,
-"computed": true
+"computed": true,
+"mjD1min": 14.051,
+"mjVerified": false
 },
 "M16x1.5": {
 "D": 16,
@@ -154,7 +190,9 @@
 "coarse": false,
 "D1": 14.376,
 "tapDrill": 14.5,
-"computed": true
+"computed": true,
+"mjD1min": 14.539,
+"mjVerified": false
 },
 "M18x2.5": {
 "D": 18,
@@ -162,7 +200,9 @@
 "coarse": true,
 "D1": 15.294,
 "tapDrill": 15.5,
-"computed": true
+"computed": true,
+"mjD1min": 15.564,
+"mjVerified": false
 },
 "M18x1.5": {
 "D": 18,
@@ -170,7 +210,9 @@
 "coarse": false,
 "D1": 16.376,
 "tapDrill": 16.5,
-"computed": true
+"computed": true,
+"mjD1min": 16.539,
+"mjVerified": false
 },
 "M20x2.5": {
 "D": 20,
@@ -178,7 +220,9 @@
 "coarse": true,
 "D1": 17.294,
 "tapDrill": 17.5,
-"computed": true
+"computed": true,
+"mjD1min": 17.564,
+"mjVerified": false
 },
 "M20x1.5": {
 "D": 20,
@@ -186,7 +230,9 @@
 "coarse": false,
 "D1": 18.376,
 "tapDrill": 18.5,
-"computed": true
+"computed": true,
+"mjD1min": 18.539,
+"mjVerified": false
 },
 "M22x2.5": {
 "D": 22,
@@ -194,7 +240,9 @@
 "coarse": true,
 "D1": 19.294,
 "tapDrill": 19.5,
-"computed": true
+"computed": true,
+"mjD1min": 19.564,
+"mjVerified": false
 },
 "M22x1.5": {
 "D": 22,
@@ -202,7 +250,9 @@
 "coarse": false,
 "D1": 20.376,
 "tapDrill": 20.5,
-"computed": true
+"computed": true,
+"mjD1min": 20.539,
+"mjVerified": false
 },
 "M24x3": {
 "D": 24,
@@ -210,7 +260,9 @@
 "coarse": true,
 "D1": 20.752,
 "tapDrill": 21,
-"computed": true
+"computed": true,
+"mjD1min": 21.077,
+"mjVerified": false
 },
 "M24x2": {
 "D": 24,
@@ -218,7 +270,9 @@
 "coarse": false,
 "D1": 21.835,
 "tapDrill": 22,
-"computed": true
+"computed": true,
+"mjD1min": 22.051,
+"mjVerified": false
 },
 "M27x3": {
 "D": 27,
@@ -226,7 +280,9 @@
 "coarse": true,
 "D1": 23.752,
 "tapDrill": 24,
-"computed": true
+"computed": true,
+"mjD1min": 24.077,
+"mjVerified": false
 },
 "M27x2": {
 "D": 27,
@@ -234,7 +290,9 @@
 "coarse": false,
 "D1": 24.835,
 "tapDrill": 25,
-"computed": true
+"computed": true,
+"mjD1min": 25.051,
+"mjVerified": false
 },
 "M30x3.5": {
 "D": 30,
@@ -242,7 +300,9 @@
 "coarse": true,
 "D1": 26.211,
 "tapDrill": 26.5,
-"computed": true
+"computed": true,
+"mjD1min": 26.59,
+"mjVerified": false
 },
 "M30x2": {
 "D": 30,
@@ -250,7 +310,9 @@
 "coarse": false,
 "D1": 27.835,
 "tapDrill": 28,
-"computed": true
+"computed": true,
+"mjD1min": 28.051,
+"mjVerified": false
 },
 "M36x4": {
 "D": 36,
@@ -258,7 +320,9 @@
 "coarse": true,
 "D1": 31.67,
 "tapDrill": 32,
-"computed": true
+"computed": true,
+"mjD1min": 32.103,
+"mjVerified": false
 },
 "M36x3": {
 "D": 36,
@@ -266,7 +330,9 @@
 "coarse": false,
 "D1": 32.752,
 "tapDrill": 33,
-"computed": true
+"computed": true,
+"mjD1min": 33.077,
+"mjVerified": false
 }
 }
 }

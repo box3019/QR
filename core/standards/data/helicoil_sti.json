@@ -1,0 +1,175 @@
+{
+"id": "HELICOIL-STI",
+"rev": "STI tapped hole, class 2B",
+"source": "nrtechstudio.com STI table cross-checked with helicoilinserts.com inch STI chart (public, fetched 2026-10-27). Rows where the drills differ or one source is missing are unverified.",
+"units": "inch",
+"columns": [
+"drillIn",
+"stiMinorMin",
+"stiMinorMax"
+],
+"rows": {
+"6-32 UNC": {
+"drill": "#25",
+"drillIn": "0.1495",
+"stiMinorMin": "0.1448",
+"stiMinorMax": "0.1527"
+},
+"8-32 UNC": {
+"drill": "#17",
+"drillIn": "0.1730",
+"stiMinorMin": "0.1708",
+"stiMinorMax": "0.1781",
+"verified": false,
+"note": "second source: 11/64"
+},
+"10-24 UNC": {
+"drill": "13/64",
+"drillIn": "0.2031",
+"stiMinorMin": "0.1990",
+"stiMinorMax": "0.2080"
+},
+"12-24 UNC": {
+"drill": "#1",
+"drillIn": "0.2280",
+"stiMinorMin": "0.2250",
+"stiMinorMax": "0.2340",
+"verified": false,
+"note": "second source: 15/64"
+},
+"1/4-20 UNC": {
+"drill": "17/64",
+"drillIn": "0.2656",
+"stiMinorMin": "0.2608",
+"stiMinorMax": "0.2704"
+},
+"5/16-18 UNC": {
+"drill": "21/64",
+"drillIn": "0.3281",
+"stiMinorMin": "0.3245",
+"stiMinorMax": "0.3342"
+},
+"3/8-16 UNC": {
+"drill": "25/64",
+"drillIn": "0.3906",
+"stiMinorMin": "0.3885",
+"stiMinorMax": "0.3987"
+},
+"7/16-14 UNC": {
+"drill": "29/64",
+"drillIn": "0.4531",
+"stiMinorMin": "0.4530",
+"stiMinorMax": "0.4639"
+},
+"1/2-13 UNC": {
+"drill": "13.3mm",
+"drillIn": "0.5236",
+"stiMinorMin": "0.5166",
+"stiMinorMax": "0.5273",
+"verified": false,
+"note": "second source: 17/32"
+},
+"9/16-12 UNC": {
+"drill": "15mm",
+"drillIn": "0.5906",
+"stiMinorMin": "0.5806",
+"stiMinorMax": "0.5918",
+"verified": false,
+"note": "second source: none"
+},
+"5/8-11 UNC": {
+"drill": "21/32",
+"drillIn": "0.6563",
+"stiMinorMin": "0.6447",
+"stiMinorMax": "0.6564",
+"verified": false,
+"note": "second source: none"
+},
+"3/4-10 UNC": {
+"drill": "25/32",
+"drillIn": "0.7813",
+"stiMinorMin": "0.7716",
+"stiMinorMax": "0.7838",
+"verified": false,
+"note": "second source: none"
+},
+"6-40 UNF": {
+"drill": "#25",
+"drillIn": "0.1495",
+"stiMinorMin": "0.1435",
+"stiMinorMax": "0.1503",
+"verified": false,
+"note": "second source: #26"
+},
+"8-36 UNF": {
+"drill": "#17",
+"drillIn": "0.1730",
+"stiMinorMin": "0.1701",
+"stiMinorMax": "0.1771",
+"verified": false,
+"note": "second source: 11/64"
+},
+"10-32 UNF": {
+"drill": "13/64",
+"drillIn": "0.2031",
+"stiMinorMin": "0.1968",
+"stiMinorMax": "0.2041"
+},
+"1/4-28 UNF": {
+"drill": "G",
+"drillIn": "0.2610",
+"stiMinorMin": "0.2577",
+"stiMinorMax": "0.2646",
+"verified": false,
+"note": "second source: 17/64"
+},
+"5/16-24 UNF": {
+"drill": "21/64",
+"drillIn": "0.3281",
+"stiMinorMin": "0.3215",
+"stiMinorMax": "0.3288"
+},
+"3/8-24 UNF": {
+"drill": "25/64",
+"drillIn": "0.3906",
+"stiMinorMin": "0.3840",
+"stiMinorMax": "0.3910"
+},
+"7/16-20 UNF": {
+"drill": "29/64",
+"drillIn": "0.4531",
+"stiMinorMin": "0.4483",
+"stiMinorMax": "0.4561"
+},
+"1/2-20 UNF": {
+"drill": "33/64",
+"drillIn": "0.5156",
+"stiMinorMin": "0.5108",
+"stiMinorMax": "0.5186"
+},
+"9/16-18 UNF": {
+"drill": "37/64",
+"drillIn": "0.5781",
+"stiMinorMin": "0.5745",
+"stiMinorMax": "0.5826",
+"verified": false,
+"note": "second source: none"
+},
+"5/8-18 UNF": {
+"drill": "41/64",
+"drillIn": "0.6406",
+"stiMinorMin": "0.6370",
+"stiMinorMax": "0.6451",
+"verified": false,
+"note": "second source: none"
+},
+"3/4-16 UNF": {
+"drill": "49/64",
+"drillIn": "0.7656",
+"stiMinorMin": "0.7635",
+"stiMinorMax": "0.7720",
+"verified": false,
+"note": "second source: none"
+}
+}
+}

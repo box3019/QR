@@ -1,7 +1,7 @@
 {
 "id": "UN-TAP",
 "rev": "ASME B1.1 basic profile; 75% tap drill",
-"source": "Engineering ToolBox UNC/UNF tap drill chart (fetched 2026-10-27) cross-checked against the ASME B1.1 basic-profile formula (minor = D - 1.082532P; 75% drill = D - 0.975P). Verified when within 0.15 mm.",
+"source": "Engineering ToolBox UNC/UNF tap drill chart (fetched 2026-10-27) cross-checked against the ASME B1.1 basic-profile formula (minor = D - 1.082532P; 75% drill = D - 0.975P). Verified when within 0.15 mm. UNJ/UNJF internal minor min (AS8879) computed as D - 0.974279P: computed, not transcribed.",
 "verified": true,
 "rows": {
 "#0 - 80 UNF": {
@@ -11,7 +11,8 @@
 "series": "UNF",
 "basicMinorIn": 0.0465,
 "tapDrillMm": 1.25,
-"tapDrillCalcMm": 1.21
+"tapDrillCalcMm": 1.21,
+"unjMinorMinIn": 0.0478
 },
 "#1 - 64 UNC": {
 "size": "#1 - 64",
@@ -20,7 +21,8 @@
 "series": "UNC",
 "basicMinorIn": 0.0561,
 "tapDrillMm": 1.5,
-"tapDrillCalcMm": 1.47
+"tapDrillCalcMm": 1.47,
+"unjMinorMinIn": 0.0578
 },
 "#1 - 72 UNF": {
 "size": "#1 - 72",
@@ -29,7 +31,8 @@
 "series": "UNF",
 "basicMinorIn": 0.058,
 "tapDrillMm": 1.55,
-"tapDrillCalcMm": 1.51
+"tapDrillCalcMm": 1.51,
+"unjMinorMinIn": 0.0595
 },
 "#2 - 56 UNC": {
 "size": "#2 - 56",
@@ -38,7 +41,8 @@
 "series": "UNC",
 "basicMinorIn": 0.0667,
 "tapDrillMm": 1.8,
-"tapDrillCalcMm": 1.74
+"tapDrillCalcMm": 1.74,
+"unjMinorMinIn": 0.0686
 },
 "#2 - 64 UNF": {
 "size": "#2 - 64",
@@ -47,7 +51,8 @@
 "series": "UNF",
 "basicMinorIn": 0.0691,
 "tapDrillMm": 1.9,
-"tapDrillCalcMm": 1.8
+"tapDrillCalcMm": 1.8,
+"unjMinorMinIn": 0.0708
 },
 "#3 - 48 UNC": {
 "size": "#3 - 48",
@@ -56,7 +61,8 @@
 "series": "UNC",
 "basicMinorIn": 0.0764,
 "tapDrillMm": 2.1,
-"tapDrillCalcMm": 2.0
+"tapDrillCalcMm": 2.0,
+"unjMinorMinIn": 0.0787
 },
 "#3 - 56 UNF": {
 "size": "#3 - 56",
@@ -65,7 +71,8 @@
 "series": "UNF",
 "basicMinorIn": 0.0797,
 "tapDrillMm": 2.15,
-"tapDrillCalcMm": 2.07
+"tapDrillCalcMm": 2.07,
+"unjMinorMinIn": 0.0816
 },
 "#4 - 40 UNC": {
 "size": "#4 - 40",
@@ -74,7 +81,8 @@
 "series": "UNC",
 "basicMinorIn": 0.0849,
 "tapDrillMm": 2.35,
-"tapDrillCalcMm": 2.23
+"tapDrillCalcMm": 2.23,
+"unjMinorMinIn": 0.0876
 },
 "#4 - 48 UNF": {
 "size": "#4 - 48",
@@ -83,7 +91,8 @@
 "series": "UNF",
 "basicMinorIn": 0.0894,
 "tapDrillMm": 2.4,
-"tapDrillCalcMm": 2.33
+"tapDrillCalcMm": 2.33,
+"unjMinorMinIn": 0.0917
 },
 "#5 - 40 UNC": {
 "size": "#5 - 40",
@@ -92,7 +101,8 @@
 "series": "UNC",
 "basicMinorIn": 0.0979,
 "tapDrillMm": 2.65,
-"tapDrillCalcMm": 2.56
+"tapDrillCalcMm": 2.56,
+"unjMinorMinIn": 0.1006
 },
 "#5 - 44 UNF": {
 "size": "#5 - 44",
@@ -101,7 +111,8 @@
 "series": "UNF",
 "basicMinorIn": 0.1004,
 "tapDrillMm": 2.7,
-"tapDrillCalcMm": 2.61
+"tapDrillCalcMm": 2.61,
+"unjMinorMinIn": 0.1029
 },
 "#6 - 32 UNC": {
 "size": "#6 - 32",
@@ -110,7 +121,8 @@
 "series": "UNC",
 "basicMinorIn": 0.1042,
 "tapDrillMm": 2.85,
-"tapDrillCalcMm": 2.73
+"tapDrillCalcMm": 2.73,
+"unjMinorMinIn": 0.1076
 },
 "#6 - 40 UNF": {
 "size": "#6 - 40",
@@ -119,7 +131,8 @@
 "series": "UNF",
 "basicMinorIn": 0.1109,
 "tapDrillMm": 2.95,
-"tapDrillCalcMm": 2.89
+"tapDrillCalcMm": 2.89,
+"unjMinorMinIn": 0.1136
 },
 "#8 - 32 UNC": {
 "size": "#8 - 32",
@@ -128,7 +141,8 @@
 "series": "UNC",
 "basicMinorIn": 0.1302,
 "tapDrillMm": 3.5,
-"tapDrillCalcMm": 3.39
+"tapDrillCalcMm": 3.39,
+"unjMinorMinIn": 0.1336
 },
 "#8 - 36 UNF": {
 "size": "#8 - 36",
@@ -137,7 +151,8 @@
 "series": "UNF",
 "basicMinorIn": 0.1339,
 "tapDrillMm": 3.5,
-"tapDrillCalcMm": 3.48
+"tapDrillCalcMm": 3.48,
+"unjMinorMinIn": 0.1369
 },
 "#10 - 24 UNC": {
 "size": "#10 - 24",
@@ -147,7 +162,8 @@
 "basicMinorIn": 0.1449,
 "tapDrillMm": 4.0,
 "tapDrillCalcMm": 3.79,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.1494
 },
 "#10 - 32 UNF": {
 "size": "#10 - 32",
@@ -156,7 +172,8 @@
 "series": "UNF",
 "basicMinorIn": 0.1562,
 "tapDrillMm": 4.1,
-"tapDrillCalcMm": 4.05
+"tapDrillCalcMm": 4.05,
+"unjMinorMinIn": 0.1596
 },
 "#12 - 24 UNC": {
 "size": "#12 - 24",
@@ -166,7 +183,8 @@
 "basicMinorIn": 0.1709,
 "tapDrillMm": 4.65,
 "tapDrillCalcMm": 4.45,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.1754
 },
 "#12 - 28 UNF": {
 "size": "#12 - 28",
@@ -175,7 +193,8 @@
 "series": "UNF",
 "basicMinorIn": 0.1773,
 "tapDrillMm": 4.7,
-"tapDrillCalcMm": 4.6
+"tapDrillCalcMm": 4.6,
+"unjMinorMinIn": 0.1812
 },
 "1/4 - 20 UNC": {
 "size": "1/4\" - 20",
@@ -185,7 +204,8 @@
 "basicMinorIn": 0.1959,
 "tapDrillMm": 5.35,
 "tapDrillCalcMm": 5.11,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.2013
 },
 "1/4 - 28 UNF": {
 "size": "1/4\" - 28",
@@ -194,7 +214,8 @@
 "series": "UNF",
 "basicMinorIn": 0.2113,
 "tapDrillMm": 5.5,
-"tapDrillCalcMm": 5.47
+"tapDrillCalcMm": 5.47,
+"unjMinorMinIn": 0.2152
 },
 "5/16 - 18 UNF": {
 "size": "5/16\" - 18",
@@ -204,7 +225,8 @@
 "basicMinorIn": 0.2529,
 "tapDrillMm": 6.8,
 "tapDrillCalcMm": 6.57,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.2589
 },
 "5/16 - 24 UNF": {
 "size": "5/16\" - 24",
@@ -213,7 +235,8 @@
 "series": "UNF",
 "basicMinorIn": 0.2679,
 "tapDrillMm": 6.9,
-"tapDrillCalcMm": 6.92
+"tapDrillCalcMm": 6.92,
+"unjMinorMinIn": 0.2724
 },
 "3/8 - 16 UNC": {
 "size": "3/8\" - 16",
@@ -223,7 +246,8 @@
 "basicMinorIn": 0.3073,
 "tapDrillMm": 8.25,
 "tapDrillCalcMm": 7.98,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.3141
 },
 "3/8 - 24 UNF": {
 "size": "3/8\" - 24",
@@ -232,7 +256,8 @@
 "series": "UNF",
 "basicMinorIn": 0.3299,
 "tapDrillMm": 8.5,
-"tapDrillCalcMm": 8.49
+"tapDrillCalcMm": 8.49,
+"unjMinorMinIn": 0.3344
 },
 "7/16 - 14 UNF": {
 "size": "7/16\" - 14",
@@ -242,7 +267,8 @@
 "basicMinorIn": 0.3607,
 "tapDrillMm": 9.65,
 "tapDrillCalcMm": 9.36,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.3684
 },
 "7/16 - 20 UNF": {
 "size": "7/16\" - 20",
@@ -251,7 +277,8 @@
 "series": "UNF",
 "basicMinorIn": 0.3839,
 "tapDrillMm": 9.9,
-"tapDrillCalcMm": 9.89
+"tapDrillCalcMm": 9.89,
+"unjMinorMinIn": 0.3893
 },
 "1/2 - 13 UNC": {
 "size": "1/2\" - 13",
@@ -261,7 +288,8 @@
 "basicMinorIn": 0.4167,
 "tapDrillMm": 11.15,
 "tapDrillCalcMm": 10.79,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.4251
 },
 "1/2 - 20 UNF": {
 "size": "1/2\" - 20",
@@ -270,7 +298,8 @@
 "series": "UNF",
 "basicMinorIn": 0.4459,
 "tapDrillMm": 11.5,
-"tapDrillCalcMm": 11.46
+"tapDrillCalcMm": 11.46,
+"unjMinorMinIn": 0.4513
 },
 "9/16 - 12 UNF": {
 "size": "9/16\" - 12",
@@ -280,7 +309,8 @@
 "basicMinorIn": 0.4728,
 "tapDrillMm": 12.6,
 "tapDrillCalcMm": 12.24,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.4818
 },
 "9/16 - 18 UNF": {
 "size": "9/16\" - 18",
@@ -289,7 +319,8 @@
 "series": "UNF",
 "basicMinorIn": 0.5029,
 "tapDrillMm": 12.9,
-"tapDrillCalcMm": 12.92
+"tapDrillCalcMm": 12.92,
+"unjMinorMinIn": 0.5089
 },
 "5/8 - 11 UNC": {
 "size": "5/8\" - 11",
@@ -299,7 +330,8 @@
 "basicMinorIn": 0.5266,
 "tapDrillMm": 14.05,
 "tapDrillCalcMm": 13.62,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.5364
 },
 "5/8 - 18 UNF": {
 "size": "5/8\" - 18",
@@ -308,7 +340,8 @@
 "series": "UNF",
 "basicMinorIn": 0.5649,
 "tapDrillMm": 14.5,
-"tapDrillCalcMm": 14.5
+"tapDrillCalcMm": 14.5,
+"unjMinorMinIn": 0.5709
 },
 "3/4 - 10 UNC": {
 "size": "3/4\" - 10",
@@ -318,7 +351,8 @@
 "basicMinorIn": 0.6417,
 "tapDrillMm": 17.0,
 "tapDrillCalcMm": 16.57,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.6526
 },
 "3/4 - 16 UNF": {
 "size": "3/4\" - 16",
@@ -327,7 +361,8 @@
 "series": "UNF",
 "basicMinorIn": 0.6823,
 "tapDrillMm": 17.5,
-"tapDrillCalcMm": 17.5
+"tapDrillCalcMm": 17.5,
+"unjMinorMinIn": 0.6891
 },
 "7/8 - 9 UNC": {
 "size": "7/8\" - 9",
@@ -337,7 +372,8 @@
 "basicMinorIn": 0.7547,
 "tapDrillMm": 20.0,
 "tapDrillCalcMm": 19.47,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.7667
 },
 "7/8 - 14 UNF": {
 "size": "7/8\" - 14",
@@ -346,7 +382,8 @@
 "series": "UNF",
 "basicMinorIn": 0.7977,
 "tapDrillMm": 20.4,
-"tapDrillCalcMm": 20.46
+"tapDrillCalcMm": 20.46,
+"unjMinorMinIn": 0.8054
 },
 "1 - 8 UNC": {
 "size": "1\" - 8",
@@ -356,7 +393,8 @@
 "basicMinorIn": 0.8647,
 "tapDrillMm": 22.85,
 "tapDrillCalcMm": 22.3,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.8782
 },
 "1 - 12 UNF": {
 "size": "1\" - 12",
@@ -365,7 +403,8 @@
 "series": "UNF",
 "basicMinorIn": 0.9098,
 "tapDrillMm": 23.25,
-"tapDrillCalcMm": 23.34
+"tapDrillCalcMm": 23.34,
+"unjMinorMinIn": 0.9188
 },
 "1 1/8 - 7 UNC": {
 "size": "1 1/8\" - 7",
@@ -375,7 +414,8 @@
 "basicMinorIn": 0.9704,
 "tapDrillMm": 25.65,
 "tapDrillCalcMm": 25.04,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 0.9858
 },
 "1 1/8 - 12 UNF": {
 "size": "1 1/8\" - 12",
@@ -384,7 +424,8 @@
 "series": "UNF",
 "basicMinorIn": 1.0348,
 "tapDrillMm": 26.5,
-"tapDrillCalcMm": 26.51
+"tapDrillCalcMm": 26.51,
+"unjMinorMinIn": 1.0438
 },
 "1 1/4 - 7 UNC": {
 "size": "1 1/4\" - 7",
@@ -394,7 +435,8 @@
 "basicMinorIn": 1.0954,
 "tapDrillMm": 28.85,
 "tapDrillCalcMm": 28.21,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 1.1108
 },
 "1 1/4 - 12 UNF": {
 "size": "1 1/4\" - 12",
@@ -404,7 +446,8 @@
 "basicMinorIn": 1.1598,
 "tapDrillMm": 29.5,
 "tapDrillCalcMm": 29.69,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 1.1688
 },
 "1 3/8 - 6 UNC": {
 "size": "1 3/8\" - 6",
@@ -414,7 +457,8 @@
 "basicMinorIn": 1.1946,
 "tapDrillMm": 31.55,
 "tapDrillCalcMm": 30.8,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 1.2126
 },
 "1 3/8 - 12 UNF": {
 "size": "1 3/8\" - 12",
@@ -423,7 +467,8 @@
 "series": "UNF",
 "basicMinorIn": 1.2848,
 "tapDrillMm": 32.75,
-"tapDrillCalcMm": 32.86
+"tapDrillCalcMm": 32.86,
+"unjMinorMinIn": 1.2938
 },
 "1 1/2 - 6 UNC": {
 "size": "1 1/2\" - 6",
@@ -433,7 +478,8 @@
 "basicMinorIn": 1.3196,
 "tapDrillMm": 34.7,
 "tapDrillCalcMm": 33.97,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 1.3376
 },
 "1 1/2 - 12 UNF": {
 "size": "1 1/2\" - 12",
@@ -442,7 +488,8 @@
 "series": "UNF",
 "basicMinorIn": 1.4098,
 "tapDrillMm": 36.0,
-"tapDrillCalcMm": 36.04
+"tapDrillCalcMm": 36.04,
+"unjMinorMinIn": 1.4188
 },
 "1 3/4 - 5 UNF": {
 "size": "1 3/4\" - 5",
@@ -452,7 +499,8 @@
 "basicMinorIn": 1.5335,
 "tapDrillMm": 40.4,
 "tapDrillCalcMm": 39.5,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 1.5551
 },
 "2 1/2 - 4 UNF": {
 "size": "2 1/2\" - 4",
@@ -462,7 +510,8 @@
 "basicMinorIn": 2.2294,
 "tapDrillMm": 58.5,
 "tapDrillCalcMm": 57.31,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 2.2564
 },
 "2 3/4 - 4 UNF": {
 "size": "2 3/4\" - 4",
@@ -472,7 +521,8 @@
 "basicMinorIn": 2.4794,
 "tapDrillMm": 64.75,
 "tapDrillCalcMm": 63.66,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 2.5064
 },
 "3 - 4 UNF": {
 "size": "3\" - 4",
@@ -482,7 +532,8 @@
 "basicMinorIn": 2.7294,
 "tapDrillMm": 71.1,
 "tapDrillCalcMm": 70.01,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 2.7564
 },
 "3 1/4 - 4 UNF": {
 "size": "3 1/4\" - 4",
@@ -492,7 +543,8 @@
 "basicMinorIn": 2.9794,
 "tapDrillMm": 77.45,
 "tapDrillCalcMm": 76.36,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 3.0064
 },
 "3 1/2 - 4 UNF": {
 "size": "3 1/2\" - 4",
@@ -502,7 +554,8 @@
 "basicMinorIn": 3.2294,
 "tapDrillMm": 83.8,
 "tapDrillCalcMm": 82.71,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 3.2564
 },
 "3 3/4 - 4 UNF": {
 "size": "3 3/4\" - 4",
@@ -512,7 +565,8 @@
 "basicMinorIn": 3.4794,
 "tapDrillMm": 90.15,
 "tapDrillCalcMm": 89.06,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 3.5064
 },
 "4 - 4 UNF": {
 "size": "4\" - 4",
@@ -522,7 +576,8 @@
 "basicMinorIn": 3.7294,
 "tapDrillMm": 96.5,
 "tapDrillCalcMm": 95.41,
-"verified": false
+"verified": false,
+"unjMinorMinIn": 3.7564
 }
 }
 }
