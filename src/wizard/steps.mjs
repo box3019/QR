@@ -6,7 +6,7 @@ export const canOpen = (n, hasParts) => n === 1 || !!hasParts;
 export const nextStep = (cur) => Math.min(4, cur + 1);
 /** Minimal UI: only the controls that step needs. */
 export function toolbarFor(step, hasParts) {
-  return { addFiles: step === 1, addFolder: step === 1, details: !!hasParts && step > 1, settings: true, help: true };
+  return { addFiles: false, addFolder: false, details: !!hasParts && step > 1, settings: true, help: true };
 }
 /** Tabs of the viewer in step 2: drawing + route always, model + data only with Details. */
 export const viewerTabs = (details) => ['drawing', 'route', ...(details ? ['model', 'data'] : [])];

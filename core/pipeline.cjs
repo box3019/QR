@@ -67,10 +67,11 @@ async function runPipeline(paths, settings, emit = () => {}) {
   for (const r of rfqs) emit({ type: 'rfq', rfq: r });
   emit({ type: 'files', files: files.map((f) => ({ path: f, name: path.basename(f) })) });
   const docs = [];
+  const nPdf = files.filter((f) => fileKind(f) === 'drawing').length; let iPdf = 0;
   for (const f of files) {
     if (fileKind(f) !== 'drawing' || !/\.pdf$/i.test(f.replace(/(\.pdf)+$/i, '.pdf'))) continue;
     try {
-      emit({ type: 'status', text: `Reading ${path.basename(f)}` });
+      emit({ type: 'status', stage: 'read', i: ++iPdf, n: nPdf, text: `Reading ${path.basename(f)}` });
       const pages = await extractPdf(f);
       docs.push({ path: f, name: path.basename(f), sha256: sha256(f), pages, kind: classify(pages, f) });
     } catch (e) { emit({ type: 'error', file: f, text: String(e.message || e) }); }
@@ -84,7 +85,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
     // OCR fallback per page (mandatory for pages flagged no_text / garbage / low_ratio)
     if (settings.ocr !== false) for (const p of d.pages) {
       if (p.quality.mode === 'text') continue;
-      emit({ type: 'status', text: `OCR ${d.name} page ${p.n} (${p.quality.reasons.join(', ')}) at ${settings.ocrDpi || 400} DPI` });
+      emit({ type: 'status', stage: 'ocr', i: drawings.indexOf(d) + 1, n: drawings.length, text: `OCR ${d.name} page ${p.n} (${p.quality.reasons.join(', ')}) at ${settings.ocrDpi || 400} DPI` });
       try {
         const t0 = Date.now();
         p.ocr = await ocrPage(d.path, p.n, p.tokens, { dpi: settings.ocrDpi || 400, langPath: settings.langPath, cachePath: settings.ocrCachePath, onProgress: (x) => emit({ type: 'progress', file: d.name, page: p.n, value: x }) });

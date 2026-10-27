@@ -63,7 +63,7 @@ export function Breakdown({ part, parts, sel, setSel, details, onFocus, goStep }
         {SECTIONS.map((sec) => { const rows = sectionRows(sec, pg); if (!rows.length && sec.key === 'other') return null;
           const k = pg.page + sec.key; const empty = !rows.length; const line = sectionLine(sec.key, pg, part);
           const fl = sectionFlags(sec, pg); const act = sectionAction(fl, empty && sec.key === 'material'); const stds = sectionStds(sec, pg);
-          return <section key={sec.key} className="qr-sec" data-testid={'bd-' + sec.key} data-empty={empty} data-open={open === k}>
+          return <section key={sec.key} className="qr-bsec" data-testid={'bd-' + sec.key} data-empty={empty} data-open={open === k}>
             <div className="qr-sec-line">
               <button type="button" className="qr-sec-main" title={t('tip.bdSection')} data-testid={'bd-open-' + sec.key} onClick={() => !empty && show(sec, pg)}>
                 <span className="qr-lbl">{t('bd.s.' + sec.key)}</span>

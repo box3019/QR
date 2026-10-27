@@ -7,7 +7,7 @@ test('four steps, state per step', async () => { const w = await load(); assert.
 test('only intake opens without parts; any step with parts', async () => { const w = await load();
   assert.deepStrictEqual(w.STEPS.map((n) => w.canOpen(n, false)), [true, false, false, false]); assert.deepStrictEqual(w.STEPS.map((n) => w.canOpen(n, true)), [true, true, true, true]); });
 test('minimal toolbar: add only in intake, details only after intake', async () => { const w = await load();
-  assert.strictEqual(w.toolbarFor(1, true).addFiles, true); assert.strictEqual(w.toolbarFor(2, true).addFiles, false); assert.strictEqual(w.toolbarFor(1, true).details, false);
+  assert.strictEqual(w.toolbarFor(1, true).addFiles, false); assert.strictEqual(w.toolbarFor(1, false).addFolder, false); assert.strictEqual(w.toolbarFor(2, true).addFiles, false); assert.strictEqual(w.toolbarFor(1, true).details, false);
   assert.strictEqual(w.toolbarFor(3, true).details, true); assert.strictEqual(w.toolbarFor(2, false).details, false); for (const n of [1, 2, 3, 4]) assert.ok(w.toolbarFor(n, true).help && w.toolbarFor(n, true).settings); });
 test('viewer tabs: model/data only with details', async () => { const w = await load(); assert.deepStrictEqual(w.viewerTabs(false), ['drawing', 'route']); assert.deepStrictEqual(w.viewerTabs(true), ['drawing', 'route', 'model', 'data']); });
 test('wizard i18n complete in EN and HE, HE has no Latin', () => { const en = require('../src/i18n/en.json'), he = require('../src/i18n/he.json');

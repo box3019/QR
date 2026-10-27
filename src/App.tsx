@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { MRT_ACTION_BTN_TOPBAR, MRT_BTN_PRIMARY, MRT_ACTION_BTN } from './ui/mrtButtons';
+import { MRT_ACTION_BTN_TOPBAR, MRT_BTN_PRIMARY, MRT_ACTION_BTN, MRT_BTN } from './ui/mrtButtons';
 import { Chip } from './ui/common';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, tReadiness, setLang, setTextSize, getLang } from './i18n';
@@ -31,7 +31,7 @@ export default function App() {
   const [sel, setSel] = useState(0);
   const [step, setStep] = useState(1);
   const [tab, setTab] = useState<string>('drawing');
-  const [busy, setBusy] = useState<{ text: string; progress?: number; log: string[] } | null>(null);
+  const [busy, setBusy] = useState<{ text: string; stage?: string; i?: number; n?: number; progress?: number; log: string[] } | null>(null);
   const [over, setOver] = useState(false);
   const [dialog, setDialog] = useState<null | 'settings' | 'questions' | 'summary' | 'tutorial'>(null);
   const [focus, setFocus] = useState<any>(null);
@@ -47,7 +47,7 @@ export default function App() {
   useEffect(() => qr().onEvent((ev: any) => {
     setBusy((b) => {
       if (!b) return b;
-      if (ev.type === 'status') return { ...b, text: ev.text, progress: undefined, log: [...b.log, ev.text].slice(-200) };
+      if (ev.type === 'status') return { ...b, text: ev.text, stage: ev.stage || b.stage, i: ev.i ?? b.i, n: ev.n ?? b.n, progress: undefined, log: [...b.log, ev.text].slice(-200) };
       if (ev.type === 'progress') return { ...b, progress: ev.value };
       if (ev.type === 'error') return { ...b, log: [...b.log, t('busy.error', { text: ev.text.split('\n')[0] })] };
       if (ev.type === 'part') return { ...b, log: [...b.log, t('busy.analyzed', { pn: ev.part.partNo })] };
@@ -109,7 +109,10 @@ export default function App() {
           <div>
             <h1>{t('drop.title')}</h1>
             <div className="qr-muted qr-drop-hint">{t('drop.hint')}</div>
-            <button className={MRT_BTN_PRIMARY + ' qr-big'} title={t('tip.addFiles')} onClick={async () => run(await qr().pickFiles())}>{t('drop.choose')}</button>
+            <div className="qr-drop-btns">
+              <button className={MRT_BTN_PRIMARY + ' qr-big qr-blue'} data-testid="btn-choose-files" title={t('tip.addFiles')} onClick={async () => run(await qr().pickFiles())}>{t('drop.choose')}</button>
+              <button className={MRT_BTN} data-testid="btn-choose-folder" title={t('tip.addFolder')} onClick={async () => { const f = await qr().pickFolder(); if (f) run([f]); }}>{t('drop.chooseFolder')}</button>
+            </div>
             {details && unknown.length > 0 && <div className="qr-muted" style={{ marginTop: 12 }}>{t('drop.notDrawings', { list: unknown.join(', ') })}</div>}
           </div>
         </div>
@@ -135,7 +138,7 @@ export default function App() {
       </div>}
       {step === 4 && has && <SummaryStep parts={parts} openDialog={setDialog} goPart={(i: number) => { pick(i); setStep(2); }} />}
 
-      {busy && <div className="qr-busy" data-testid="busy"><div>{busy.text}</div>{busy.progress != null && <div className="qr-bar"><div style={{ width: Math.round(busy.progress * 100) + '%' }} /></div>}</div>}
+      {busy && <BusyToast busy={busy} details={details} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { setSettings(await qr().setSettings(s)); setDialog(null); }} />}
       {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
       {settings && !settings.firstRunDone && !parts.length && !busy && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
@@ -231,4 +234,13 @@ function RfqBar({ rfq }: any) {
     {miss.parts_without_row?.length > 0 && <Chip t="attention">{t('rfq.notInRfq', { list: miss.parts_without_row.join(', ') })}</Chip>}
     {rfq.requirements?.length > 0 && <span className="qr-muted" dir="auto" title={rfq.requirements.join('\n')}>{t('rfq.reqs', { n: rfq.requirements.length })}</span>}
   </div>;
+}
+
+/** Plain, localized progress; the technical line only with Details. */
+function BusyToast({ busy, details }: any) {
+  const msg = busy.stage && busy.n ? t('busy.' + busy.stage, { i: busy.i, n: busy.n }) : t('busy.starting');
+  const frac = busy.progress != null ? busy.progress : busy.n ? Math.max(0, (busy.i - 1) / busy.n) : null;
+  return <div className="qr-busy" data-testid="busy" role="status"><div data-testid="busy-text">{msg}</div>
+    {frac != null && <div className="qr-bar"><div style={{ width: Math.round(frac * 100) + '%' }} /></div>}
+    {details && <div className="qr-busy-tech" data-testid="busy-tech">{busy.text}</div>}</div>;
 }

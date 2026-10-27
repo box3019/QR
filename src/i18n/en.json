@@ -373,5 +373,8 @@
  "tip.goFlagged": "Open the first part with open flags",
  "wz.parts": "Parts",
  "wz.questions": "Questions",
- "tip.toDocs": "Go to step 3: documents and questions"
+ "tip.toDocs": "Go to step 3: documents and questions",
+ "busy.read": "Reading drawing {i} of {n}…",
+ "busy.ocr": "Reading scanned drawing {i} of {n}…",
+ "drop.chooseFolder": "Choose folder…"
 }
