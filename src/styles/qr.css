@@ -3,7 +3,7 @@
 .qr-topbar { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-bottom: 1px solid var(--mrt-border, #cbd5e1); background: var(--mrt-surface, #fff); }
 .qr-brand { font-weight: 700; font-size: 1.125rem; letter-spacing: .02em; margin-inline-end: 14px; display: flex; align-items: center; gap: 8px; }
 .qr-brand-badge { width: 28px; height: 28px; border-radius: 6px; background: #334155; color: #fff; display: grid; place-items: center; font-size: 0.75rem; }
-.qr-topbar .mrt-topbar-cmd { min-width: 4.6rem; height: 3.1rem; padding: 4px 10px; font-size: 0.6875rem; gap: 2px; }
+.qr-topbar .mrt-topbar-cmd { min-width: 64px; height: 44px; padding: 3px 8px; font-size: 11px; gap: 2px; }
 .qr-topbar .ico { font-size: 1.0625rem; line-height: 1; }
 .qr-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr) 420px; gap: 8px; padding: 8px; }
 .qr-panel { background: var(--mrt-surface, #fff); border: 1px solid var(--mrt-border, #cbd5e1); border-radius: var(--mrt-radius, 8px); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }

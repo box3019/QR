@@ -8,7 +8,7 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 }
 .qr-settings-tab { text-align: start; font-size: 0.875rem !important; }
 .qr-tab { font-size: 0.875rem !important; }
-.qr-topbar .mrt-topbar-cmd { height: auto !important; min-height: 3.1em !important; min-width: 4.6em !important; padding: 0.25em 0.6em !important; font-size: 0.6875rem !important; }
+.qr-topbar .mrt-topbar-cmd { height: auto !important; min-height: 44px !important; max-height: 48px; min-width: 64px !important; padding: 3px 8px !important; font-size: 11px !important; } /* px: toolbar does not grow with text size */
 .qr-topbar { height: auto !important; min-height: 0 !important; flex-wrap: wrap; }
 .qr-topbar .mrt-topbar-cmd .ico { font-size: 1.15em; line-height: 1; }
 .qr-brand-badge { width: 1.75em; height: 1.75em; }

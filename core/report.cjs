@@ -14,11 +14,11 @@ function plainStatus(part) {
   return 'ready';
 }
 const L = {
-  en: { title: 'RFQ review report', rfq: 'RFQ', customer: 'Customer', date: 'Date', parts: 'Parts', summary: 'Summary by group', group: 'Group', count: 'Parts',
+  en: { title: 'RFQ review report', rfq: 'RFQ', customer: 'Customer', date: 'Date', parts: 'Parts', summary: 'Summary by group', group: 'Group', count: 'Count',
     g: { ready: 'Fits us', needsDoc: 'Needs document', needsAnswer: 'Needs customer answer', notOurs: 'Not our material / process' },
     part: 'Part', rev: 'Rev', material: 'Material', heat: 'Heat treat', coat: 'Coatings', paint: 'Paint', mask: 'Masking', seq: 'Operation sequence', flags: 'Flags',
     none: '—', questions: 'Customer questions', docs: 'Documents to upload', noQ: 'No open questions.', noDocs: 'No documents needed.', page: 'Page', sev: { Blocker: 'Blocker', Question: 'Question', Document: 'Document', Warning: 'Warning' } },
-  he: { title: 'דוח בדיקת בקשה להצעת מחיר', rfq: 'בקשה', customer: 'לקוח', date: 'תאריך', parts: 'חלקים', summary: 'סיכום לפי קבוצה', group: 'קבוצה', count: 'חלקים',
+  he: { title: 'דוח בדיקת בקשה להצעת מחיר', rfq: 'בקשה', customer: 'לקוח', date: 'תאריך', parts: 'חלקים', summary: 'סיכום לפי קבוצה', group: 'קבוצה', count: 'כמות',
     g: { ready: 'מתאים לנו', needsDoc: 'חסר מסמך', needsAnswer: 'ממתין לתשובת לקוח', notOurs: 'לא החומר / התהליך שלנו' },
     part: 'מק"ט', rev: 'מהדורה', material: 'חומר', heat: 'טיפול תרמי', coat: 'ציפויים', paint: 'צבע', mask: 'מיסוך', seq: 'סדר פעולות', flags: 'סימונים',
     none: '—', questions: 'שאלות ללקוח', docs: 'מסמכים להעלאה', noQ: 'אין שאלות פתוחות.', noDocs: 'אין צורך במסמכים.', page: 'עמוד', sev: { Blocker: 'חוסם', Question: 'שאלה', Document: 'מסמך', Warning: 'אזהרה' } },
@@ -66,7 +66,7 @@ function reportHtml(parts, lang = 'he', meta = {}) {
   th{background:#f1f5f9;font-weight:600} table.kv th{width:22%} .muted{color:#64748b;font-weight:400}
   .st{display:inline-block;border:1px solid;border-radius:4px;padding:1px 7px;font-size:10.5px;font-weight:600}
   .sev{display:inline-block;min-width:52px;border:1px solid #cbd5e1;border-radius:4px;padding:0 4px;font-size:10px;color:#334155;margin-inline-end:4px}
-  section.part{border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 0 10px;break-inside:avoid}
+  section.part{border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 0 10px} section.part h3,table.kv tr,ol.seq li,ul.flags li{break-inside:avoid} h2,h3,h4{break-after:avoid}
   ol.seq,ul.flags{margin:0;padding-inline-start:18px} ol.seq li,ul.flags li{margin:1px 0}
   </style></head><body>
   <header><div class="logo">QR</div><div><h1>${esc(T.title)}</h1><div class="meta"><span>${esc(T.rfq)}: ${bdi(meta.rfq || T.none)}</span><span>${esc(T.customer)}: ${bdi(customer || T.none)}</span><span>${esc(T.date)}: ${bdi(date)}</span><span>${esc(T.parts)}: ${parts.length}</span></div></div></header>
