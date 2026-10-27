@@ -385,5 +385,15 @@
  "tip.assistantHide": "הסתרת הרמז של העוזר",
  "tip.assistantShow": "הצגת הרמז של העוזר",
  "st.tab.assistant": "עוזר",
- "st.assistantOn": "הצגת רמזים בכל שלב"
+ "st.assistantOn": "הצגת רמזים בכל שלב",
+ "as.h1done1": "נטען חלק אחד. לחצו \"הבא\" כדי לבדוק אותו.",
+ "imp.subject": "נושא",
+ "imp.from": "מאת",
+ "imp.files": "קבצים ({n})",
+ "imp.progress": "{d} מתוך {n} קבצים",
+ "imp.st.waiting": "ממתין",
+ "imp.st.reading": "בקריאה",
+ "imp.st.done": "הושלם",
+ "imp.st.check": "דורש בדיקה",
+ "wz.qText1": "שאלה פתוחה אחת בחלק אחד."
 }

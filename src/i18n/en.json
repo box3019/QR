@@ -385,5 +385,15 @@
  "tip.assistantHide": "Hide the assistant hint",
  "tip.assistantShow": "Show the assistant hint",
  "st.tab.assistant": "Assistant",
- "st.assistantOn": "Show step hints"
+ "st.assistantOn": "Show step hints",
+ "as.h1done1": "1 part loaded. Press Next to check it.",
+ "imp.subject": "Subject",
+ "imp.from": "From",
+ "imp.files": "Files ({n})",
+ "imp.progress": "{d} of {n} files",
+ "imp.st.waiting": "Waiting",
+ "imp.st.reading": "Reading",
+ "imp.st.done": "Done",
+ "imp.st.check": "Needs check",
+ "wz.qText1": "1 open question on 1 part."
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, setLang, setTextSize, getLang } from './i18n';
@@ -18,6 +18,7 @@ import { useAssistant } from './hooks/useAssistant';
 import { hintFor } from './wizard/hints.mjs';
 import { openQuestions } from './wizard/summary.mjs';
 import { useBusy } from './hooks/useBusy';
+import { afterImport } from './wizard/importView.mjs';
 import { exposeTestHooks } from './hooks/testHooks';
 import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
 
@@ -47,16 +48,20 @@ export default function App() {
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
   if (settings) { setLang(settings.uiLanguage); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
-  const { busy, start, stop } = useBusy((p) => setParts((ps) => [...ps, p]));
+  const { busy, view, start, stop, clear } = useBusy((p) => setParts((ps) => [...ps, p]));
+  const partsRef = useRef([] as Part[]); partsRef.current = parts; const queue = useRef(Promise.resolve() as Promise<any>);
 
-  const reset = () => { setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setStep(1); };
-  const run = useCallback(async (paths: string[]) => {
-    if (!paths.length) return;
-    reset(); start();
-    try { const r = await qr().process(paths); setParts(r.parts); setUnknown([...(r.unknown || []), ...(r.other || [])]); setRfqs(r.rfqs || []); setLastRun({ seconds: r.seconds, files: r.files }); if (r.parts.length) { setStep(2); setTab('drawing'); } }
+  const reset = () => { clear(); setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setStep(1); };
+  // A drop while something is loaded or loading is added to it (queued); otherwise a fresh run. Step 1 shows the import view.
+  const runOne = async (paths: string[]) => {
+    const prev = partsRef.current; const append = prev.length > 0; start(append);
+    try { const r = await qr().process(paths); const all = [...prev, ...r.parts]; setParts(all); setUnknown((u) => [...(append ? u : []), ...(r.unknown || []), ...(r.other || [])]);
+      setRfqs((x) => [...(append ? x : []), ...(r.rfqs || [])]); setLastRun((l: any) => ({ seconds: r.seconds, files: [...(append && l ? l.files : []), ...r.files] }));
+      if (all.length) { setStep((s) => afterImport(s, all.length)); setTab('drawing'); } }
     catch (e: any) { alert(t('err.processing', { text: e?.message || e })); }
     finally { stop(); }
-  }, []);
+  };
+  const run = useCallback((paths: string[]) => { if (!paths || !paths.length) return; queue.current = queue.current.then(() => runOne(paths)); return queue.current; }, []);
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => run(files)) : undefined, [run]); // Outlook 'Send to QR'
 
   const onDrop = (e: React.DragEvent) => {
@@ -92,7 +97,7 @@ export default function App() {
         <StepHeader step={step} hint={hint} assistant={assistant} />
         <Stepper step={step} setStep={setStep} hasParts={has} />
         <main className="qr-wiz-main">
-          {step === 1 && <StepIntake rfqs={rfqs} over={over} details={details} unknown={unknown} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
+          {step === 1 && <StepIntake view={view} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
           {step === 2 && has && <StepCheckParts parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={setStep} />}
           {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} />}
           {step === 4 && has && <StepSummary parts={parts} openDialog={setDialog} goPart={(i: number) => { pick(i); setStep(2); }} />}
@@ -100,7 +105,7 @@ export default function App() {
         <WizardFooter step={step} setStep={setStep} hasParts={has} onCancel={() => confirm(t('wz.cancelAsk')) && reset()} onClose={() => window.close()} />
       </div>
 
-      {busy && <ProgressToast busy={busy} details={details} />}
+      {busy && step !== 1 && <ProgressToast busy={busy} details={details} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} />}
       {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
       {settings && !settings.firstRunDone && !parts.length && !busy && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}

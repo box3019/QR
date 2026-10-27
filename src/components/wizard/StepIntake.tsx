@@ -1,10 +1,13 @@
-// Step 1: drop zone (title only, explanation in the assistant) with Choose files (primary) and Choose folder; RFQ lines; unread files only with Details.
+// Step 1: import view (files and progress) once something is loading or loaded, otherwise the drop zone (title only, explanation in the assistant) with Choose files (primary) and Choose folder; RFQ lines; unread files only with Details.
 import React from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import { RfqBar } from './RfqBar';
+import { ImportView } from './ImportView';
+import { showDrop } from '../../wizard/importView.mjs';
 
-export function StepIntake({ rfqs, over, details, unknown, onFiles, onFolder }: any) {
+export function StepIntake({ view, nParts, rfqs, over, details, unknown, onFiles, onFolder }: any) {
+  if (!showDrop(view, nParts)) return <div className="qr-step-intake">{view && <ImportView view={view} />}</div>;
   return <div className="qr-step-intake">
     {rfqs.map((r: any, i: number) => <RfqBar key={i} rfq={r} />)}
     <div className="qr-drop" data-over={over} data-testid="dropzone">
