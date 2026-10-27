@@ -19,7 +19,7 @@ function scan(SEL) {
     const f = [];
     if (e.tagName === 'SELECT') {
       const o = e.options[e.selectedIndex]; const c = document.createElement('canvas').getContext('2d'); c.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-      const need = c.measureText(o ? o.text : '').width + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 18;
+      const need = c.measureText(o ? o.text : '').width + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + Math.max(0, 18 - parseFloat(cs.paddingInlineEnd || cs.paddingRight)); // arrow sits in the end padding (fit.css)
       if (need > e.clientWidth + 1) f.push(['textW', Math.round(need - e.clientWidth)]);
       const lh = parseFloat(cs.fontSize) * 1.15 + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
       if (lh > e.clientHeight + 1) f.push(['textH', Math.round(lh - e.clientHeight)]);
