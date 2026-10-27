@@ -26,7 +26,12 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
   const info = sorted.filter((p: any) => p.severity === 'Info');
   const uploads = part.tasks.filter((x: any) => x.type === 'uploadDocument');
   const verify = part.tasks.filter((x: any) => x.type === 'verify');
-  const attach = async (tk: any) => { const f = tk.status === 'done' ? [] : await qr().pickFiles(); updatePart((pt: any) => { const x = pt.tasks.find((y: any) => y.id === tk.id); if (x.status === 'done') { x.status = 'open'; x.file = ''; } else if (f.length) { x.status = 'done'; x.file = f[0]; } return pt; }); };
+  const attach = async (tk: any) => {
+    let f: string[] = []; let doc: any = null;
+    if (tk.status !== 'done' && tk.std) { doc = await qr().stdUpload({ std: tk.refNumber, paid: tk.paid }, tk.customer || '', `part:${part.partNo || ''}|${part.rev || ''}`); f = doc ? [doc.file] : []; }
+    else if (tk.status !== 'done') f = await qr().pickFiles();
+    updatePart((pt: any) => { const x = pt.tasks.find((y: any) => y.id === tk.id); if (x.status === 'done') { x.status = 'open'; x.file = ''; } else if (f.length) { x.status = 'done'; x.file = f[0]; if (doc) for (const s of pt.standards || []) if (s.std === tk.refNumber) { s.status = s.dims ? 'needsConfirm' : 'resolved'; s.doc = { key: doc.key, rev: doc.rev, sha256: doc.sha256, file: doc.file, scope: doc.scope }; } } return pt; });
+  };
   return <div className="qr-panel" data-testid="problems-panel">
     <div className="qr-panel-h"><span className="pn">{part.partNo || part.drawing.name}</span></div>
     <div className="qr-scroll qr-boxes">

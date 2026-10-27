@@ -433,5 +433,16 @@
   "hist.deleteAsk": "הסרת \"{name}\" מההיסטוריה. למחוק גם את הנתונים השמורים במחשב? אישור מוחק, ביטול שומר.",
   "hist.empty": "אין עדיין פרויקטים.",
   "hist.noMatch": "אין תוצאות לחיפוש.",
-  "tip.stepHelp": "הדרכה לשלב הזה"
+  "tip.stepHelp": "הדרכה לשלב הזה",
+  "std.title": "תקנים",
+  "std.status.resolved": "נמצא בספרייה",
+  "std.status.needsConfirm": "לבדוק ולאשר",
+  "std.status.needsDoc": "חסר מסמך",
+  "std.newerRev": "קיימת מהדורה חדשה {rev}",
+  "std.open": "פתח מסמך",
+  "std.confirm": "אשר",
+  "std.upload": "העלה מסמך",
+  "tip.stdOpen": "פתיחת מסמך התקן השמור",
+  "tip.stdConfirm": "אישור המידות פעם אחת, הן יישמרו",
+  "tip.stdUpload": "העלאת עותק התקן, הוא יישמר לשימוש חוזר"
 }

@@ -7,6 +7,7 @@ import { usePartCard } from '../../hooks/usePartCard';
 import { cardPages, cardFlags } from '../../parts/breakdown.mjs';
 import { CARD_SECTIONS } from './sections';
 import { TableDialog } from './TableDialog';
+import { StandardsSection } from './StandardsSection';
 
 export function PartCard({ part, n, sel, setSel, details, onFocus, goStep }: any) {
   const card = usePartCard(part, onFocus);
@@ -19,6 +20,7 @@ export function PartCard({ part, n, sel, setSel, details, onFocus, goStep }: any
     </div>
     <div className="qr-scroll qr-card" data-testid="processes-panel">
       {flags.length > 0 && <div className="qr-card-flags" data-testid="card-flags">{flags.slice(0, 4).map((p: any) => <div key={p.id} data-sev={p.severity}>✕ <bdi>{localized(p, 'message')}</bdi></div>)}{flags.length > 4 && <div className="qr-muted">{t('bd.more', { n: flags.length - 4 })}</div>}</div>}
+      <StandardsSection part={part} />
       {!pages.length && <div className="qr-muted">{t('pp.none')}</div>}
       {pages.map((pg: any) => <div key={pg.page} className="qr-card-page">
         {pages.length > 1 && <div className="qr-lbl">{t('pp.page')} {pg.page}</div>}

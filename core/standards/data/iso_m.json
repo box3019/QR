@@ -1,0 +1,272 @@
+{
+"id": "ISO-M",
+"rev": "ISO 261 / ISO 724 basic; tap drill D-P (ISO 2306 practice)",
+"source": "Computed from ISO 724 basic-profile formulas; pitches per ISO 261 preferred series. Computed values, not transcribed. MJ uses the same D/P with a rounded root (ISO 5855); MJ minor limits need the standard.",
+"verified": true,
+"rows": {
+"M1.6x0.35": {
+"D": 1.6,
+"P": 0.35,
+"coarse": true,
+"D1": 1.221,
+"tapDrill": 1.25,
+"computed": true
+},
+"M2x0.4": {
+"D": 2,
+"P": 0.4,
+"coarse": true,
+"D1": 1.567,
+"tapDrill": 1.6,
+"computed": true
+},
+"M2.5x0.45": {
+"D": 2.5,
+"P": 0.45,
+"coarse": true,
+"D1": 2.013,
+"tapDrill": 2.05,
+"computed": true
+},
+"M3x0.5": {
+"D": 3,
+"P": 0.5,
+"coarse": true,
+"D1": 2.459,
+"tapDrill": 2.5,
+"computed": true
+},
+"M4x0.7": {
+"D": 4,
+"P": 0.7,
+"coarse": true,
+"D1": 3.242,
+"tapDrill": 3.3,
+"computed": true
+},
+"M5x0.8": {
+"D": 5,
+"P": 0.8,
+"coarse": true,
+"D1": 4.134,
+"tapDrill": 4.2,
+"computed": true
+},
+"M6x1": {
+"D": 6,
+"P": 1,
+"coarse": true,
+"D1": 4.917,
+"tapDrill": 5,
+"computed": true
+},
+"M8x1.25": {
+"D": 8,
+"P": 1.25,
+"coarse": true,
+"D1": 6.647,
+"tapDrill": 6.75,
+"computed": true
+},
+"M8x1": {
+"D": 8,
+"P": 1,
+"coarse": false,
+"D1": 6.917,
+"tapDrill": 7,
+"computed": true
+},
+"M10x1.5": {
+"D": 10,
+"P": 1.5,
+"coarse": true,
+"D1": 8.376,
+"tapDrill": 8.5,
+"computed": true
+},
+"M10x1.25": {
+"D": 10,
+"P": 1.25,
+"coarse": false,
+"D1": 8.647,
+"tapDrill": 8.75,
+"computed": true
+},
+"M10x1": {
+"D": 10,
+"P": 1,
+"coarse": false,
+"D1": 8.917,
+"tapDrill": 9,
+"computed": true
+},
+"M12x1.75": {
+"D": 12,
+"P": 1.75,
+"coarse": true,
+"D1": 10.106,
+"tapDrill": 10.25,
+"computed": true
+},
+"M12x1.5": {
+"D": 12,
+"P": 1.5,
+"coarse": false,
+"D1": 10.376,
+"tapDrill": 10.5,
+"computed": true
+},
+"M12x1.25": {
+"D": 12,
+"P": 1.25,
+"coarse": false,
+"D1": 10.647,
+"tapDrill": 10.75,
+"computed": true
+},
+"M14x2": {
+"D": 14,
+"P": 2,
+"coarse": true,
+"D1": 11.835,
+"tapDrill": 12,
+"computed": true
+},
+"M14x1.5": {
+"D": 14,
+"P": 1.5,
+"coarse": false,
+"D1": 12.376,
+"tapDrill": 12.5,
+"computed": true
+},
+"M16x2": {
+"D": 16,
+"P": 2,
+"coarse": true,
+"D1": 13.835,
+"tapDrill": 14,
+"computed": true
+},
+"M16x1.5": {
+"D": 16,
+"P": 1.5,
+"coarse": false,
+"D1": 14.376,
+"tapDrill": 14.5,
+"computed": true
+},
+"M18x2.5": {
+"D": 18,
+"P": 2.5,
+"coarse": true,
+"D1": 15.294,
+"tapDrill": 15.5,
+"computed": true
+},
+"M18x1.5": {
+"D": 18,
+"P": 1.5,
+"coarse": false,
+"D1": 16.376,
+"tapDrill": 16.5,
+"computed": true
+},
+"M20x2.5": {
+"D": 20,
+"P": 2.5,
+"coarse": true,
+"D1": 17.294,
+"tapDrill": 17.5,
+"computed": true
+},
+"M20x1.5": {
+"D": 20,
+"P": 1.5,
+"coarse": false,
+"D1": 18.376,
+"tapDrill": 18.5,
+"computed": true
+},
+"M22x2.5": {
+"D": 22,
+"P": 2.5,
+"coarse": true,
+"D1": 19.294,
+"tapDrill": 19.5,
+"computed": true
+},
+"M22x1.5": {
+"D": 22,
+"P": 1.5,
+"coarse": false,
+"D1": 20.376,
+"tapDrill": 20.5,
+"computed": true
+},
+"M24x3": {
+"D": 24,
+"P": 3,
+"coarse": true,
+"D1": 20.752,
+"tapDrill": 21,
+"computed": true
+},
+"M24x2": {
+"D": 24,
+"P": 2,
+"coarse": false,
+"D1": 21.835,
+"tapDrill": 22,
+"computed": true
+},
+"M27x3": {
+"D": 27,
+"P": 3,
+"coarse": true,
+"D1": 23.752,
+"tapDrill": 24,
+"computed": true
+},
+"M27x2": {
+"D": 27,
+"P": 2,
+"coarse": false,
+"D1": 24.835,
+"tapDrill": 25,
+"computed": true
+},
+"M30x3.5": {
+"D": 30,
+"P": 3.5,
+"coarse": true,
+"D1": 26.211,
+"tapDrill": 26.5,
+"computed": true
+},
+"M30x2": {
+"D": 30,
+"P": 2,
+"coarse": false,
+"D1": 27.835,
+"tapDrill": 28,
+"computed": true
+},
+"M36x4": {
+"D": 36,
+"P": 4,
+"coarse": true,
+"D1": 31.67,
+"tapDrill": 32,
+"computed": true
+},
+"M36x3": {
+"D": 36,
+"P": 3,
+"coarse": false,
+"D1": 32.752,
+"tapDrill": 33,
+"computed": true
+}
+}
+}

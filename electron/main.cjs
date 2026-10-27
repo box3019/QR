@@ -58,7 +58,7 @@ ipcMain.handle('qr:process', async (e, paths, job) => {
   const s = loadSettings();
   const emit = (ev) => { try { e.sender.send('qr:event', { ...(ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev), job: job || null }); } catch {} };
   const t0 = Date.now();
-  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), sevenZip: sevenZipPath(), catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
+  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), libraryBase: app.getPath('userData'), sevenZip: sevenZipPath(), catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
   (res.parts || []).forEach(localizePart);
   res.seconds = Math.round((Date.now() - t0) / 1000);
   lastResult = res;
@@ -114,7 +114,8 @@ ipcMain.handle('qr:exportReport', async (_e, parts, lang, meta, target) => {
   const out = await pickSave(`QR_Report_${String(m.rfq || (parts[0] || {}).partNo || 'RFQ').replace(/[^\w.-]+/g, '_')}_${lang}.pdf`, [{ name: 'PDF', extensions: ['pdf'] }], target);
   if (!out) return null;
   await htmlToPdf(reportHtml(parts || [], lang, m), out);
-  return { path: out };
+  const docs = require('../core/standards/export.cjs').copyStandardDocs(parts || [], out.replace(/\.pdf$/i, '') + '_standards');
+  return { path: out, docs };
 });
 ipcMain.handle('qr:exportRequirements', async (_e, parts, target) => {
   const { buildSheets } = require('../core/requirements/sheets.cjs'); const { writeXlsx } = require('../core/requirements/xlsx.cjs');
@@ -136,6 +137,13 @@ ipcMain.handle('qr:history:remove', (_e, id, deleteData) => history.removeHistor
 ipcMain.handle('qr:projects:load', (_e, id) => history.loadProject(app.getPath('userData'), id));
 ipcMain.handle('qr:peekRfq', (_e, paths) => projects.peekRfq(paths, require('../core/email/readers.cjs').readMail));
 ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.getPath('temp'), 'qr-outlook', String(Date.now()))));
+ipcMain.handle('qr:std:confirm', (_e, s, customer) => require('../core/standards/index.cjs').confirmStandard(app.getPath('userData'), s, customer));
+ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
+  const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: [{ name: 'PDF', extensions: ['pdf'] }, { name: 'All files', extensions: ['*'] }] });
+  if (r.canceled) return null;
+  return require('../core/standards/index.cjs').uploadStandard(app.getPath('userData'), { id: s.std, rev: s.rev || '', customer, file: r.filePaths[0], owner, paid: s.paid });
+});
+ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
 
 // Single instance: a second launch focuses the existing window instead of starting a hidden duplicate.

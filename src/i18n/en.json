@@ -433,5 +433,16 @@
   "hist.deleteAsk": "Remove \"{name}\" from history. Also delete its saved data from this computer? OK deletes it, Cancel keeps it.",
   "hist.empty": "No projects yet.",
   "hist.noMatch": "Nothing matches the search.",
-  "tip.stepHelp": "Show the tutorial for this step"
+  "tip.stepHelp": "Show the tutorial for this step",
+  "std.title": "Standards",
+  "std.status.resolved": "found in library",
+  "std.status.needsConfirm": "check and confirm",
+  "std.status.needsDoc": "needs document",
+  "std.newerRev": "newer revision {rev} available",
+  "std.open": "Open document",
+  "std.confirm": "Confirm",
+  "std.upload": "Upload document",
+  "tip.stdOpen": "Open the stored standard document",
+  "tip.stdConfirm": "Confirm these dimensions once; they are remembered",
+  "tip.stdUpload": "Upload your copy of this standard; it is stored for reuse"
 }

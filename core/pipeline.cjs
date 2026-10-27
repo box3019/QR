@@ -12,6 +12,7 @@ const { fileKind, modelRank } = require('./intake/classify.cjs');
 const { readEmail } = require('./email/index.cjs');
 const { analyzeFile } = require('./requirements/index.cjs');
 const { attachRfqs } = require('./rfq/attach.cjs');
+const { attachStandards } = require('./standards/index.cjs');
 
 const sha256 = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 const isModel = (f) => fileKind(f) === 'model';
@@ -102,6 +103,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
       const mm = findModels(a.partNo, d.path, models, a.profile, settings.searchRoots);
       a.model = mm.models[0] ? { path: mm.models[0], ...stepHeader(mm.models[0]) } : null;
       a.modelSearchLog = mm.log;
+      if (settings.libraryBase) { try { await attachStandards(a, d.pages.map((p) => p.raw || '').join('\n'), { base: settings.libraryBase, customerDirs: (settings.customerDocDirs || []).filter(Boolean), jobFiles: files, problem }); } catch (e) { emit({ type: 'status', text: `Standards lookup failed on ${d.name}: ${e.message || e}` }); } }
       for (const pr of a.problems) pr.loc = locate(d.pages, pr);
       for (const p of d.pages) if (p.ocrError) a.problems.unshift({ id: 'OCR' + p.n, ...problem('Info', 'OCR warning', 'ocr.failed', { n: p.n, err: p.ocrError }), evidence: [], status: 'open', loc: null });
       const dup = parts.find((q) => q.partNo && q.partNo === a.partNo && q.rev === a.rev && q.customer === a.customer);

@@ -17,11 +17,11 @@ const L = {
   en: { title: 'RFQ review report', rfq: 'RFQ', customer: 'Customer', date: 'Date', parts: 'Parts', summary: 'Summary by group', group: 'Group', count: 'Count',
     g: { ready: 'Fits us', needsDoc: 'Needs document', needsAnswer: 'Needs customer answer', notOurs: 'Not our material / process' },
     part: 'Part', rev: 'Rev', material: 'Material', heat: 'Heat treat', coat: 'Coatings', paint: 'Paint', mask: 'Masking', seq: 'Operation sequence', flags: 'Flags',
-    none: '—', questions: 'Customer questions', docs: 'Documents to upload', noQ: 'No open questions.', noDocs: 'No documents needed.', page: 'Page', sev: { Blocker: 'Blocker', Question: 'Question', Document: 'Document', Warning: 'Warning' } },
+    stds: 'Standards', stStatus: { resolved: 'found in library', needsConfirm: 'check and confirm', needsDoc: 'needs document' }, none: '—', questions: 'Customer questions', docs: 'Documents to upload', noQ: 'No open questions.', noDocs: 'No documents needed.', page: 'Page', sev: { Blocker: 'Blocker', Question: 'Question', Document: 'Document', Warning: 'Warning' } },
   he: { title: 'דוח בדיקת בקשה להצעת מחיר', rfq: 'בקשה', customer: 'לקוח', date: 'תאריך', parts: 'חלקים', summary: 'סיכום לפי קבוצה', group: 'קבוצה', count: 'כמות',
     g: { ready: 'מתאים לנו', needsDoc: 'חסר מסמך', needsAnswer: 'ממתין לתשובת לקוח', notOurs: 'לא החומר / התהליך שלנו' },
     part: 'מק"ט', rev: 'מהדורה', material: 'חומר', heat: 'טיפול תרמי', coat: 'ציפויים', paint: 'צבע', mask: 'מיסוך', seq: 'סדר פעולות', flags: 'סימונים',
-    none: '—', questions: 'שאלות ללקוח', docs: 'מסמכים להעלאה', noQ: 'אין שאלות פתוחות.', noDocs: 'אין צורך במסמכים.', page: 'עמוד', sev: { Blocker: 'חוסם', Question: 'שאלה', Document: 'מסמך', Warning: 'אזהרה' } },
+    stds: 'תקנים', stStatus: { resolved: 'נמצא בספרייה', needsConfirm: 'לבדוק ולאשר', needsDoc: 'חסר מסמך' }, none: '—', questions: 'שאלות ללקוח', docs: 'מסמכים להעלאה', noQ: 'אין שאלות פתוחות.', noDocs: 'אין צורך במסמכים.', page: 'עמוד', sev: { Blocker: 'חוסם', Question: 'שאלה', Document: 'מסמך', Warning: 'אזהרה' } },
 };
 const TONE = { ready: ['#dcfce7', '#166534', '#86efac'], needsDoc: ['#fef3c7', '#92400e', '#fcd34d'], needsAnswer: ['#e0f2fe', '#075985', '#7dd3fc'], notOurs: ['#fee2e2', '#991b1b', '#fca5a5'] };
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -39,6 +39,11 @@ function partFacts(p, lang) {
     flags: (p.problems || []).filter((x) => open(x) && x.severity !== 'Info').map((x) => ({ sev: x.severity, text: msg(x) })),
   };
 }
+function stdHtml(p, T) {
+  const l = p.standards || []; if (!l.length) return '';
+  const dim = (d) => Object.entries(d || {}).map(([k, v]) => `${k} ${v && v.mm != null ? v.mm + ' mm' : v}`).join(', ');
+  return `<h4>${esc(T.stds)}</h4><table><tbody>${l.map((s) => `<tr><td>${bdi(s.std + (s.dash ? '-' + s.dash : ''))}</td><td>${esc((T.stStatus || {})[s.status] || s.status)}${s.doc && s.doc.rev ? ' · ' + bdi(s.doc.rev) : ''}</td><td>${bdi(dim(s.dims))}${(s.flags || []).filter((f) => f.drawing).map((f) => ' ✕ ' + bdi(f.drawing + ' → ' + f.required)).join('')}</td></tr>`).join('')}</tbody></table>`;
+}
 function reportHtml(parts, lang = 'he', meta = {}) {
   const he = lang === 'he', T = L[he ? 'he' : 'en'];
   const date = meta.date || new Date().toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
@@ -50,7 +55,7 @@ function reportHtml(parts, lang = 'he', meta = {}) {
     return `<section class="part"><h3>${bdi(p.partNo || '?')} <span class="muted">${esc(T.rev)} ${bdi(p.rev || '-')}</span> ${label(plainStatus(p))}</h3>${p.title ? `<div class="muted">${bdi(p.title)}</div>` : ''}
     <table class="kv">${row('material', f.material)}${row('heat', f.heat)}${row('coat', f.coat)}${row('paint', f.paint)}${row('mask', f.mask)}</table>
     <h4>${esc(T.seq)}</h4>${f.seq.length ? `<ol class="seq">${f.seq.map((s) => `<li><b>${bdi(s.seq)}</b> ${bdi(s.text)}</li>`).join('')}</ol>` : `<p class="muted">${T.none}</p>`}
-    <h4>${esc(T.flags)}</h4>${f.flags.length ? `<ul class="flags">${f.flags.map((x) => `<li><span class="sev">${esc(T.sev[x.sev] || x.sev)}</span> ${bdi(x.text)}</li>`).join('')}</ul>` : `<p class="muted">${T.none}</p>`}</section>`; }).join('');
+    ${stdHtml(p, T)}<h4>${esc(T.flags)}</h4>${f.flags.length ? `<ul class="flags">${f.flags.map((x) => `<li><span class="sev">${esc(T.sev[x.sev] || x.sev)}</span> ${bdi(x.text)}</li>`).join('')}</ul>` : `<p class="muted">${T.none}</p>`}</section>`; }).join('');
   const qs = buildQuestions(parts, he ? 'he' : 'en');
   const qHtml = qs.filter((g) => g.questions.some((q) => q.severity !== 'Document'));
   const docs = parts.flatMap((p) => (p.tasks || []).filter((t) => t.type === 'uploadDocument' && t.status !== 'done').map((t) => ({ pn: p.partNo, ref: t.refNumber })));

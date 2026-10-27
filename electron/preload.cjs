@@ -28,4 +28,7 @@ contextBridge.exposeInMainWorld('qr', {
   outlookSelection: () => ipcRenderer.invoke('qr:outlookSelection'),
   onImport: (cb) => { const h = (_e, files) => cb(files); ipcRenderer.on('qr:import', h); return () => ipcRenderer.removeListener('qr:import', h); },
   openPath: (p) => ipcRenderer.invoke('qr:openPath', p),
+  stdConfirm: (s, c) => ipcRenderer.invoke('qr:std:confirm', s, c),
+  stdUpload: (s, c, o) => ipcRenderer.invoke('qr:std:upload', s, c, o),
+  stdOpen: (f) => ipcRenderer.invoke('qr:std:open', f),
 });
