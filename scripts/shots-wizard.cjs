@@ -45,5 +45,21 @@ const [exe, data, out] = process.argv.slice(2); fs.mkdirSync(out, { recursive: t
   await win.screenshot({ path: path.join(out, 'v014_toast_he.png') }); console.log('TOAST', await win.evaluate(() => { const e = document.querySelector('[data-testid=busy-text]'); return e ? JSON.stringify({ text: e.textContent, cut: e.scrollWidth > e.clientWidth }) : 'none'; }));
   await win.waitForFunction(() => !document.querySelector('[data-testid=busy]'), null, { timeout: 10 * 60 * 1000 }).catch(() => {}); await win.waitForTimeout(1500);
   console.log('APPEND', JSON.stringify(await win.evaluate(() => ({ n: window.__qrParts.length, toast: !!document.querySelector('[data-testid=busy]'), choice: !!document.querySelector('[data-testid=drop-choice]') }))));
+  // project tabs: a second project runs in the background; the first keeps its own state; tab drag reorders and never imports
+  const T = () => win.evaluate(() => window.__qrTabs());
+  const first = await win.evaluate(() => ({ n: window.__qrParts.length })); const t0 = await T();
+  await win.evaluate(() => window.__qrAddTab()); await win.waitForTimeout(800);
+  win.evaluate((p) => window.__qrRun(p), [path.join(data, 'KLA_matbug_d.pdf')]);
+  await win.waitForFunction(() => window.__qrTabs().some((x) => x.status === 'busy'), null, { timeout: 60000 }).catch(() => {}); await win.waitForTimeout(1500);
+  await win.screenshot({ path: path.join(out, 'v014_tabs_busy_he.png') }); console.log('TABS busy', JSON.stringify(await T()));
+  await win.evaluate((id) => window.__qrSelectTab(id), t0[0].id); await win.waitForTimeout(600);
+  await win.screenshot({ path: path.join(out, 'v014_tabs_first_while_busy_he.png') });
+  await win.waitForFunction(() => !window.__qrTabs().some((x) => x.status === 'busy'), null, { timeout: 10 * 60 * 1000 }).catch(() => {}); await win.waitForTimeout(1000);
+  const tabsDone = await T(); const firstNow = await win.evaluate(() => ({ n: window.__qrParts.length, step: document.querySelector('[data-testid=project][aria-hidden=false]')?.dataset.step }));
+  console.log('TABS done', JSON.stringify(tabsDone), 'first', JSON.stringify(first), '->', JSON.stringify(firstNow), first.n === firstNow.n ? 'KEEP-OK' : 'KEEP-FAIL');
+  await win.dragAndDrop('[data-testid=tab]:nth-of-type(2)', '[data-testid=tab]:nth-of-type(1)').catch((e) => console.log('drag err', e.message)); await win.waitForTimeout(800);
+  const tabsMoved = await T(); console.log('TABS moved', JSON.stringify(tabsMoved.map((x) => x.id)), tabsMoved.length === tabsDone.length && tabsMoved[0].id === tabsDone[1].id ? 'MOVE-OK' : 'MOVE-CHECK', 'parts', await win.evaluate(() => window.__qrParts.length));
+  await win.screenshot({ path: path.join(out, 'v014_tabs_he.png') });
+  await win.evaluate(() => window.__qrSetSettings({ uiLanguage: 'en' })); await win.waitForTimeout(500); await win.screenshot({ path: path.join(out, 'v014_tabs_en.png') });
   await app.close();
 })().catch((e) => { console.error(e); process.exit(1); });
