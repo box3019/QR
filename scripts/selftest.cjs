@@ -28,6 +28,9 @@ const SETS = SETS_ALL.filter(([n]) => !ONLY || ONLY.includes(n));
   for (const [name, files] of SETS) {
     const t0 = Date.now();
     await win.evaluate((p) => window.__qrRun(p), files.map((f) => (path.isAbsolute(f) || f.startsWith('\\\\') ? f : path.join(data, f))));
+    // a new set on a loaded job asks Add/Start new (drop guard): each set starts new
+    const st = await win.waitForFunction(() => document.querySelector('[data-testid=drop-choice]') ? 'ask' : (!document.querySelector('[data-testid=busy]') && document.querySelector('[data-testid=parts-panel]') ? 'done' : ''), null, { timeout: 15 * 60 * 1000 });
+    if ((await st.jsonValue()) === 'ask') { await win.click('[data-testid=drop-new]'); await win.waitForTimeout(500); }
     await win.waitForFunction(() => !document.querySelector('[data-testid=busy]') && document.querySelector('[data-testid=parts-panel]'), null, { timeout: 15 * 60 * 1000 });
     const parts = await win.evaluate(() => window.__qrParts);
     const rfqs = await win.evaluate(() => window.__qrRfqs || []);
