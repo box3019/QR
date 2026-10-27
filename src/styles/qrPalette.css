@@ -33,8 +33,8 @@
   --mrt-accent: #1e293b;
   --mrt-accent-soft: rgba(30, 41, 59, 0.12);
   --mrt-focus: #1e293b;
-  --mrt-btn-primary-bg: #6a6e77;
-  --mrt-btn-primary-fg: #ffffff;
-  --mrt-btn-primary-border: #5a5e67;
-  --mrt-btn-primary-bg-hover: #777b85;
+  --mrt-btn-primary-bg: #f8fafc;
+  --mrt-btn-primary-fg: #1d4ed8;
+  --mrt-btn-primary-border: #2563eb;
+  --mrt-btn-primary-bg-hover: #eff6ff;
 }

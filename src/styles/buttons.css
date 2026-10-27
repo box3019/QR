@@ -1,29 +1,29 @@
 /* QR button tokens. Values copied 1:1 from MRT (cmm-pr3) computed styles, palette industrial-steel / light,
    measured with scripts/btn-probe (MRT dist CSS rendered in Electron). No MRT code is imported. */
 :root {
-  --qr-btn-radius: 8px;
+  --qr-btn-radius: 6px;
   --qr-btn-border-w: 1px;
-  /* MRT px values expressed in rem so QR's text-size setting still scales them (16px root = MRT exactly). */
-  --qr-btn-h: 2.5rem;      /* 40px */
-  --qr-btn-pad-x: 0.85rem; /* 13.6px */
-  --qr-btn-fs: 0.875rem;   /* 14px */
+  /* Compact MRT size in px: buttons do NOT grow with QR's Large/XLarge/Huge text setting (capped at Normal). */
+  --qr-btn-h: 32px;
+  --qr-btn-pad-x: 12px;
+  --qr-btn-fs: 14px;
   --qr-btn-lh: 1.2;        /* 16.8px */
   --qr-btn-fw: 500;
   --qr-btn-fw-primary: 600;
   --qr-btn-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   --qr-btn-transition: 0.15s;
   /* secondary (default) */
-  --qr-btn-bg: #e8ecf1;
+  --qr-btn-bg: #f8fafc;
   --qr-btn-fg: #0f172a;
-  --qr-btn-border: #334155;
-  --qr-btn-bg-hover: #dce1e8;
-  --qr-btn-border-hover: #495362;
-  /* primary */
-  --qr-btn-primary-bg: #6a6e77;
-  --qr-btn-primary-fg: #ffffff;
-  --qr-btn-primary-border: #62656d;
-  --qr-btn-primary-bg-hover: #777b85;
-  --qr-btn-primary-border-hover: #777b85;
+  --qr-btn-border: #cbd5e1;
+  --qr-btn-bg-hover: #eef2f6;
+  --qr-btn-border-hover: #94a3b8;
+  /* primary: same light button, blue text + border accent only (no dark fill: "MRT doesn't want blackness") */
+  --qr-btn-primary-bg: #f8fafc;
+  --qr-btn-primary-fg: #1d4ed8;
+  --qr-btn-primary-border: #2563eb;
+  --qr-btn-primary-bg-hover: #eff6ff;
+  --qr-btn-primary-border-hover: #1d4ed8;
   /* states */
   --qr-btn-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1e293b;
   --qr-btn-disabled-opacity: 0.48;
@@ -44,7 +44,7 @@
   cursor: pointer;
 }
 .qr-btn, .qr-root .mrt-btn:is(.mrt-action-btn--row, .mrt-action-btn--dialog-secondary, .mrt-action-btn--dialog-primary) {
-  height: auto !important; min-height: var(--qr-btn-h) !important;
+  height: auto !important; min-height: var(--qr-btn-h) !important; max-height: none;
   padding-block: 0 !important; padding-inline: var(--qr-btn-pad-x) !important;
   font-size: var(--qr-btn-fs) !important; line-height: var(--qr-btn-lh) !important;
 }
@@ -67,3 +67,12 @@
 .qr-chip, .qr-badge, .qr-status, .qr-brand-badge {
   border-radius: var(--qr-btn-radius) !important; border-width: var(--qr-btn-border-w); border-style: solid;
 }
+
+/* Light buttons everywhere (footer, toolbar, Summary, part card, dialogs): override any dark fill from MRT CSS. */
+.qr-root button.mrt-btn, .qr-root button.qr-btn, .qr-root .qr-drop-btns button.qr-blue, .qr-root .qr-drop-btns button.qr-blue:not(:disabled) {
+  background-image: none !important;
+}
+.qr-root .qr-drop-btns button.qr-blue, .qr-root .qr-drop-btns button.qr-blue:not(:disabled) {
+  background: var(--qr-btn-primary-bg) !important; background-color: var(--qr-btn-primary-bg) !important; color: var(--qr-btn-primary-fg) !important; border-color: var(--qr-btn-primary-border) !important;
+}
+.qr-root .qr-drop-btns button.qr-blue:hover:not(:disabled) { background: var(--qr-btn-primary-bg-hover) !important; }

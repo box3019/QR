@@ -1,8 +1,8 @@
 'use strict';
-// QR button tokens must stay equal to the MRT values measured by scripts/btn-probe (industrial-steel, light).
+// QR button tokens: compact MRT toolbar look (light fill, thin border, 32px, 14px), px so text size cannot grow them.
 const test = require('node:test'); const assert = require('node:assert'); const fs = require('fs'); const path = require('path');
 const css = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles', 'buttons.css'), 'utf8');
-const MRT = { radius: '8px', 'border-w': '1px', h: '2.5rem', 'pad-x': '0.85rem', fs: '0.875rem', fw: '500', 'fw-primary': '600', bg: '#e8ecf1', fg: '#0f172a', border: '#334155', 'bg-hover': '#dce1e8', 'primary-bg': '#6a6e77', 'primary-fg': '#ffffff', 'primary-border': '#62656d', 'primary-bg-hover': '#777b85', 'disabled-opacity': '0.48' };
+const MRT = { radius: '6px', 'border-w': '1px', h: '32px', 'pad-x': '12px', fs: '14px', fw: '500', 'fw-primary': '600', bg: '#f8fafc', fg: '#0f172a', border: '#cbd5e1', 'bg-hover': '#eef2f6', 'primary-bg': '#f8fafc', 'primary-fg': '#1d4ed8', 'primary-border': '#2563eb', 'primary-bg-hover': '#eff6ff', 'disabled-opacity': '0.48' };
 test('button tokens equal MRT', () => {
   for (const [k, v] of Object.entries(MRT)) assert.match(css, new RegExp(`--qr-btn-${k}:\\s*${v.replace('.', '\\.')};`), k);
 });
