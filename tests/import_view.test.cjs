@@ -25,7 +25,7 @@ test('drop zone only when nothing is loaded; it hides as soon as an import start
 test('auto-advance: step 1 -> 2 when parts arrived; stays when none; never moves another step', async () => { const m = await load('importView.mjs');
   assert.strictEqual(m.afterImport(1, 3), 2); assert.strictEqual(m.afterImport(1, 0), 1); assert.strictEqual(m.afterImport(3, 5), 3); assert.strictEqual(m.afterImport(2, 1), 2); });
 test('App uses afterImport and the import view; labels in EN and HE', () => { const fs = require('fs');
-  const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.tsx'), 'utf8'); assert.match(app, /afterImport\(/);
+  const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'ProjectView.tsx'), 'utf8'); assert.match(app, /afterImport\(/);
   assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'wizard', 'StepIntake.tsx'), 'utf8'), /showDrop\(/);
   for (const k of ['imp.subject', 'imp.from', 'imp.files', 'imp.progress', 'imp.st.waiting', 'imp.st.reading', 'imp.st.done', 'imp.st.check']) { assert.ok(en[k], k); assert.ok(he[k], k); assert.doesNotMatch(he[k].replace(/\{\w+\}/g, ''), /[A-Za-z]/, k); } });
 test('one part: singular hint in EN and HE', async () => { const { hintFor } = await load('hints.mjs');

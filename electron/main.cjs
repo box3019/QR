@@ -54,9 +54,9 @@ ipcMain.handle('qr:pickFiles', async () => {
   return r.canceled ? [] : r.filePaths;
 });
 ipcMain.handle('qr:pickFolder', async () => { const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] }); return r.canceled ? '' : r.filePaths[0]; });
-ipcMain.handle('qr:process', async (e, paths) => {
+ipcMain.handle('qr:process', async (e, paths, job) => {
   const s = loadSettings();
-  const emit = (ev) => { try { e.sender.send('qr:event', ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev); } catch {} };
+  const emit = (ev) => { try { e.sender.send('qr:event', { ...(ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev), job: job || null }); } catch {} };
   const t0 = Date.now();
   const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), sevenZip: sevenZipPath(), catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
   (res.parts || []).forEach(localizePart);
@@ -117,6 +117,12 @@ ipcMain.handle('qr:exportRequirements', async (_e, parts, target) => {
   fs.writeFileSync(out, writeXlsx(buildSheets(pages)));
   return { path: out };
 });
+// projects (tabs): %APPDATA%\QR\projects\<id>, reopened on restart
+const projects = require('../core/projects.cjs');
+ipcMain.handle('qr:projects:list', () => projects.listProjects(app.getPath('userData')));
+ipcMain.handle('qr:projects:save', (_e, id, data) => projects.saveProject(app.getPath('userData'), id, data));
+ipcMain.handle('qr:projects:index', (_e, idx) => projects.saveIndex(app.getPath('userData'), idx));
+ipcMain.handle('qr:peekRfq', (_e, paths) => projects.peekRfq(paths, require('../core/email/readers.cjs').readMail));
 ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.getPath('temp'), 'qr-outlook', String(Date.now()))));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
 

@@ -1,34 +1,19 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+// QR window shell: top bar with project tabs, settings/help, and one ProjectView per open project (kept mounted so each keeps its own state).
+import React, { useEffect, useState } from 'react';
 import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, setLang, setTextSize, getLang } from './i18n';
 import { FirstRun } from './ui/simple';
 import { Tutorial } from './tutorial/Tutorial';
 import { toolbarFor } from './wizard/steps.mjs';
-import { Stepper } from './components/wizard/Stepper';
-import { StepHeader } from './components/wizard/StepHeader';
-import { StepIntake } from './components/wizard/StepIntake';
-import { StepCheckParts } from './components/wizard/StepCheckParts';
-import { StepDocsQuestions } from './components/wizard/StepDocsQuestions';
-import { StepSummary } from './components/wizard/StepSummary';
-import { ProgressToast } from './components/wizard/ProgressToast';
-import { RailContext } from './components/wizard/RailContext';
-import { WizardFooter } from './components/wizard/WizardFooter';
 import { useAssistant } from './hooks/useAssistant';
-import { hintFor } from './wizard/hints.mjs';
-import { openQuestions } from './wizard/summary.mjs';
-import { useBusy } from './hooks/useBusy';
-import { afterImport } from './wizard/importView.mjs';
-import { dropPlan } from './wizard/dropGuard.mjs';
 import { useDrop } from './hooks/useDrop';
-import { DropChoice } from './components/wizard/DropChoice';
-import { exposeTestHooks } from './hooks/testHooks';
-import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
+import { useProjects } from './projects/useProjects';
+import { TabsBar } from './components/tabs/TabsBar';
+import { ProjectView } from './ProjectView';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
-type Part = any;
-
 
 function TopButton({ icon, label, tip, onClick, testid, active }: any) {
   return <button type="button" title={tip || label} data-active={active} className={MRT_ACTION_BTN_TOPBAR} onClick={onClick} data-testid={testid}><span className="ico" aria-hidden>{icon}</span><span>{label}</span></button>;
@@ -36,82 +21,38 @@ function TopButton({ icon, label, tip, onClick, testid, active }: any) {
 
 export default function App() {
   const [settings, setSettings] = useState<any>(null);
-  const [parts, setParts] = useState<Part[]>([]);
-  const [unknown, setUnknown] = useState<string[]>([]);
-  const [sel, setSel] = useState(0);
-  const [step, setStep] = useState(1);
-  const [tab, setTab] = useState<string>('drawing');
   const [over, setOver] = useState(false);
-  const [dialog, setDialog] = useState<null | 'settings' | 'questions' | 'summary' | 'tutorial'>(null);
-  const [focus, setFocus] = useState<any>(null);
-  const [lastRun, setLastRun] = useState<any>(null);
-  const [rfqs, setRfqs] = useState<any[]>([]);
+  const [dialog, setDialog] = useState<null | 'settings' | 'tutorial'>(null);
   const [details, setDetails] = useState(false);
-
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
   if (settings) { setLang(settings.uiLanguage); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
-  const { busy, view, start, stop, clear } = useBusy((p) => setParts((ps) => [...ps, p]));
-  const partsRef = useRef([] as Part[]); partsRef.current = parts; const queue = useRef(Promise.resolve() as Promise<any>);
-  const rfqsRef = useRef([] as any[]); rfqsRef.current = rfqs; const [ask, setAsk] = useState(null as any);
-  const reset = () => { clear(); setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setStep(1); };
-  // A drop while something is loaded or loading is added to it (queued); otherwise a fresh run. Step 1 shows the import view.
-  const runOne = async (paths: string[]) => {
-    const prev = partsRef.current; let append = prev.length > 0; start(append);
-    try { const r = await qr().process(paths);
-      // never replace an open job silently: same RFQ adds; another RFQ asks Add to current / Start new
-      if (append && dropPlan(true, rfqsRef.current, r.rfqs) === 'ask') append = (await new Promise<'append' | 'new'>((res) => setAsk(() => res))) === 'append';
-      setAsk(null); const all = append ? [...prev, ...r.parts] : r.parts; if (!append) { setSel(0); setFocus(null); } setParts(all); setUnknown((u) => [...(append ? u : []), ...(r.unknown || []), ...(r.other || [])]);
-      setRfqs((x) => [...(append ? x : []), ...(r.rfqs || [])]); setLastRun((l: any) => ({ seconds: r.seconds, files: [...(append && l ? l.files : []), ...r.files] }));
-      if (all.length) { setStep((s) => afterImport(s, all.length)); setTab('drawing'); } }
-    catch (e: any) { alert(t('err.processing', { text: e?.message || e })); }
-    finally { stop(); }
-  };
-  const run = useCallback((paths: string[]) => { if (!paths || !paths.length) return; queue.current = queue.current.then(() => runOne(paths)); return queue.current; }, []);
-  useEffect(() => qr().onImport ? qr().onImport((files: string[]) => run(files)) : undefined, [run]); // Outlook 'Send to QR'
-
-  const drop = useDrop(run, settings, setOver);
-  exposeTestHooks({ setDetails, setStep, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); if (tb) { setTab(tb); setStep(2); } } });
-  const has = parts.length > 0;
-  const bar = toolbarFor(step, has);
-  const updatePart = (fn: (p: Part) => Part) => setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p)));
-  const pick = (i: number) => { setSel(i); setFocus(null); };
+  const P = useProjects();
+  useEffect(() => qr().onImport ? qr().onImport((files: string[]) => P.importOutlook(files)) : undefined, []); // Outlook 'Send to QR': new tab, or the tab of the same RFQ
+  const drop = useDrop(P.runActive, settings, setOver); // drops go into the current tab
+  const w = window as any; w.__qrAddTab = P.add; w.__qrTabs = () => P.list.map((p) => ({ id: p.id, active: p.id === P.active, ...(P.metas[p.id] || {}) })); w.__qrSelectTab = P.setActive; w.__qrMoveTab = P.move;
   const saveSettings = async (s: any) => setSettings(await qr().setSettings(s));
   const assistant = useAssistant(settings, saveSettings);
-  const hint = hintFor(step, { hasParts: has, nParts: parts.length, busy: !!busy, nQuestions: parts.reduce((n, p) => n + openQuestions(p), 0) });
+  const m = P.metas[P.active] || {}; const bar = toolbarFor(m.step || 1, (m.nParts || 0) > 0);
+  const tabs = P.list.map((p) => ({ id: p.id, label: '', customer: '', status: 'empty', ...(P.metas[p.id] || {}) }));
 
   return (
-    <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light" data-step={step}
-      {...drop}>
+    <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light" data-step={m.step || 1} {...drop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
         <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
-        <div style={{ flex: 1 }} />
-        {bar.details && <TopButton icon="🔍" label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
-        {bar.details && details && lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: parts.length, files: lastRun.files.length, sec: lastRun.seconds })}</span>}
-        <TopButton icon="⚙" label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
+        <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
+        {bar.details && <TopButton icon="??" label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
+        {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
+        <TopButton icon="?" label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
         <TopButton icon="?" label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => setDialog('tutorial')} />
       </div>
-      <div className="qr-wiz">
-        <RailContext rfqs={rfqs} parts={parts} files={lastRun?.files || []} />
-        <StepHeader step={step} hint={hint} assistant={assistant} />
-        <Stepper step={step} setStep={setStep} hasParts={has} />
-        <main className="qr-wiz-main">
-          {step === 1 && <StepIntake view={view} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
-          {step === 2 && has && <StepCheckParts parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={setStep} />}
-          {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} />}
-          {step === 4 && has && <StepSummary parts={parts} openDialog={setDialog} goPart={(i: number) => { pick(i); setStep(2); }} />}
-        </main>
-        <WizardFooter step={step} setStep={setStep} hasParts={has} onCancel={() => confirm(t('wz.cancelAsk')) && reset()} onClose={() => window.close()} />
+      <div className="qr-projs">
+        {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
+          details={details} setDetails={setDetails} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} />)}
       </div>
-
-      {ask && <DropChoice onChoose={(c: 'append' | 'new') => ask(c)} />}
-      {busy && view?.active && step !== 1 && <ProgressToast busy={busy} details={details} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} />}
-      {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
-      {settings && !settings.firstRunDone && !parts.length && !busy && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
-      {dialog === 'summary' && <SummaryDialog parts={parts} onClose={() => setDialog(null)} />}
+      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'tutorial' && <Tutorial lang0={getLang()} onClose={() => setDialog(null)} />}
     </div>
   );
 }
-

@@ -400,5 +400,14 @@
  "drop.add": "Add to current",
  "drop.new": "Start new",
  "tip.dropAdd": "Add the files to the open job",
- "tip.dropNew": "Close the open job and start a new one with these files"
+ "tip.dropNew": "Close the open job and start a new one with these files",
+ "tab.list": "Open projects",
+ "tab.new": "New project",
+ "tab.add": "Open a new empty project",
+ "tab.close": "Close this project",
+ "tab.closeAsk": "This project is still working or has changes. Close it?",
+ "tab.st.busy": "Working",
+ "tab.st.check": "Needs check",
+ "tab.st.ready": "Ready",
+ "tab.st.empty": "Empty"
 }

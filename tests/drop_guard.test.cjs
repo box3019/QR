@@ -17,7 +17,7 @@ test('drop while loaded adds, never replaces; other RFQ asks', async () => { con
   assert.strictEqual(m.dropPlan(true, [{ rfq_no: '1' }], []), 'append');
   assert.strictEqual(m.dropPlan(true, [{ rfq_no: '1' }], [{ rfq_no: '1' }]), 'append');
   assert.strictEqual(m.dropPlan(true, [{ rfq_no: '1' }], [{ rfq_no: '2' }]), 'ask');
-  const a = src('App.tsx'); assert.match(a, /dropPlan\(/); assert.match(a, /\[\.\.\.prev, \.\.\.r\.parts\]/); assert.doesNotMatch(a, /reset\(\); start\(\)/); });
+  const a = src('ProjectView.tsx'); assert.match(a, /dropPlan\(/); assert.match(a, /\[\.\.\.prev, \.\.\.r\.parts\]/); assert.doesNotMatch(a, /reset\(\); start\(\)/); });
 test('viewer: left-drag pans, wheel zooms, double-click fits; images not draggable', async () => { const m = await load(); const v = src('views/Viewer.tsx');
   assert.deepStrictEqual(m.panTo({ left: 100, top: 50 }, 30, -20), { left: 70, top: 70 });
   assert.ok(m.zoomStep(1, -100) > 1 && m.zoomStep(1, 100) < 1); assert.strictEqual(m.zoomStep(8, -1), 8); assert.strictEqual(m.fitZoom(750, 1500), 0.5);
