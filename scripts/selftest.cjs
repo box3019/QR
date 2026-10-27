@@ -18,7 +18,7 @@ const SETS_ALL = [
 ];
 const SETS = SETS_ALL.filter(([n]) => !ONLY || ONLY.includes(n));
 (async () => {
-  const app = await _electron.launch({ executablePath: exe, args: [], env: { ...process.env, QR_MAXIMIZE: '0' } });
+  const app = await _electron.launch({ executablePath: exe, args: [], env: { ...process.env, QR_MAXIMIZE: '0', QR_PROFILE_DIR: path.join(out, 'profile') } });
   const win = await app.firstWindow();
   // no setViewportSize: it freezes the page at a fixed size while the real window can be resized
   await win.waitForSelector('[data-testid=dropzone]');

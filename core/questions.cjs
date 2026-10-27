@@ -12,7 +12,9 @@ const HE = [
   [/^Note (\S+) \(black anodize\) is not assigned to any surface on the views(?:, while note (\S+) \(chemical conversion\) is marked on (\d+) surfaces)?\./, (m) => `הערה ${m[1]} (אנודייז שחור) אינה מסומנת על אף משטח במבטים${m[2] ? `, בעוד הערה ${m[2]} (ציפוי המרה כימי) מסומנת על ${m[3]} משטחים` : ''}. אילו משטחים מקבלים אנודייז?`],
   [/^Range (.+): min is larger than max\./, (m) => `בטווח ${m[1]} הערך המינימלי גדול מהמקסימלי. נא לתקן.`],
   [/^Datum (\S) is referenced in a tolerance frame but no datum feature \S+ was found\./, (m) => `דטום ${m[1]} מופיע במסגרת טולרנס אך אינו מוגדר בשרטוט. נא להגדיר.`],
-  [/^Material not found/, () => 'לא נמצא חומר בשרטוט. נא לציין את מפרט החומר.'],
+  [/^(?:Material not found|No material found)/, () => 'לא נמצא חומר בשרטוט. נא לציין את מפרט החומר.'],
+  [/^(.+?) is not in the materials list — "([^"]*)"/, (m) => `החומר ${m[1]} ("${m[2]}") אינו בין החומרים שאנו עובדים איתם. האם ניתן להחליף לחומר אחר?`],
+  [/^(.+?): temper (\S+) is not in the list/, (m) => `${m[1]}: טמפר ${m[2]} אינו בין הטמפרים שאנו עובדים איתם. האם ניתן טמפר אחר?`],
 ];
 const heUpload = (t) => `נא לשלוח את המסמך ${t.refNumber}${t.title.match(/\((.*)\)\s*$/) ? ` (${t.title.match(/\((.*)\)\s*$/)[1]})` : ''} — נדרש להכנת כרטיס העבודה.`;
 const enUpload = (t) => `Please send document ${t.refNumber}${t.title.match(/\((.*)\)\s*$/) ? ` (${t.title.match(/\((.*)\)\s*$/)[1]})` : ''}; it is needed to prepare the route card.`;
@@ -26,7 +28,7 @@ function buildQuestions(parts, lang = 'he') {
   const out = [];
   for (const part of parts) {
     const qs = [];
-    for (const p of part.problems.filter((x) => x.severity !== 'Info' && x.status !== 'resolved')) {
+    for (const p of part.problems.filter((x) => x.severity !== 'Info' && x.status !== 'resolved' && !x.internal)) {
       if (lang === 'he') qs.push({ severity: p.severity, text: toHebrew(p) || p.message, translated: !!toHebrew(p) });
       else qs.push({ severity: p.severity, text: `${p.message} ${p.suggestion || ''}`.trim(), translated: true });
     }
@@ -61,4 +63,9 @@ function questionsHtml(parts, lang = 'he', meta = {}) {
 function questionsText(parts, lang = 'he') {
   return buildQuestions(parts, lang).map((g) => `${lang === 'he' ? 'מק"ט' : 'Part'} ${g.partNo} rev ${g.rev || '-'}\n` + g.questions.map((q, i) => `${i + 1}. ${q.text}`).join('\n')).join('\n\n');
 }
-module.exports = { buildQuestions, questionsHtml, questionsText };
+/** One sample question in the chosen export language (Settings preview). */
+const SAMPLE = { message: 'Insert quantity 10 in the table, 8 holes on the view.', suggestion: 'Confirm the quantity.' };
+const sampleQuestion = (lang) => (lang === 'he' ? toHebrew(SAMPLE) : `${SAMPLE.message} ${SAMPLE.suggestion}`);
+/** Adds messageHe (Hebrew UI text) to each problem that has a translation. Mutates and returns the part. */
+function localizePart(part) { if (part && part.rejectReason) { const h = toHebrew({ message: part.rejectReason }); if (h) part.rejectReasonHe = h; } for (const p of (part && part.problems) || []) { const h = toHebrew(p); if (h) p.messageHe = h; } return part; }
+module.exports = { buildQuestions, questionsHtml, questionsText, sampleQuestion, toHebrew, localizePart };

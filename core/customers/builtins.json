@@ -1,0 +1,12 @@
+[
+  { "id": "RAFAEL", "name": "RAFAEL", "base": "RAFAEL", "builtin": true, "enabled": true, "routing": "auto", "questionsLanguage": "", "contact": "", "notes": "",
+    "detect": { "emailDomains": ["rafael.co.il"], "keywords": ["RAFAEL", "רפאל", "PRODUCTION ROUTING CHART"], "partNoPatterns": [], "filenamePatterns": ["*-PD-*"] } },
+  { "id": "ELBIT", "name": "ELBIT", "base": "ELBIT", "builtin": true, "enabled": true, "routing": "auto", "questionsLanguage": "", "contact": "", "notes": "",
+    "detect": { "emailDomains": ["elbitsystems.com"], "keywords": ["ELBIT", "אלביט"], "partNoPatterns": [], "filenamePatterns": [] } },
+  { "id": "KLA", "name": "KLA", "base": "KLA", "builtin": true, "enabled": true, "routing": "auto", "questionsLanguage": "", "contact": "", "notes": "",
+    "detect": { "emailDomains": ["kla.com"], "keywords": ["KLA", "KLA-TENCOR", "KLA FORMAT"], "partNoPatterns": [], "filenamePatterns": [] } },
+  { "id": "ELTA", "name": "ELTA", "base": "ELTA", "builtin": true, "enabled": true, "routing": "auto", "questionsLanguage": "", "contact": "", "notes": "",
+    "detect": { "emailDomains": ["elta.co.il", "iai.co.il"], "keywords": ["ELTA", "אלתא"], "partNoPatterns": ["####@###-###"], "filenamePatterns": [] } },
+  { "id": "GENERIC", "name": "Generic", "base": "GENERIC", "builtin": true, "enabled": true, "routing": "auto", "questionsLanguage": "", "contact": "", "notes": "Fallback",
+    "detect": { "emailDomains": [], "keywords": [], "partNoPatterns": [], "filenamePatterns": [] } }
+]

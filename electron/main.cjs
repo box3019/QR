@@ -7,10 +7,14 @@ const { runPipeline } = require('../core/pipeline.cjs');
 const { createMainWindow } = require('./window.cjs');
 const { saveOutlookSelection } = require('../core/email/outlook.cjs');
 const { renderPreview } = require('../core/pdf.cjs');
-const { DEFAULT_ALLOW } = require('../core/analyze.cjs');
-const { questionsHtml, questionsText, buildQuestions } = require('../core/questions.cjs');
+const { normalizeSettings, catalogOf } = require('../core/settings.cjs');
+const { entryPattern } = require('../core/catalog/index.cjs');
+const { newCustomer } = require('../core/customers/index.cjs');
+const { questionsHtml, questionsText, buildQuestions, sampleQuestion, localizePart } = require('../core/questions.cjs');
 
 app.setName('QR');
+// Isolated profile for automated tests (own settings + own single-instance lock), never used by the shortcuts.
+if (process.env.QR_PROFILE_DIR) app.setPath('userData', process.env.QR_PROFILE_DIR);
 // Startup log: %APPDATA%\QR\logs\main.log is written on every start so a silent failure is always diagnosable.
 function mainLog(msg) {
   try { const f = path.join(app.getPath('userData'), 'logs', 'main.log'); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.appendFileSync(f, `[${new Date().toISOString()}] [${process.pid}] ${msg}\n`); } catch {}
@@ -24,16 +28,7 @@ function logError(kind, e) {
 process.on('uncaughtException', (e) => { mainLog('uncaughtException ' + ((e && e.stack) || e)); logError('uncaughtException', e); });
 process.on('unhandledRejection', (e) => logError('unhandledRejection', e));
 const settingsFile = () => path.join(app.getPath('userData'), 'qr-settings.json');
-const DEFAULTS = {
-  textSize: 'normal',
-  questionsLanguage: 'he',
-  ocrDpi: 400,
-  ocr: true,
-  materials: DEFAULT_ALLOW.map((m) => ({ ...m, enabled: true })),
-  companyFolder: '',
-  searchRoots: ['\\\\fileserver-sr\\erp$\\Inspection'],
-};
-function loadSettings() { try { return { ...DEFAULTS, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) }; } catch { return { ...DEFAULTS }; } }
+function loadSettings() { let raw = null; try { raw = JSON.parse(fs.readFileSync(settingsFile(), 'utf8')); } catch {} return normalizeSettings(raw); }
 function saveSettings(s) { fs.mkdirSync(path.dirname(settingsFile()), { recursive: true }); fs.writeFileSync(settingsFile(), JSON.stringify(s, null, 2)); }
 const sevenZipPath = () => (app.isPackaged ? path.join(process.resourcesPath, '7zip', '7z.exe') : path.join(__dirname, '..', 'vendor', '7zip', '7z.exe'));
 const langPath = () => (app.isPackaged ? path.join(process.resourcesPath, 'ocr') : path.join(__dirname, '..', 'ocr'));
@@ -50,7 +45,10 @@ function createWindow() {
 
 const slim = (part) => part; // pipeline already strips tokens from parts
 ipcMain.handle('qr:getSettings', () => loadSettings());
-ipcMain.handle('qr:setSettings', (_e, s) => { const n = { ...loadSettings(), ...s }; saveSettings(n); return n; });
+ipcMain.handle('qr:questionSample', (_e, lang) => sampleQuestion(lang));
+ipcMain.handle('qr:newCustomer', (_e, from, ids) => newCustomer(from, ids));
+ipcMain.handle('qr:catalogPatterns', (_e, entries) => (entries || []).map((x) => entryPattern(x) || ''));
+ipcMain.handle('qr:setSettings', (_e, s) => { const n = normalizeSettings({ ...loadSettings(), ...s }); saveSettings(n); return n; });
 ipcMain.handle('qr:pickFiles', async () => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Drawings, models, ZIP/RAR/7z, e-mails', extensions: ['pdf', 'zip', 'rar', '7z', 'msg', 'eml', 'step', 'stp', 'igs', 'iges', 'sldprt', 'x_t', 'x_b'] }, { name: 'All files', extensions: ['*'] }] });
   return r.canceled ? [] : r.filePaths;
@@ -60,7 +58,8 @@ ipcMain.handle('qr:process', async (e, paths) => {
   const s = loadSettings();
   const emit = (ev) => { try { e.sender.send('qr:event', ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev); } catch {} };
   const t0 = Date.now();
-  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), sevenZip: sevenZipPath(), materials: (s.materials || []).filter((m) => m.enabled !== false) }, emit);
+  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), sevenZip: sevenZipPath(), catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
+  (res.parts || []).forEach(localizePart);
   res.seconds = Math.round((Date.now() - t0) / 1000);
   lastResult = res;
   return res;

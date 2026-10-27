@@ -2,8 +2,11 @@
 // QR analysis: part identity, customer profile, material + allow-list, BOM / parts list, threads vs inserts,
 // routing (route card), references, surface-zone markers, problems and engineer tasks.
 const { findReferences } = require('./refs.cjs');
+const { checkCapability } = require('./checks/capability.cjs');
+const { defaultCatalog } = require('./catalog/index.cjs');
+const { detectProfile } = require('./customers/index.cjs');
 
-const { MATERIAL_RE, normalizeMaterialTokens, NOT_MATERIAL, isMaterialValue, DEFAULT_ALLOW, REJECT_FAMILIES, materialFamily, prettyMaterial, materialFromTitleBlock } = require('./materials.cjs');
+const { normalizeMaterialTokens, isMaterialValue, materialFromTitleBlock } = require('./materials.cjs');
 const bb = (t) => [Math.round(t.x), Math.round(t.y), Math.round(t.w), Math.round(t.h)];
 
 // ---------- notes ----------
@@ -176,14 +179,7 @@ function insertFromBom(line) {
 }
 
 // ---------- customer profile ----------
-function detectCustomer(text) {
-  const t = text.toUpperCase();
-  if (/RAFAEL/.test(t) || /PRODUCTION ROUTING CHART/.test(t)) return 'RAFAEL';
-  if (/ELBIT/.test(t)) return 'ELBIT';
-  if (/\bKLA\b|KLA-TENCOR|KLA FORMAT/.test(t)) return 'KLA';
-  if (/\b\d{4}[A-Z]\d{3}-\d{3}\b/.test(t)) return 'ELTA';
-  return 'GENERIC';
-}
+const detectCustomer = (text) => detectProfile({ text }).base; // compat: base profile from the built-in data
 /** UNS / alloy codes (C36000, A92024...) are materials, not part numbers. */
 function isMaterialCode(pn, text) { return /^[ACS]\d{5}$/.test(pn) && new RegExp('(ALLOY|BRASS|COPPER|BRONZE|STEEL|ALUMIN\\w*)[^\\n]{0,40}' + pn + '|' + pn + '-H\\d', 'i').test(text); }
 /** RAFAEL file names: <PN>-<REV>-PD-<PN>_<REV>[-pas].pdf */
@@ -210,6 +206,8 @@ function detectPartNo(text, customer, fileName) {
   if (customer === 'KLA') { const revs = [...t.matchAll(/^\s*(A[A-H])\s*$/gm), ...t.matchAll(/^\s*(A[A-H])\s+[A-Z]{3,}/gm)].map((m) => m[1]).sort(); rev = revs[revs.length - 1] || null; }
   if (customer === 'ELBIT') rev = (t.match(/Drawing:\s*[\d-]+,\s*([A-Z])/) || [])[1] || null;
   if (!rev && rr) rev = rr[1];
+  // generic: rev letter glued to the part number in the file name (1096b020-001b.pdf, 0123456-001_AC.pdf)
+  if (!rev && pn) rev = (String(fileName).toUpperCase().match(new RegExp('^' + pn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[-_ ]?(?:REV[-_ ]?)?([A-Z]{1,2})(?=[-_ .(]|$)')) || [])[1] || null;
   const title = (customer === 'RAFAEL' && (t.match(/TITLE\s*\n?.*?CHECKED\s+([A-Za-z][A-Za-z ]+?)\s+\d\s*$/m) || [])[1]) ||
     (customer === 'KLA' && (t.match(/\n((?:BRKT|CHUCK|LBC)[^\n]+)/) || [])[1]) || '';
   return { partNo: pn, rev, title: title.trim() };
@@ -235,8 +233,10 @@ function zoneMarkers(pages, noteIds) {
 function analyzePart({ drawing, partsList, models, settings, library }) {
   const pages = drawing.pages;
   const text = pages.map((p) => p.raw).join('\n');
-  const customer = detectCustomer(text + ' ' + (partsList ? partsList.pages.map((p) => p.raw).join('\n') : ''));
+  const profile = detectProfile({ text: text + ' ' + (partsList ? partsList.pages.map((p) => p.raw).join('\n') : ''), fileName: drawing.name, emails: drawing.emails || [] }, settings.customers);
+  const customer = profile.base; // base profile picks the parsers below
   const id = detectPartNo(text, customer, drawing.name);
+  if (!id.rev && drawing.path) id.rev = (String(drawing.path).split(/[\\/]/).slice(-2, -1)[0] || '').toUpperCase().match(/^REV(?:ISION)?[-_ ]?([A-Z]{1,2})$/)?.[1] || null; // ...\\Revision_B\\1.pdf
   const problems = [];
   const tasks = [];
   const addP = (severity, category, message, suggestion, evidence = [], extra = {}) => problems.push({ id: 'P' + (problems.length + 1), severity, category, message, suggestion, evidence, status: 'open', ...extra });
@@ -251,7 +251,7 @@ function analyzePart({ drawing, partsList, models, settings, library }) {
   const notes = parseNotes(text);
   let route = [];
   let routeSource = '';
-  if (customer === 'RAFAEL') { route = parseRafaelRouting(text) || []; routeSource = 'PRODUCTION ROUTING CHART'; }
+  if (customer === 'RAFAEL' && !/^notes/.test(profile.routing)) { route = parseRafaelRouting(text) || []; routeSource = 'PRODUCTION ROUTING CHART'; }
   if (!route.length) {
     routeSource = partsList ? 'Drawing NOTES + PARTS LIST' : 'Drawing NOTES';
     const order = ['material', 'machining', 'surface', 'marking', 'inserts', 'inspection', 'packing', 'general', 'other'];
@@ -267,17 +267,13 @@ function analyzePart({ drawing, partsList, models, settings, library }) {
   let tbSeeNotes = false;
   if (!material) for (const p of pages) { const m = materialFromTitleBlock(p); if (m && m.raw) { material = m; break; } if (m && m.seeNotes) tbSeeNotes = true; }
   if (!material) { const n = notes.find((x) => /^MATERIAL\s*:/.test(x.text) && isMaterialValue(x.text)); if (n) material = { raw: n.text.replace(/^MATERIAL\s*:\s*/, ''), source: 'Note ' + n.n + (tbSeeNotes ? ' (title block: SEE NOTES)' : ''), conf: 1 }; }
-  let status = 'pending', rejectReason = '';
-  if (material) {
-    const fam = materialFamily(material.raw, settings.materials || DEFAULT_ALLOW);
-    Object.assign(material, { normalized: prettyMaterial(material.raw), family: fam.family });
-    if (fam.allowed) status = 'accepted';
-    else { status = 'rejected'; rejectReason = `Material: ${material.normalized} — not in "Materials we work with"`; }
-  } else {
-    addP('Question', 'Material', 'Material not found on the drawing (title block, notes, routing chart or parts list).', 'Ask the customer for the material specification.');
-    rejectReason = 'Material not found';
-  }
-
+  // capability: material + processes vs the enabled catalog (core/checks/capability.cjs)
+  const capLines = [...notes.map((n) => ({ text: n.text, where: 'note ' + n.n })), ...route.flatMap((r) => r.items.map((i) => ({ text: i.text, where: (routeSource.startsWith('PRODUCTION') ? 'routing ' : 'step ') + (i.seq || r.seq) }))), ...bom.map((b) => ({ text: b.desc, where: 'parts list seq ' + b.seq }))];
+  const cap = checkCapability({ material, lines: capLines, catalog: settings.catalog || defaultCatalog() });
+  let { status, rejectReason } = cap;
+  if (material) Object.assign(material, { normalized: cap.materialMatch.found, family: cap.materialMatch.entry ? cap.materialMatch.entry.family : 'Not in list', catalogId: cap.materialMatch.entry && cap.materialMatch.entry.id });
+  else addP('Question', 'Material', 'No material found (title block, notes, routing, parts list).', 'Ask the customer for the material spec.');
+  for (const p of cap.problems) addP(p.severity, p.category, p.message, p.suggestion, [], p.internal ? { internal: true } : {});
   // threads vs inserts
   const vt = viewThreads(text);
   const inserts = bom.map((b) => ({ b, ins: insertFromBom(b) })).filter((x) => x.ins);
@@ -386,12 +382,11 @@ function analyzePart({ drawing, partsList, models, settings, library }) {
   const maskIdx = route.findIndex((s) => s.type === 'surface' && /MASK/.test(s.items.map((i) => i.text).join(' ')) && s.items.length === 1 && !/ANODI|PAINT|CONVERSION/.test(s.items[0].text));
   const coatIdx = route.findIndex((s) => s.outsourced);
   if (maskIdx > coatIdx && coatIdx >= 0) { const [m] = route.splice(maskIdx, 1); route.splice(coatIdx, 0, m); m.moved = 'moved before coating'; }
-  for (const s of route.filter((x) => x.empty && customer === 'RAFAEL' && ['10', '20', '30', '50', '70', '80', '90'].includes(x.seq))) addP('Info', 'Route card', `Routing chart step ${s.seq} ${s.title} has no sub-items.`, 'Check the routing chart.', [], { verify: true });
 
   const textMode = pages.some((p) => p.quality.mode === 'ocr') ? 'OCR' : pages.some((p) => p.quality.mode === 'mixed') ? 'Mixed' : 'Text';
   const openTasks = tasks.filter((t) => t.type === 'uploadDocument').length;
-  const readiness = status === 'rejected' ? 'n/a' : openTasks ? `Blocked by ${openTasks} task${openTasks > 1 ? 's' : ''}` : problems.some((p) => p.severity === 'Blocker') ? 'Incomplete' : 'Ready';
-  return { customer, ...id, material, status, rejectReason, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
+  const readiness = status === 'rejected' ? 'n/a' : status === 'pending' ? 'Blocked: no material' : openTasks ? `Blocked by ${openTasks} task${openTasks > 1 ? 's' : ''}` : problems.some((p) => p.severity === 'Blocker') ? 'Incomplete' : 'Ready';
+  return { customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
 }
 
-module.exports = { detectPartNo, isMaterialCode, revFromFileName, parseEltaPartsListPages, analyzePart, DEFAULT_ALLOW, normalizeMaterialTokens, isMaterialValue, materialFamily, parseNotes, viewThreads, normThread, detectCustomer };
+module.exports = { detectPartNo, isMaterialCode, revFromFileName, parseEltaPartsListPages, analyzePart, normalizeMaterialTokens, isMaterialValue, parseNotes, viewThreads, normThread, detectCustomer };

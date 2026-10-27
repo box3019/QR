@@ -1,20 +1,18 @@
 'use strict';
 // email/rfq: build the Rfq record from a Mail object (headers, forwarded "From:", customer hints, requirements).
-const CUSTOMER_HINTS = { RAFAEL: ['רפאל', 'rafael'], ELTA: ['elta', 'אלתא'], KLA: ['kla'], ELBIT: ['elbit', 'אלביט'] };
+const { detectProfile } = require('../customers/index.cjs');
 const REQUIREMENT_RE = /FAI|\bLT\b|דולר|גימור|\$|lead time|finish/i;
 const clean = (s) => String(s || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 
-function detectCustomer(text) {
-  const t = String(text).toLowerCase();
-  return Object.keys(CUSTOMER_HINTS).find((c) => CUSTOMER_HINTS[c].some((k) => t.includes(k.toLowerCase()))) || null;
-}
+/** Customer from the profile data (e-mail domains, keywords); null when nothing matches. */
+function detectCustomer(text, customers, emails = []) { const p = detectProfile({ text, emails }, customers); return p.score ? p.name : null; }
 
 /**
  * @param {object} mail Mail from readers.cjs
  * @param {Array} rows RFQ table rows
  * @returns Rfq
  */
-function buildRfq(mail, rows, source) {
+function buildRfq(mail, rows, source, customers) {
   const subject = clean(mail.subject); const body = String(mail.body || '');
   const orig = body.match(/From:\s*(.+?)\s*<\s*([^\s>]+@[^\s>]+)/);
   const sent = body.match(/Sent:\s*(.+)/);
@@ -26,7 +24,7 @@ function buildRfq(mail, rows, source) {
     original_sender: orig ? { name: clean(orig[1]), email: orig[2] } : null,
     original_sent: sent ? clean(sent[1]) : null,
     date: mail.date,
-    customer: detectCustomer(subject + '\n' + body),
+    customer: detectCustomer(subject + '\n' + body, customers, [mail.sender && mail.sender.email, orig && orig[2]].filter(Boolean)),
     intermediary: orig ? orig[2].split('@')[1] : null,
     requirements: body.split(/\r?\n/).map((l) => l.replace(/^[*\s]+/, '').trim()).filter((l) => l && REQUIREMENT_RE.test(l) && !/@|https?:/.test(l)),
     rows,

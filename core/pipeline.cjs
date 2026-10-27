@@ -61,7 +61,7 @@ function locate(pages, pr) {
 async function runPipeline(paths, settings, emit = () => {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-'));
   const errors = [];
-  const { files, rfqs } = await expand(paths, tmp, { sevenZip: settings.sevenZip, readEmail, onStatus: (text) => emit({ type: 'status', text }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
+  const { files, rfqs } = await expand(paths, tmp, { sevenZip: settings.sevenZip, readEmail: (f, out) => readEmail(f, out, { customers: settings.customers }), onStatus: (text) => emit({ type: 'status', text }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
   for (const r of rfqs) emit({ type: 'rfq', rfq: r });
   emit({ type: 'files', files: files.map((f) => ({ path: f, name: path.basename(f) })) });
   const docs = [];
@@ -94,7 +94,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
     const pl = partsLists.find((l) => { const forPn = (l.name.match(/\bfor\s+([A-Z0-9-]{5,})/i) || [])[1]; if (forPn) return d.name.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(forPn.toUpperCase().replace(/[^A-Z0-9]/g, '')) || key.toUpperCase().includes('ASSEMBLY') && key.includes(forPn.toUpperCase()) && d.name.toUpperCase().includes(forPn.toUpperCase()); const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
     try {
       const a = analyzePart({ drawing: d, partsList: pl, models, settings, library: settings.library || [] });
-      const mm = findModels(a.partNo, d.path, models, a.customer, settings.searchRoots);
+      const mm = findModels(a.partNo, d.path, models, a.profile, settings.searchRoots);
       a.model = mm.models[0] ? { path: mm.models[0], ...stepHeader(mm.models[0]) } : null;
       a.modelSearchLog = mm.log;
       for (const pr of a.problems) pr.loc = locate(d.pages, pr);

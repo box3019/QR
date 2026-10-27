@@ -9,7 +9,7 @@ const { buildRfq } = require('./rfq.cjs');
 const SKIP = /^(~WRD|image\d|email_signature|Outlook-)/i;
 const safeName = (n) => path.basename(String(n)).replace(/[<>:"/\\|?*\x00-\x1f]/g, '_');
 
-async function readEmail(file, outDir) {
+async function readEmail(file, outDir, opts = {}) {
   const mail = await readMail(file);
   fs.mkdirSync(outDir, { recursive: true });
   const attachmentFiles = [];
@@ -17,7 +17,7 @@ async function readEmail(file, outDir) {
     if (!a.name || a.hidden || SKIP.test(a.name)) continue;
     const p = path.join(outDir, safeName(a.name)); fs.writeFileSync(p, a.data); attachmentFiles.push(p);
   }
-  const rfq = buildRfq(mail, parseRfqTable(mail), path.basename(file));
+  const rfq = buildRfq(mail, parseRfqTable(mail), path.basename(file), opts.customers);
   rfq.attachments = attachmentFiles.map((f) => path.basename(f));
   return { rfq, attachmentFiles };
 }

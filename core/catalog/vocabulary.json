@@ -1,0 +1,17 @@
+[
+  { "key": "anodize", "label": "Anodize", "aliases": ["ANODIZE", "ANODIZED", "ANODIZING", "MIL-A-8625", "MIL-PRF-8625"] },
+  { "key": "chem-film", "label": "Chem film", "aliases": ["CHEM FILM", "CHEMICAL FILM", "CHEMICAL CONVERSION", "CONVERSION COAT", "MIL-DTL-5541", "MIL-C-5541", "ALODINE", "IRIDITE"] },
+  { "key": "paint", "label": "Paint", "aliases": ["PAINT", "PAINTED", "TOP COAT", "TOPCOAT", "PRIMER", "MIL-PRF-85285", "MIL-PRF-23377"] },
+  { "key": "passivation", "label": "Passivation", "aliases": ["PASSIVATE", "PASSIVATION", "AMS 2700", "ASTM A967"] },
+  { "key": "plating", "label": "Plating", "aliases": ["PLATING", "PLATED", "ELECTROLESS NICKEL", "AMS 2404", "AMS-C-26074", "CADMIUM", "QQ-P-416", "ZINC PLATE"] },
+  { "key": "heat-treat", "label": "Heat treat", "aliases": ["HEAT TREAT", "HEAT TREATMENT", "SOLUTION TREAT", "AGE HARDEN", "ANNEAL", "AMS 2770"] },
+  { "key": "inserts", "label": "Inserts", "aliases": ["INSERT", "HELICOIL", "HELI-COIL", "KEENSERT", "MS21209", "NAS1130"] },
+  { "key": "laser-marking", "label": "Laser marking", "aliases": ["LASER MARK", "LASER MARKING", "LASER ETCH"] },
+  { "key": "dlc", "label": "DLC coating", "aliases": ["DLC", "DIAMOND-LIKE CARBON", "DIAMOND LIKE CARBON"] },
+  { "key": "black-oxide", "label": "Black oxide", "aliases": ["BLACK OXIDE", "MIL-DTL-13924"] },
+  { "key": "nitriding", "label": "Nitriding", "aliases": ["NITRIDE", "NITRIDING", "AMS 2759/6"] },
+  { "key": "shot-peen", "label": "Shot peening", "aliases": ["SHOT PEEN", "SHOT-PEEN", "AMS 2430", "AMS 2432"] },
+  { "key": "powder-coat", "label": "Powder coat", "aliases": ["POWDER COAT", "POWDER-COAT"] },
+  { "key": "silk-screen", "label": "Silk screen", "aliases": ["SILK SCREEN", "SILKSCREEN"] },
+  { "key": "welding", "label": "Welding", "aliases": ["WELD", "WELDING", "AWS D17"] }
+]
