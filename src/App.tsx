@@ -12,7 +12,13 @@ import { StepCheckParts } from './components/wizard/StepCheckParts';
 import { StepDocsQuestions } from './components/wizard/StepDocsQuestions';
 import { StepSummary } from './components/wizard/StepSummary';
 import { ProgressToast } from './components/wizard/ProgressToast';
+import { RailContext } from './components/wizard/RailContext';
+import { WizardFooter } from './components/wizard/WizardFooter';
+import { useAssistant } from './hooks/useAssistant';
+import { hintFor } from './wizard/hints.mjs';
+import { openQuestions } from './wizard/summary.mjs';
 import { useBusy } from './hooks/useBusy';
+import { exposeTestHooks } from './hooks/testHooks';
 import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
 
 declare global { interface Window { qr: any } }
@@ -37,28 +43,21 @@ export default function App() {
   const [lastRun, setLastRun] = useState<any>(null);
   const [rfqs, setRfqs] = useState<any[]>([]);
   const [details, setDetails] = useState(false);
-  (window as any).__qrDetails = setDetails;
-  (window as any).__qrStep = setStep;
 
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
   if (settings) { setLang(settings.uiLanguage); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
   const { busy, start, stop } = useBusy((p) => setParts((ps) => [...ps, p]));
 
+  const reset = () => { setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setStep(1); };
   const run = useCallback(async (paths: string[]) => {
     if (!paths.length) return;
-    setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setStep(1); start();
+    reset(); start();
     try { const r = await qr().process(paths); setParts(r.parts); setUnknown([...(r.unknown || []), ...(r.other || [])]); setRfqs(r.rfqs || []); setLastRun({ seconds: r.seconds, files: r.files }); if (r.parts.length) { setStep(2); setTab('drawing'); } }
     catch (e: any) { alert(t('err.processing', { text: e?.message || e })); }
     finally { stop(); }
   }, []);
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => run(files)) : undefined, [run]); // Outlook 'Send to QR'
-  (window as any).__qrRun = run; // hooks for automated self-tests
-  (window as any).__qrParts = parts;
-  (window as any).__qrRfqs = rfqs;
-  (window as any).__qrUnknown = unknown;
-  (window as any).__qrSelect = (i: number, tb?: any) => { setSel(i); if (tb) { setTab(tb); setStep(2); } };
-  (window as any).__qrDialog = setDialog;
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault(); setOver(false);
@@ -68,11 +67,14 @@ export default function App() {
     if (settings && settings.outlookDrag === false) return;
     qr().outlookSelection().then(run).catch((x: any) => alert(String(x?.message || x)));
   };
+  exposeTestHooks({ setDetails, setStep, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); if (tb) { setTab(tb); setStep(2); } } });
   const has = parts.length > 0;
   const bar = toolbarFor(step, has);
   const updatePart = (fn: (p: Part) => Part) => setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p)));
   const pick = (i: number) => { setSel(i); setFocus(null); };
-  const hint = step === 1 && has ? t('wz.h1done', { n: parts.length }) : t('wz.h' + step);
+  const saveSettings = async (s: any) => setSettings(await qr().setSettings(s));
+  const assistant = useAssistant(settings, saveSettings);
+  const hint = hintFor(step, { hasParts: has, nParts: parts.length, busy: !!busy, nQuestions: openQuestions(parts) });
 
   return (
     <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light" data-step={step}
@@ -86,18 +88,20 @@ export default function App() {
         <TopButton icon="?" label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => setDialog('tutorial')} />
       </div>
       <div className="qr-wiz">
+        <RailContext rfqs={rfqs} parts={parts} files={lastRun?.files || []} />
+        <StepHeader step={step} hint={hint} assistant={assistant} />
         <Stepper step={step} setStep={setStep} hasParts={has} />
         <main className="qr-wiz-main">
-          <StepHeader step={step} setStep={setStep} hasParts={has} hint={hint} />
           {step === 1 && <StepIntake rfqs={rfqs} over={over} details={details} unknown={unknown} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
           {step === 2 && has && <StepCheckParts parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={setStep} />}
           {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} />}
           {step === 4 && has && <StepSummary parts={parts} openDialog={setDialog} goPart={(i: number) => { pick(i); setStep(2); }} />}
         </main>
+        <WizardFooter step={step} setStep={setStep} hasParts={has} onCancel={() => confirm(t('wz.cancelAsk')) && reset()} onClose={() => window.close()} />
       </div>
 
       {busy && <ProgressToast busy={busy} details={details} />}
-      {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { setSettings(await qr().setSettings(s)); setDialog(null); }} />}
+      {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} />}
       {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
       {settings && !settings.firstRunDone && !parts.length && !busy && <FirstRun onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'summary' && <SummaryDialog parts={parts} onClose={() => setDialog(null)} />}

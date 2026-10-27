@@ -11,5 +11,5 @@ test('minimal toolbar: add only in intake, details only after intake', async () 
   assert.strictEqual(w.toolbarFor(3, true).details, true); assert.strictEqual(w.toolbarFor(2, false).details, false); for (const n of [1, 2, 3, 4]) assert.ok(w.toolbarFor(n, true).help && w.toolbarFor(n, true).settings); });
 test('viewer tabs: model/data only with details', async () => { const w = await load(); assert.deepStrictEqual(w.viewerTabs(false), ['drawing', 'route']); assert.deepStrictEqual(w.viewerTabs(true), ['drawing', 'route', 'model', 'data']); });
 test('wizard i18n complete in EN and HE, HE has no Latin', () => { const en = require('../src/i18n/en.json'), he = require('../src/i18n/he.json');
-  const keys = Object.keys(en).filter((k) => k.startsWith('wz.')); assert.ok(keys.length >= 30);
+  const keys = Object.keys(en).filter((k) => /^(wz|as|ctx)\./.test(k)); assert.ok(keys.length >= 30);
   for (const k of keys) { assert.ok(he[k], 'he ' + k); assert.ok(!/[A-Za-z]/.test(he[k].replace(/\{\w+\}/g, '')), 'latin in he ' + k); } });

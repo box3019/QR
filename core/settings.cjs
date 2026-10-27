@@ -15,6 +15,7 @@ const DEFAULTS = {
   searchRoots: ['\\\\fileserver-sr\\erp$\\Inspection'],
   outlookDrag: true,
   outlookSaveFolder: '',
+  assistant: true,
 };
 /** Pure: stored object -> full settings with the capability catalog merged over the defaults. */
 function normalizeSettings(stored) {

@@ -18,7 +18,6 @@ export function StepSummary({ parts, openDialog, goPart }: any) {
       <button className={MRT_BTN_PRIMARY} data-testid="btn-questions" title={t('tip.questions')} onClick={() => openDialog('questions')}>{t('wz.qBtn')}</button>
     </Box>
     <Box title={t('wz.secX')} testid="box-export-xlsx">
-      <p className="qr-box-text">{t('wz.xText')}</p>
       <button className={MRT_BTN_PRIMARY} data-testid="btn-export-xlsx-all" title={t('tip.exportXlsx')} onClick={xlsx}>{t('wz.xBtn')}</button>
     </Box>
     <div className="qr-more"><button className={MRT_BTN} data-testid="btn-summary" title={t('wz.tipReport')} onClick={() => openDialog('summary')}>{t('wz.showReport')}</button></div>

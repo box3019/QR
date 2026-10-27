@@ -80,3 +80,50 @@
 .qr-root .qr-bsec button.qr-sec-main > * { min-width: 0; overflow-wrap: anywhere; }
 .qr-sec-line { container-type: inline-size; }
 @container (max-width: 24rem) { .qr-root .qr-bsec button.qr-sec-main { grid-template-columns: minmax(0, 1fr); flex-basis: 100%; } .qr-root .qr-bsec button.qr-sec-main > :nth-child(n+3) { grid-column: 1; } }
+
+/* ===== v0.1.4 wizard shell: MRT "Create CMM Program" layout (cmm-pr3 src/mrtLiquidGlass.css .mrt-wizard-*, QR's own copy, px/16 -> rem) ===== */
+.qr-wiz { grid-template-columns: min(17.5rem, 34vw) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; line-height: 1.35; }
+.qr-rail-context { grid-column: 1; grid-row: 1; min-width: 0; border-bottom: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); border-inline-end: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.65rem 0.7rem; }
+.qr-wsum { overflow: hidden; border: 1px solid var(--mrt-ui-border, var(--mrt-border)); border-radius: var(--mrt-radius, 6px); background: var(--mrt-surface, #fff); }
+.qr-wsum-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.qr-wsum-table th, .qr-wsum-table td { border-bottom: 1px solid var(--mrt-ui-border, var(--mrt-border)); padding: 0.28rem 0.45rem; vertical-align: middle; text-align: start; line-height: 1.3; }
+.qr-wsum-table tr:last-child th, .qr-wsum-table tr:last-child td { border-bottom: 0; }
+.qr-wsum-table th { width: 45%; border-inline-end: 1px solid var(--mrt-ui-border, var(--mrt-border)); background: var(--mrt-surface-muted, #f8fafc); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #64748b; }
+.qr-wsum-table td { max-width: 0; overflow: hidden; font-size: 0.875rem; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; text-overflow: ellipsis; color: var(--mrt-text); }
+.qr-wiz > .qr-wiz-head { grid-column: 2; grid-row: 1; min-width: 0; background: var(--mrt-header-bg, #f4f4f5); padding: 0.875rem 1.25rem; gap: 0.5rem; flex-wrap: nowrap; }
+.qr-wiz-title { font-size: 1rem; font-weight: 600; white-space: nowrap; }
+.qr-rail { grid-column: 1; grid-row: 2; }
+.qr-rail .mrt-wizard-steps { background: var(--mrt-surface, #fff); padding: 0.75rem 0.75rem 0.75rem 1rem; gap: 0.15rem; }
+.qr-rail .mrt-wizard-step { padding: 0.55rem 0.6rem; }
+.qr-rail .mrt-wizard-step-marker { height: 1.375rem; width: 1.375rem; font-size: 0.6875rem; }
+.qr-rail .mrt-wizard-step-label { font-size: 1rem; font-weight: 600; }
+.qr-rail .mrt-wizard-step[data-state='locked'] .mrt-wizard-step-label, .qr-rail .mrt-wizard-step[data-state='todo'] .mrt-wizard-step-label { color: var(--mrt-text-muted, #6b7280); }
+.qr-wiz > .qr-wiz-main { grid-column: 2; grid-row: 2; background: var(--mrt-surface, #fff); }
+.qr-wiz-footer { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.75rem 1rem; }
+.qr-root .qr-wiz-footer button { width: auto; min-width: 0; height: auto !important; min-height: 2.125rem; padding: 0.375rem 0.75rem !important; font-size: 0.8125rem !important; white-space: nowrap; }
+.qr-chev { display: inline-block; margin-inline-start: 0.35rem; font-size: 1.1em; line-height: 1; }
+[dir='rtl'] .qr-chev { transform: scaleX(-1); }
+/* assistant: avatar + speech bubble */
+.qr-ai-hint { display: flex; flex: 1 1 16rem; align-items: center; gap: 0.5rem; min-width: 0; }
+.qr-ai-avatar { flex: 0 0 auto; border: 0; background: none; padding: 0; cursor: pointer; line-height: 0; border-radius: 50%; } /* circle avatar */
+.qr-face { width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: 50%; } /* circle avatar */
+.qr-ai-hint[data-on='false'] .qr-face { opacity: 0.55; }
+.qr-ai-bubble { min-width: 0; border-radius: 1.125rem; border: 1px solid color-mix(in srgb, var(--mrt-text-muted, #6b7280) 28%, var(--mrt-border, #e5e7eb)); background: var(--mrt-surface, #fff); padding: 0.375rem 0.875rem; color: var(--mrt-text); font-size: 0.78rem; font-weight: 600; line-height: 1.35; text-align: center; box-shadow: 0 1px 2px color-mix(in srgb, var(--mrt-text, #111) 8%, transparent); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.qr-face-disc { fill: #f4efe6; stroke: #e4d8c8; stroke-width: 1; }
+.qr-face-bob { transform-box: fill-box; transform-origin: center; animation: qr-face-bob 2.8s ease-in-out infinite; }
+.qr-face-hair { fill: #d5dbe3; } .qr-face-tuft { fill: #f7f8fa; }
+.qr-face-band { fill: none; stroke: #8e98a6; stroke-width: 3.2; stroke-linecap: round; }
+.qr-face-cup { fill: #5f6b78; stroke: #3f4854; stroke-width: 1.4; }
+.qr-face-skin { fill: #f6c7a6; } .qr-face-blush { fill: #f0a090; }
+.qr-face-look { transform-box: fill-box; transform-origin: center; animation: qr-face-look 5.5s ease-in-out infinite; }
+.qr-face-eyes { transform-box: fill-box; transform-origin: center; animation: qr-face-blink 4.6s ease-in-out infinite; }
+.qr-face-eye { fill: #2b241f; } .qr-face-glint { fill: #fff; } .qr-face-shirt { fill: #fff; }
+.qr-face-mouth { fill: none; stroke: #c45b62; stroke-width: 1.4; stroke-linecap: round; }
+@keyframes qr-face-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+@keyframes qr-face-look { 0%, 40%, 100% { transform: translateX(0); } 50%, 60% { transform: translateX(1.2px); } 75%, 85% { transform: translateX(-1.2px); } }
+@keyframes qr-face-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@media (prefers-reduced-motion: reduce) { .qr-face-bob, .qr-face-eyes, .qr-face-look { animation: none; } }
+/* step content inside a bordered rounded card (MRT .mrt-wizard-main-body + .mrt-wizard-panel) */
+.qr-root[data-step="1"] .qr-wiz-main, .qr-root[data-step="4"] .qr-wiz-main { padding: 1.25rem; gap: 0.75rem; }
+.qr-step-intake .qr-drop { margin: 0; border: 1px solid var(--mrt-ui-border-strong, var(--mrt-border)); border-radius: var(--mrt-radius, 6px); }
+.qr-step-intake .qr-drop[data-over='true'] { border-style: dashed; }

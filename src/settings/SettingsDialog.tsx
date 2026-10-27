@@ -11,7 +11,7 @@ function QuestionSample({ lang }: { lang: string }) {
   return <div className="qr-sample" dir={lang === 'he' ? 'rtl' : 'ltr'} data-testid="question-sample">{t}</div>;
 }
 
-const TABS = ['general', 'ocr', 'materials', 'processes', 'customers', 'outlook', 'folders'] as const;
+const TABS = ['general', 'ocr', 'materials', 'processes', 'customers', 'outlook', 'folders', 'assistant'] as const;
 type Tab = typeof TABS[number];
 
 function Field({ label, children }: any) { return <div className="qr-field"><label>{label}</label><div>{children}</div></div>; }
@@ -54,6 +54,7 @@ export default function SettingsDialog({ settings, onClose, onSave, initialTab }
           <Field label={t('st.export')}><FolderInput value={s.exportFolder} onChange={(v: string) => set('exportFolder', v)} /></Field>
           <Field label={t('st.roots')}><textarea className="qr-input" style={{ width: '100%' }} rows={4} value={(s.searchRoots || []).join('\n')} onChange={(e) => set('searchRoots', e.target.value.split('\n').map((x) => x.trim()).filter(Boolean))} /></Field>
         </>}
+        {tab === 'assistant' && <Field label={t('st.tab.assistant')}><label className="qr-row"><input type="checkbox" data-testid="assistant-on" checked={s.assistant !== false} onChange={(e) => set('assistant', e.target.checked)} /> {t('st.assistantOn')}</label></Field>}
       </div>
     </div>
   </Modal>;
