@@ -1,18 +1,17 @@
-// Step 4: export the questions and the Excel; the full report opens on demand.
+// Step 4: flagged-parts bar, totals, the two exports; the full report on demand.
 import React from 'react';
-import { t } from '../i18n';
-import { MRT_BTN, MRT_BTN_PRIMARY } from '../ui/mrtButtons';
-import { Box } from '../wizard/StepBar';
-import { groupParts } from '../parts/groups.mjs';
+import { t } from '../../i18n';
+import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
+import { Box } from './Box';
+import { groupParts } from '../../parts/groups.mjs';
+import { summaryCounts } from '../../wizard/summary.mjs';
 
-export function SummaryStep({ parts, openDialog, goPart }: any) {
-  const open = (p: any) => p.problems.filter((x: any) => (x.severity === 'Blocker' || x.severity === 'Question') && x.status !== 'resolved').length;
-  const nq = parts.reduce((s: number, p: any) => s + open(p), 0), np = parts.filter((p: any) => open(p) > 0).length;
+export function StepSummary({ parts, openDialog, goPart }: any) {
+  const { nq, np, flagged } = summaryCounts(parts);
   const xlsx = async () => { const r = await (window as any).qr.exportRequirements(parts); if (r && r.path) (window as any).qr.openPath(r.path); };
-  const flagged = parts.map((p: any, i: number) => ({ p, i })).filter(({ p }: any) => p.problems.some((x: any) => (x.severity === 'Blocker' || x.severity === 'Warning') && x.status !== 'resolved'));
   const groups = groupParts(parts);
   return <div className="qr-summary-step" data-testid="summary-step">
-    {flagged.length > 0 && <div className="qr-warnbar" data-testid="sum-flagged"><span>{t('wz.flagged', { n: flagged.length })}</span><button className={MRT_BTN} title={t('tip.goFlagged')} onClick={() => goPart(flagged[0].i)}>{t('wz.goFlagged')}</button></div>}
+    {flagged.length > 0 && <div className="qr-warnbar" data-testid="sum-flagged"><span>{t('wz.flagged', { n: flagged.length })}</span><button className={MRT_BTN} title={t('tip.goFlagged')} onClick={() => goPart(flagged[0])}>{t('wz.goFlagged')}</button></div>}
     <div className="qr-sum-line" data-testid="sum-totals"><span className="qr-lbl">{t('wz.parts')}</span> <b>{parts.length}</b>{groups.map((g: any) => <span key={g.key} className="qr-sum-g" data-g={g.key}>{t('pg.' + g.key)} {g.items.length}</span>)}<span className="qr-lbl">{t('wz.questions')}</span> <b>{nq}</b></div>
     <Box title={t('wz.secQ')} testid="box-export-questions">
       <p className="qr-box-text">{t('wz.qText', { n: nq, p: np })}</p>

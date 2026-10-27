@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { t, getLang } from '../i18n';
 import { Chip } from '../ui/common';
 import { MRT_ACTION_BTN, MRT_BTN } from '../ui/mrtButtons';
-import { Box } from '../wizard/StepBar';
+import { Box } from '../components/wizard/Box';
 
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
 const tone = (sev: string) => (sev === 'Blocker' ? 'danger' : sev === 'Question' ? 'attention' : 'info');

@@ -1,11 +1,4 @@
 /* Wizard step bar: MRT wizard step look (copied values), laid out horizontally on top. */
-.qr-stepbar { background: var(--mrt-surface, #fff); border-bottom: 1px solid var(--mrt-border, #cbd5e1); }
-.qr-stepbar .mrt-wizard-steps { flex-direction: row; flex-wrap: wrap; gap: 0.4rem; overflow: visible; max-height: none; border-inline-end: 0; border-bottom: 1px solid var(--mrt-border, #cbd5e1); padding: 0.5rem 0.75rem; }
-.qr-stepbar .mrt-wizard-step-item { flex: 1 1 12rem; min-width: 0; }
-.qr-stepbar .mrt-wizard-step-item + .mrt-wizard-step-item .mrt-wizard-step-marker::before { display: none; }
-.qr-stepbar .mrt-wizard-step { height: 100%; }
-.qr-stepbar .mrt-wizard-step[data-state='current'] { border-radius: var(--qr-btn-radius, 8px); }
-.qr-stepbar .mrt-wizard-step-label, .qr-stepbar .mrt-wizard-step-caption { overflow-wrap: anywhere; }
 .qr-stephint { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 0.6rem 1rem; }
 .qr-stephint-text { flex: 1 1 16rem; min-width: 0; font-size: 1rem; line-height: 1.5; }
 .qr-next { min-width: 8rem; font-size: 1rem !important; height: auto !important; padding: 0.55rem 1.4rem !important; }
@@ -50,15 +43,6 @@
 
 /* Text-size tokens: everything in rem so Settings > Text size (root font-size) scales the wizard too. */
 .qr-root { --qr-fs-xs: 0.75rem; --qr-fs-sm: 0.875rem; --qr-fs-md: 1rem; --qr-fs-lg: 1.2rem; --qr-fs-xl: 1.6rem; font-size: var(--qr-fs-md); }
-.qr-stepbar .mrt-wizard-step { padding: 0.55rem 0.8rem; gap: 0.7rem; align-items: center; }
-.qr-stepbar .mrt-wizard-step-marker { height: 2rem; width: 2rem; font-size: var(--qr-fs-sm); font-weight: 600; border-width: 2px; }
-.qr-stepbar .mrt-wizard-step-label { font-size: var(--qr-fs-md); font-weight: 600; line-height: 1.3; }
-.qr-stepbar .mrt-wizard-step-caption { font-size: var(--qr-fs-sm); line-height: 1.35; }
-.qr-stepbar .mrt-wizard-step[data-state='current'] { background: color-mix(in srgb, #2563eb 10%, var(--mrt-surface, #fff)); border-color: color-mix(in srgb, #2563eb 45%, transparent); border-inline-start: 3px solid #2563eb; }
-.qr-stepbar .mrt-wizard-step[data-state='current'] .mrt-wizard-step-marker { background: #2563eb; border-color: #2563eb; color: #fff; }
-.qr-stepbar .mrt-wizard-step[data-state='locked'] { opacity: 0.45; cursor: not-allowed; }
-.qr-stepbar .mrt-wizard-step[data-state='locked'] .mrt-wizard-step-marker { background: #e2e8f0; border-color: #cbd5e1; color: #64748b; }
-.qr-stepbar .mrt-wizard-step[data-state='todo'] .mrt-wizard-step-marker { background: var(--mrt-surface, #fff); border-color: #2563eb; color: #1d4ed8; }
 .qr-stephint-text, .qr-next, .qr-box-title, .qr-card-h, .qr-root .qr-panel-h { font-size: var(--qr-fs-md) !important; }
 .qr-box, .qr-card, .qr-bsec, .qr-bd-row, .qr-card-nav, .qr-summary-step, .qr-sum-line, .qr-warnbar { font-size: var(--qr-fs-md); }
 .qr-pn { font-size: var(--qr-fs-lg); }
@@ -71,3 +55,17 @@
 .qr-drop-btns .qr-blue:hover { background: #1d4ed8 !important; }
 .qr-busy { font-size: var(--qr-fs-md); min-width: 22rem; }
 .qr-busy-tech { font-size: var(--qr-fs-xs); opacity: 0.75; margin-top: 0.3rem; direction: ltr; overflow-wrap: anywhere; }
+
+/* Vertical wizard rail on the start side (MRT .mrt-wizard-shell layout, QR's own copy): 280px at 16px = 17.5rem, scales with text size. */
+.qr-wiz { flex: 1 1 auto; min-height: 0; min-width: 0; display: grid; grid-template-columns: min(17.5rem, 32vw) minmax(0, 1fr); border-top: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); }
+.qr-rail { min-height: 0; min-width: 0; display: flex; flex-direction: column; font-size: 0.875rem; line-height: 1.35; }
+.qr-rail .mrt-wizard-steps { flex: 1 1 auto; }
+.qr-rail .mrt-wizard-step-label { font-size: 1rem; }
+.qr-rail .mrt-wizard-step-caption { font-size: 0.75rem; }
+.qr-rail .mrt-wizard-step-marker { height: 1.375rem; width: 1.375rem; font-size: 0.6875rem; }
+.qr-wiz-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.qr-wiz-main > :not(.qr-wiz-head) { flex: 1 1 auto; min-height: 0; }
+.qr-wiz-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; border-bottom: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, var(--mrt-surface)); padding: 0.875rem 1.25rem; }
+.qr-wiz-title { margin: 0; font-size: var(--qr-fs-lg); font-weight: 600; line-height: 1.3; }
+.qr-step-intake { display: flex; flex-direction: column; min-height: 0; }
+.qr-step-intake .qr-drop { flex: 1; }

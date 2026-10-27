@@ -51,3 +51,7 @@ export function locate(src, tokens) {
   const x0 = Math.min(...near.map((o) => o.x)), y0 = Math.min(...near.map((o) => o.y)), x1 = Math.max(...near.map((o) => o.x + o.w)), y1 = Math.max(...near.map((o) => o.y + o.h));
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
+/** Requirement pages worth a card (rows or a material). */
+export const cardPages = (part) => (part.requirements || []).filter((p) => (p.rows || []).length || p.material).map((p) => ({ rows: [], procs: [], masks: [], ...p }));
+/** Open non-info problems, shown in red/amber on top of the card. */
+export const cardFlags = (part) => (part.problems || []).filter((p) => p.severity !== 'Info' && p.status !== 'resolved');

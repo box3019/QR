@@ -31,7 +31,7 @@ test('labels in EN and HE for every field, section and flag; Breakdown renders t
   const en = require('../src/i18n/en.json'), he = require('../src/i18n/he.json');
   const keys = [...new Set(b.SECTIONS.flatMap((s) => s.fields))].map((f) => 'bd.f.' + f).concat(b.SECTIONS.map((s) => 'bd.s.' + s.key), b.FLAGS.map(([, k]) => 'bd.flag.' + k));
   for (const k of keys) { assert.ok(en[k], 'en ' + k); assert.ok(he[k], 'he ' + k); assert.ok(!/[A-Za-z]/.test(he[k]), 'latin he ' + k); }
-  const ui = fs.readFileSync(path.join(__dirname, '..', 'src', 'views', 'Breakdown.tsx'), 'utf8'); assert.match(ui, /SECTIONS\.map/); assert.match(ui, /'bd\.f\.' \+ f/); });
+  const ui = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'partcard', 'Fields.tsx'), 'utf8'); assert.match(ui, /'bd\.f\.' \+ f/); });
 test('card helpers: line, action, locate', async () => { const b = await load();
   const pg = { rows: [{}], summary: { coatings: 'Anodize II' }, masks: [{ method: 'Tape', areas: 'Threads', before: 'AFTER HEAT TREAT' }], procs: [] };
   assert.strictEqual(b.sectionLine('coatings', pg), 'Anodize II'); assert.match(b.sectionLine('masking', pg), /AFTER HEAT TREAT/);

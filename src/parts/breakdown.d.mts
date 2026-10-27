@@ -8,3 +8,5 @@ export declare function sectionStds(sec: any, page: any): string[];
 export declare function sectionFlags(sec: any, page: any): string[];
 export declare function sectionAction(flags: string[], empty: boolean): 'upload' | 'ask' | 'confirm';
 export declare function locate(src: string, tokens: any[]): { x: number; y: number; w: number; h: number } | null;
+export declare const cardPages: (part: any) => any[];
+export declare const cardFlags: (part: any) => any[];
