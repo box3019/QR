@@ -61,7 +61,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
         {step === 1 && <StepIntake view={view} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
         {step === 2 && has && <StepCheckParts parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={setStep} />}
         {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} />}
-        {step === 4 && has && <StepSummary parts={parts} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => { pick(i); setStep(2); }} />}
+        {step === 4 && has && <StepSummary parts={parts} lang={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} meta={tabMeta({ parts, rfqs })} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => { pick(i); setStep(2); }} />}
       </main>
       <WizardFooter step={step} setStep={setStep} hasParts={has} onCancel={() => confirm(t('wz.cancelAsk')) && reset()} onClose={() => window.close()} />
     </div>

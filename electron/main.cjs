@@ -109,6 +109,13 @@ ipcMain.handle('qr:exportSummary', async (_e, parts, kind, target) => {
   }
   return { path: out };
 });
+ipcMain.handle('qr:exportReport', async (_e, parts, lang, meta, target) => {
+  const { reportHtml } = require('../core/report.cjs'); const m = meta || {};
+  const out = await pickSave(`QR_Report_${String(m.rfq || (parts[0] || {}).partNo || 'RFQ').replace(/[^\w.-]+/g, '_')}_${lang}.pdf`, [{ name: 'PDF', extensions: ['pdf'] }], target);
+  if (!out) return null;
+  await htmlToPdf(reportHtml(parts || [], lang, m), out);
+  return { path: out };
+});
 ipcMain.handle('qr:exportRequirements', async (_e, parts, target) => {
   const { buildSheets } = require('../core/requirements/sheets.cjs'); const { writeXlsx } = require('../core/requirements/xlsx.cjs');
   const pages = (parts || []).flatMap((p) => (p.requirements || []).map((r) => ({ file: p.drawing.name, ...r })));

@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('qr', {
   questionsPreview: (parts, lang) => ipcRenderer.invoke('qr:questionsPreview', parts, lang),
   exportQuestions: (parts, lang, target) => ipcRenderer.invoke('qr:exportQuestions', parts, lang, target),
   exportSummary: (parts, kind, target) => ipcRenderer.invoke('qr:exportSummary', parts, kind, target),
+  exportReport: (parts, lang, meta, target) => ipcRenderer.invoke('qr:exportReport', parts, lang, meta, target),
   exportRequirements: (parts, target) => ipcRenderer.invoke('qr:exportRequirements', parts, target),
   outlookSelection: () => ipcRenderer.invoke('qr:outlookSelection'),
   onImport: (cb) => { const h = (_e, files) => cb(files); ipcRenderer.on('qr:import', h); return () => ipcRenderer.removeListener('qr:import', h); },

@@ -409,5 +409,9 @@
  "tab.st.busy": "Working",
  "tab.st.check": "Needs check",
  "tab.st.ready": "Ready",
- "tab.st.empty": "Empty"
+ "tab.st.empty": "Empty",
+ "wz.secPdf": "PDF report",
+ "wz.pdfText": "Full report: summary by group, each part, questions and documents.",
+ "wz.pdfBtn": "Export PDF",
+ "tip.exportPdf": "Save a PDF report of this RFQ in the export language and open it"
 }

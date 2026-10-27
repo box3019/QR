@@ -1,12 +1,13 @@
-// Step 4: flagged-parts bar, totals, the two exports; the full report on demand.
+// Step 4: flagged-parts bar, totals, the exports (questions, Excel, PDF report); the full report on demand.
 import React from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
+import { exportReport } from '../../wizard/report';
 import { Box } from './Box';
 import { groupParts } from '../../parts/groups.mjs';
 import { summaryCounts } from '../../wizard/summary.mjs';
 
-export function StepSummary({ parts, openDialog, goPart }: any) {
+export function StepSummary({ parts, openDialog, goPart, lang, meta }: any) {
   const { nq, np, flagged } = summaryCounts(parts);
   const xlsx = async () => { const r = await (window as any).qr.exportRequirements(parts); if (r && r.path) (window as any).qr.openPath(r.path); };
   const groups = groupParts(parts);
@@ -19,6 +20,10 @@ export function StepSummary({ parts, openDialog, goPart }: any) {
     </Box>
     <Box title={t('wz.secX')} testid="box-export-xlsx">
       <button className={MRT_BTN_PRIMARY} data-testid="btn-export-xlsx-all" title={t('tip.exportXlsx')} onClick={xlsx}>{t('wz.xBtn')}</button>
+    </Box>
+    <Box title={t('wz.secPdf')} testid="box-export-pdf">
+      <p className="qr-box-text">{t('wz.pdfText')}</p>
+      <button className={MRT_BTN_PRIMARY} data-testid="btn-export-pdf" title={t('tip.exportPdf')} onClick={() => exportReport(parts, lang, meta)}>{t('wz.pdfBtn')}</button>
     </Box>
     <div className="qr-more"><button className={MRT_BTN} data-testid="btn-summary" title={t('wz.tipReport')} onClick={() => openDialog('summary')}>{t('wz.showReport')}</button></div>
   </div>;
