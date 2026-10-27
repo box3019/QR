@@ -8,5 +8,7 @@ import './styles/fit.css';
 import './styles/shape.css';
 import './styles/buttons.css';
 import './styles/groups.css';
+import './styles/wizard.css';
+import './styles/type.css';
 import App from './App';
 createRoot(document.getElementById('root')!).render(<App />);

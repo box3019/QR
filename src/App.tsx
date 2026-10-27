@@ -1,13 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { MRT_ACTION_BTN_TOPBAR, MRT_BTN, MRT_BTN_PRIMARY, MRT_ACTION_BTN } from './ui/mrtButtons';
-import { Chip, Modal } from './ui/common';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { MRT_ACTION_BTN_TOPBAR, MRT_BTN_PRIMARY, MRT_ACTION_BTN } from './ui/mrtButtons';
+import { Chip } from './ui/common';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, tReadiness, setLang, setTextSize, getLang } from './i18n';
-import { PlainStatusBadge, FirstRun } from './ui/simple';
+import { FirstRun } from './ui/simple';
 import { ProcessesPanel } from './ui/processes';
-import { groupParts } from './parts/groups.mjs';
-import { PartGroup } from './parts/PartGroup';
 import { Tutorial } from './tutorial/Tutorial';
+import { StepBar } from './wizard/StepBar';
+import { toolbarFor, viewerTabs } from './wizard/steps.mjs';
+import { PartsPanel } from './views/Parts';
+import { ProblemsPanel } from './views/Problems';
+import { SummaryStep } from './views/SummaryStep';
+import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
@@ -15,12 +19,9 @@ type Part = any;
 
 /** Hebrew display field when HE is active (core adds xxxHe fields). */
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
-const tone = (sev: string) => (sev === 'Blocker' ? 'danger' : sev === 'Question' ? 'attention' : 'info');
-const readinessTone = (r: string) => (/^Ready/.test(r) ? 'ready' : /Blocked/.test(r) ? 'danger' : /n\/a/.test(r) ? 'neutral' : 'attention');
 
-
-function TopButton({ icon, label, tip, onClick, disabled, testid, active }: any) {
-  return <button type="button" title={tip || label} data-active={active} className={MRT_ACTION_BTN_TOPBAR} onClick={onClick} disabled={disabled} data-testid={testid}><span className="ico" aria-hidden>{icon}</span><span>{label}</span></button>;
+function TopButton({ icon, label, tip, onClick, testid, active }: any) {
+  return <button type="button" title={tip || label} data-active={active} className={MRT_ACTION_BTN_TOPBAR} onClick={onClick} data-testid={testid}><span className="ico" aria-hidden>{icon}</span><span>{label}</span></button>;
 }
 
 export default function App() {
@@ -28,7 +29,8 @@ export default function App() {
   const [parts, setParts] = useState<Part[]>([]);
   const [unknown, setUnknown] = useState<string[]>([]);
   const [sel, setSel] = useState(0);
-  const [tab, setTab] = useState<'drawing' | 'route' | 'model' | 'data'>('drawing');
+  const [step, setStep] = useState(1);
+  const [tab, setTab] = useState<string>('drawing');
   const [busy, setBusy] = useState<{ text: string; progress?: number; log: string[] } | null>(null);
   const [over, setOver] = useState(false);
   const [dialog, setDialog] = useState<null | 'settings' | 'questions' | 'summary' | 'tutorial'>(null);
@@ -37,6 +39,7 @@ export default function App() {
   const [rfqs, setRfqs] = useState<any[]>([]);
   const [details, setDetails] = useState(false);
   (window as any).__qrDetails = setDetails;
+  (window as any).__qrStep = setStep;
 
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
   if (settings) { setLang(settings.uiLanguage); setTextSize(settings.textSize); }
@@ -55,8 +58,8 @@ export default function App() {
 
   const run = useCallback(async (paths: string[]) => {
     if (!paths.length) return;
-    setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setBusy({ text: t('busy.starting'), log: [] });
-    try { const r = await qr().process(paths); setParts(r.parts); setUnknown([...(r.unknown || []), ...(r.other || [])]); setRfqs(r.rfqs || []); setLastRun({ seconds: r.seconds, files: r.files }); }
+    setParts([]); setRfqs([]); setUnknown([]); setLastRun(null); setSel(0); setFocus(null); setStep(1); setBusy({ text: t('busy.starting'), log: [] });
+    try { const r = await qr().process(paths); setParts(r.parts); setUnknown([...(r.unknown || []), ...(r.other || [])]); setRfqs(r.rfqs || []); setLastRun({ seconds: r.seconds, files: r.files }); if (r.parts.length) { setStep(2); setTab('drawing'); } }
     catch (e: any) { alert(t('err.processing', { text: e?.message || e })); }
     finally { setBusy(null); }
   }, []);
@@ -65,7 +68,7 @@ export default function App() {
   (window as any).__qrParts = parts;
   (window as any).__qrRfqs = rfqs;
   (window as any).__qrUnknown = unknown;
-  (window as any).__qrSelect = (i: number, t?: any) => { setSel(i); if (t) setTab(t); };
+  (window as any).__qrSelect = (i: number, tb?: any) => { setSel(i); if (tb) { setTab(tb); setStep(2); } };
   (window as any).__qrDialog = setDialog;
 
   const onDrop = (e: React.DragEvent) => {
@@ -77,52 +80,60 @@ export default function App() {
     qr().outlookSelection().then(run).catch((x: any) => alert(String(x?.message || x)));
   };
   const part = parts[sel];
+  const has = parts.length > 0;
+  const bar = toolbarFor(step, has);
+  const tabs = viewerTabs(details);
+  const curTab = tabs.includes(tab) ? tab : 'drawing';
   const updatePart = (fn: (p: Part) => Part) => setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p)));
+  const pick = (i: number) => { setSel(i); setFocus(null); };
+  const hint = step === 1 && has ? t('wz.h1done', { n: parts.length }) : t('wz.h' + step);
 
   return (
-    <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light"
+    <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light" data-step={step}
       onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={onDrop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
         <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
-        <TopButton icon="＋" label={t('top.addFiles')} tip={t('tip.addFiles')} testid="btn-add" onClick={async () => run(await qr().pickFiles())} />
-        <TopButton icon="📁" label={t('top.addFolder')} tip={t('tip.addFolder')} onClick={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />
-        <TopButton icon="❓" label={t('top.questions')} tip={t('tip.questions')} testid="btn-questions" disabled={!parts.length} onClick={() => setDialog('questions')} />
-        <TopButton icon="☰" label={t('top.summary')} tip={t('tip.summary')} testid="btn-summary" disabled={!parts.length} onClick={() => setDialog('summary')} />
+        {bar.addFiles && <TopButton icon="＋" label={t('top.addFiles')} tip={t('tip.addFiles')} testid="btn-add" onClick={async () => run(await qr().pickFiles())} />}
+        {bar.addFolder && <TopButton icon="📁" label={t('top.addFolder')} tip={t('tip.addFolder')} onClick={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
         <div style={{ flex: 1 }} />
-        <TopButton icon="🔍" label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />
-        {details && lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: parts.length, files: lastRun.files.length, sec: lastRun.seconds })}</span>}
+        {bar.details && <TopButton icon="🔍" label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
+        {bar.details && details && lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: parts.length, files: lastRun.files.length, sec: lastRun.seconds })}</span>}
         <TopButton icon="⚙" label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
         <TopButton icon="?" label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => setDialog('tutorial')} />
       </div>
+      <StepBar step={step} setStep={setStep} hasParts={has} hint={hint} />
 
-      {!parts.length ? (
+      {step === 1 && <>
+        {rfqs.map((r: any, i: number) => <RfqBar key={i} rfq={r} />)}
         <div className="qr-drop" data-over={over} data-testid="dropzone">
           <div>
             <h1>{t('drop.title')}</h1>
-            <div className="qr-muted" style={{ fontSize: '1.05rem', marginBottom: 6 }}>{t('drop.hint')}</div><div className="qr-muted" style={{ marginBottom: 18 }}>{t('drop.hint2')}</div>
+            <div className="qr-muted qr-drop-hint">{t('drop.hint')}</div>
             <button className={MRT_BTN_PRIMARY + ' qr-big'} title={t('tip.addFiles')} onClick={async () => run(await qr().pickFiles())}>{t('drop.choose')}</button>
-            {unknown.length > 0 && <div className="qr-muted" style={{ marginTop: 12 }}>{t('drop.notDrawings', { list: unknown.join(', ') })}</div>}
+            {details && unknown.length > 0 && <div className="qr-muted" style={{ marginTop: 12 }}>{t('drop.notDrawings', { list: unknown.join(', ') })}</div>}
           </div>
         </div>
-      ) : (<>
-        {rfqs.map((r: any, i: number) => <RfqBar key={i} rfq={r} />)}
-        <div className="qr-body">
-          <PartsPanel details={details} parts={parts} sel={sel} setSel={(i: number) => { setSel(i); setFocus(null); }} unknown={unknown} />
-          <div className="qr-panel">
-            <div className="qr-tabs">
-              {(['drawing', 'route', 'model', ...(details ? ['data'] : [])] as any[]).map((k) => (
-                <button key={k} className="qr-tab" data-active={tab === k} data-testid={'tab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('tab.' + k)}</button>))}
-            </div>
-            <div className="qr-scroll">
-              {part && tab === 'drawing' && <DrawingView part={part} focus={focus} details={details} />}
-              {part && tab === 'route' && <RouteCard part={part} />}
-              {part && tab === 'model' && <ModelView part={part} />}
-              {part && tab === 'data' && <DataView part={part} />}
-            </div>
+      </>}
+      {step === 2 && has && <div className="qr-body" data-cols="2">
+        <PartsPanel details={details} parts={parts} sel={sel} setSel={pick} unknown={unknown} />
+        <div className="qr-panel">
+          <div className="qr-tabs">
+            {tabs.map((k) => <button key={k} className="qr-tab" data-active={curTab === k} data-testid={'tab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('tab.' + k)}</button>)}
           </div>
-          {part && <ProblemsPanel details={details} part={part} onFocus={(loc: any) => { setTab('drawing'); setFocus(loc); }} updatePart={updatePart} />}
+          <div className="qr-scroll">
+            {part && curTab === 'drawing' && <DrawingView part={part} focus={focus} details={details} />}
+            {part && curTab === 'route' && <RouteCard part={part} />}
+            {part && curTab === 'model' && <ModelView part={part} />}
+            {part && curTab === 'data' && <DataView part={part} />}
+          </div>
         </div>
-      </>)}
+      </div>}
+      {step === 3 && has && <div className="qr-body" data-cols="2">
+        <PartsPanel details={details} parts={parts} sel={sel} setSel={pick} unknown={unknown} />
+        {part && <ProblemsPanel details={details} part={part} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} updatePart={updatePart} />}
+      </div>}
+      {step === 4 && has && <SummaryStep parts={parts} openDialog={setDialog} />}
+
       {busy && <div className="qr-busy" data-testid="busy"><div>{busy.text}</div>{busy.progress != null && <div className="qr-bar"><div style={{ width: Math.round(busy.progress * 100) + '%' }} /></div>}</div>}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { setSettings(await qr().setSettings(s)); setDialog(null); }} />}
       {dialog === 'questions' && <QuestionsDialog parts={parts} lang0={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} onClose={() => setDialog(null)} />}
@@ -131,35 +142,6 @@ export default function App() {
       {dialog === 'tutorial' && <Tutorial lang0={getLang()} onClose={() => setDialog(null)} />}
     </div>
   );
-}
-
-
-function PartsPanel({ parts, sel, setSel, unknown, details }: any) {
-  return <div className="qr-panel" data-testid="parts-panel">
-    <div className="qr-panel-h">{t('parts.title')} <span className="qr-muted">({parts.length})</span></div>
-    <div className="qr-scroll">
-      {groupParts(parts).map((g: any) => <PartGroup key={g.key} k={g.key} n={g.items.length}>{g.items.map(({ part: p, index: i }: any) => {
-        const b = p.problems.filter((x: any) => x.severity === 'Blocker' && x.status !== 'resolved').length;
-        const q = p.problems.filter((x: any) => x.severity === 'Question' && x.status !== 'resolved').length;
-        const tk = p.tasks.filter((x: any) => x.status !== 'done').length;
-        return <div key={p.id} className="qr-part" data-active={i === sel} onClick={() => setSel(i)} data-testid="part-item">
-          <div className="qr-row"><span className="pn qr-ltr">{p.partNo || p.drawing.name}</span><span className="qr-muted">{t('parts.rev')} <span className="qr-ltr">{p.rev || '-'}</span></span><span style={{ flex: 1 }} />{p.rfq && <span data-testid="part-qty" style={{ fontWeight: 600, marginInlineEnd: 6 }}>{t('parts.qty')} {p.rfq.qty ?? '?'}{p.rfq.uom && p.rfq.uom !== 'EA' ? ' ' + p.rfq.uom : ''}</span>}<Chip t="neutral">{p.customer}</Chip></div>
-          <div className="qr-muted" style={{ margin: '2px 0 4px', fontSize: '0.75rem' }}>{p.title}</div>
-          <div className="qr-row" style={{ marginBottom: 4 }}>
-            <PlainStatusBadge part={p} />
-            <span style={{ fontSize: '0.75rem' }}>{L(p.material, 'normalized') || t('parts.noMaterial')}</span>
-          </div>
-          {p.status !== 'accepted' && p.rejectReason && <div style={{ color: '#991b1b', fontSize: '0.75rem', marginBottom: 4 }}>{L(p, 'rejectReason')}</div>}
-          <div className="qr-row">
-            {details && <Chip t={readinessTone(p.readiness)}>{tReadiness(p.readiness)}</Chip>}
-            {details && b > 0 && <Chip t="danger">{t('parts.blockers', { n: b })}</Chip>}{details && q > 0 && <Chip t="attention">{t('parts.questions', { n: q })}</Chip>}{details && tk > 0 && <Chip t="info">{t('parts.tasks', { n: tk })}</Chip>}
-            {details && <Chip t={p.textMode === 'Text' ? 'neutral' : 'info'}>{p.textMode === 'Text' ? t('parts.textPdf') : p.textMode === 'OCR' ? t('parts.ocr') : t('parts.textOcr')}</Chip>}
-          </div>
-        </div>;
-      })}</PartGroup>)}
-      {unknown.length > 0 && <div className="qr-part qr-muted">{t('parts.other', { list: unknown.join(', ') })}</div>}
-    </div>
-  </div>;
 }
 
 function DrawingView({ part, focus, details }: any) {
@@ -235,72 +217,6 @@ function DataView({ part }: any) {
     {part.bom.length > 0 && <><h4>{t('dv.bom')}</h4><table className="qr-table"><thead><tr><th>{t('dv.seq')}</th><th>{t('dv.partNo')}</th><th>{t('dv.catalog')}</th><th>{t('dv.desc')}</th><th>{t('dv.qty')}</th></tr></thead><tbody>{part.bom.map((b: any, i: number) => <tr key={i}><td>{b.seq}</td><td>{b.partNo}</td><td>{b.catalogNo}</td><td>{b.desc}{b.alternatives?.length ? <div className="qr-muted">{t('dv.alt', { list: b.alternatives.map((a: any) => a.partNo).join(', ') })}</div> : null}</td><td>{b.qty} {b.uom}</td></tr>)}</tbody></table></>}
     <h4>{t('dv.notes')}</h4><table className="qr-table"><tbody>{part.notes.map((n: any, i: number) => <tr key={i}><td style={{ width: 40 }}>{n.n}</td><td>{n.text}</td></tr>)}</tbody></table>
   </div>;
-}
-
-function ProblemLine({ p, onFocus, updatePart }: any) {
-  const toggle = (e: any) => { e.stopPropagation(); updatePart((pt: any) => { const x = pt.problems.find((y: any) => y.id === p.id); x.status = x.status === 'resolved' ? 'open' : 'resolved'; return pt; }); };
-  return <div className="qr-prob" data-testid="problem" onClick={() => p.loc && onFocus({ ...p.loc, id: p.id, bbox: null })} style={p.status === 'resolved' ? { opacity: .5 } : {}}>
-    <div className="qr-row"><Chip t={tone(p.severity)}>{t('sev.' + p.severity)}</Chip><b>{L(p, 'category')}</b>{p.loc && <span className="qr-muted">{t('pr.sheet', { n: p.loc.page })}</span>}<span style={{ flex: 1 }} />
-      {p.severity !== 'Info' && <button className={MRT_ACTION_BTN} title={p.status === 'resolved' ? t('pr.reopen') : t('pr.resolve')} onClick={toggle}>{p.status === 'resolved' ? '↺' : '✓'}</button>}</div>
-    <div className="msg"><bdi>{L(p, 'message')}</bdi>{L(p, 'suggestion') && <span className="qr-muted"> → {L(p, 'suggestion')}</span>}</div>
-  </div>;
-}
-
-function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
-  const probs = part.problems;
-  const order: any = { Blocker: 0, Question: 1, Info: 2 };
-  const sorted = [...probs].sort((a, b) => order[a.severity] - order[b.severity]);
-  const main = sorted.filter((p: any) => p.severity !== 'Info');
-  const info = sorted.filter((p: any) => p.severity === 'Info');
-  const uploads = part.tasks.filter((t: any) => t.type === 'uploadDocument');
-  const verify = part.tasks.filter((t: any) => t.type === 'verify');
-  return <div className="qr-panel" data-testid="problems-panel">
-    <div className="qr-panel-h">{t('pr.title')} <span className="qr-muted">({probs.filter((p: any) => p.severity !== 'Info').length})</span> · {t('pr.tasks')} <span className="qr-muted">({part.tasks.filter((x: any) => x.status !== 'done').length})</span></div>
-    <div className="qr-scroll">
-      <div className="qr-sec">{t('pr.title')}</div>
-      {!main.length && <div className="qr-prob qr-muted" data-testid="no-problems">{t('pr.none')}</div>}
-      {main.map((p: any) => <ProblemLine key={p.id} p={p} onFocus={onFocus} updatePart={updatePart} />)}
-      {info.length > 0 && <details className="qr-info-group" data-testid="info-group"><summary>{t('pr.info', { n: info.length })}</summary>{info.map((p: any) => <ProblemLine key={p.id} p={p} onFocus={onFocus} updatePart={updatePart} />)}</details>}
-      <div className="qr-sec">{t('pr.uploads', { n: uploads.filter((x: any) => x.status !== 'done').length })}</div>
-      {uploads.map((tk: any) => <div key={tk.id} className="qr-prob" data-testid="task">
-        <div className="qr-row"><Chip t={tk.status === 'done' ? 'ready' : 'info'}>{tk.status === 'done' ? t('pr.uploaded') : t('pr.upload')}</Chip><b className="qr-ltr">{tk.refNumber}</b><span className="qr-muted">{L(tk, 'title').replace(/^\S+ \S+ /, '')} · {t('pr.blocks', { n: L(tk, 'blocks') })}</span></div>
-        <div className="qr-row" style={{ marginTop: 4 }}><button className={MRT_ACTION_BTN} title={t('tip.attach')} onClick={async () => { const f = tk.status === 'done' ? [] : await qr().pickFiles(); updatePart((pt: any) => { const x = pt.tasks.find((y: any) => y.id === tk.id); if (x.status === 'done') { x.status = 'open'; x.file = ''; } else if (f.length) { x.status = 'done'; x.file = f[0]; } return pt; }); }}>{tk.status === 'done' ? t('pr.undo') : t('pr.attach')}</button>{tk.file && <span className="qr-muted">{tk.file}</span>}</div>
-      </div>)}
-      {details && verify.length > 0 && <details className="qr-info-group"><summary>{t('pr.verify', { n: verify.length })}</summary>
-        {verify.map((tk: any) => <div key={tk.id} className="qr-prob" onClick={() => onFocus({ page: tk.page, bbox: tk.bbox, id: tk.id })}><div className="msg">{L(tk, 'title')}</div></div>)}</details>}
-      <div className="qr-sec">{t('pr.refs')}</div>
-      {part.refs.map((r: any, i: number) => <div key={i} className="qr-prob" style={{ cursor: 'default' }}><div className="qr-row"><Chip t={r.kind === 'public' ? 'neutral' : r.kind === 'vendor' ? 'info' : 'attention'}>{t('ref.' + r.kind)}</Chip><b className="qr-ltr">{r.number}</b></div><div className="qr-muted" style={{ fontSize: '0.75rem' }}>{L(r, 'description')}{r.owner ? ' · ' + L(r, 'owner') : ''}</div></div>)}
-    </div>
-  </div>;
-}
-
-function QuestionsDialog({ parts, lang0, onClose }: any) {
-  const [lang, setLang] = useState(lang0);
-  const [html, setHtml] = useState('');
-  const [msg, setMsg] = useState('');
-  useEffect(() => { qr().questionsPreview(parts, lang).then((r: any) => setHtml(r.html)); }, [lang, parts]);
-  return <Modal title={t('q.title')} onClose={onClose} testid="questions-dialog" footer={<>
-    {msg && <span className="qr-muted" style={{ marginInlineEnd: 'auto' }}>{msg}</span>}
-    <button className={MRT_BTN} title={t('tip.close')} onClick={onClose}>{t('q.close')}</button>
-    <span className="qr-muted" data-testid="export-lang">{t('q.exportLang', { lang: lang === 'he' ? t('q.he') : t('q.en') })}</span>
-    <button className={MRT_BTN_PRIMARY} data-testid="export-questions" title={t('tip.export')} onClick={async () => { const r = await qr().exportQuestions(parts, lang); if (r) { setMsg(t('q.saved', { path: r.pdf })); qr().openPath(r.pdf); } }}>{t('q.export')}</button></>}>
-    <div className="qr-row" style={{ marginBottom: 8 }}>{t('q.language')}
-      <button className={lang === 'he' ? MRT_BTN_PRIMARY : MRT_BTN} data-testid="lang-he" title={t('tip.lang')} onClick={() => setLang('he')}>עברית</button>
-      <button className={lang === 'en' ? MRT_BTN_PRIMARY : MRT_BTN} data-testid="lang-en" title={t('tip.lang')} onClick={() => setLang('en')}>English</button></div>
-    <iframe title="questions" srcDoc={html} style={{ width: '100%', height: '62vh', border: '1px solid #cbd5e1', borderRadius: 6, background: '#fff' }} />
-  </Modal>;
-}
-
-function SummaryDialog({ parts, onClose }: any) {
-  const [msg, setMsg] = useState('');
-  return <Modal title={t('sum.title')} onClose={onClose} testid="summary-dialog" footer={<>
-    {msg && <span className="qr-muted" style={{ marginInlineEnd: 'auto' }}>{msg}</span>}
-    <button className={MRT_BTN} title={t('tip.csv')} onClick={async () => { const r = await qr().exportSummary(parts, 'csv'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.csv')}</button>
-    <button className={MRT_BTN_PRIMARY} title={t('tip.pdf')} onClick={async () => { const r = await qr().exportSummary(parts, 'pdf'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.pdf')}</button></>}>
-    <table className="qr-table"><thead><tr><th>{t('rc.part')}</th><th>{t('rc.rev')}</th><th>{t('rc.customer')}</th><th>{t('rc.material')}</th><th>{t('rc.status')}</th><th>{t('sum.readiness')}</th><th>{t('sum.blockers')}</th><th>{t('sum.questions')}</th><th>{t('sum.tasks')}</th><th>{t('sum.model')}</th></tr></thead>
-      <tbody>{parts.map((p: Part) => <tr key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{L(p.material, 'normalized')}</td><td><PlainStatusBadge part={p} /></td><td>{tReadiness(p.readiness)}</td>
-        <td>{p.problems.filter((x: any) => x.severity === 'Blocker').length}</td><td>{p.problems.filter((x: any) => x.severity === 'Question').length}</td><td>{p.tasks.filter((x: any) => x.status !== 'done').length}</td><td>{p.model ? t('sum.found') : '—'}</td></tr>)}</tbody></table>
-  </Modal>;
 }
 
 function RfqBar({ rfq }: any) {

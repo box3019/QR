@@ -41,7 +41,7 @@ const SETS = SETS_ALL.filter(([n]) => !ONLY || ONLY.includes(n));
     await win.waitForTimeout(400);
     await win.screenshot({ path: path.join(out, `${name}_3_data.png`) });
     await win.evaluate(() => window.__qrDetails(false)); await win.click('[data-testid=tab-drawing]');
-    await win.click('[data-testid=btn-questions]');
+    await win.evaluate(() => window.__qrStep(4)); await win.waitForTimeout(200); await win.click('[data-testid=btn-questions]');
     await win.waitForTimeout(1200);
     await win.screenshot({ path: path.join(out, `${name}_4_questions_he.png`) });
     if (name === 'bq' || name === 'elbit_ex4') {

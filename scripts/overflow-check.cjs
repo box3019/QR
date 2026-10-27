@@ -129,6 +129,11 @@ function overlaps() {
   await sweep('details', () => win.evaluate(() => { window.__qrDetails(true); window.__qrSelect(0, 'data'); }));
   await sweep('route', () => win.evaluate(() => { window.__qrDetails(false); window.__qrSelect(0, 'route'); }));
   await win.evaluate(() => window.__qrSelect(0, 'drawing'));
+  await sweep('step1', () => win.evaluate(() => window.__qrStep(1)));
+  await sweep('step3', () => win.evaluate(() => { window.__qrDetails(false); window.__qrStep(3); }));
+  await sweep('step3-refs', async () => { await win.evaluate(() => window.__qrStep(3)); if (!(await has('[data-testid=box-refs]'))) await win.click('[data-testid=btn-refs]'); });
+  await sweep('step4', () => win.evaluate(() => window.__qrStep(4)));
+  await win.evaluate(() => window.__qrSelect(0, 'drawing'));
   await sweep('questions', async () => { if (!(await has('[data-testid=questions-dialog]'))) await win.evaluate(() => window.__qrDialog('questions')); });
   await win.evaluate(() => window.__qrDialog(null));
   await sweep('summary', async () => { if (!(await has('[data-testid=summary-dialog]'))) await win.evaluate(() => window.__qrDialog('summary')); });
