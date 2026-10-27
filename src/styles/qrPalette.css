@@ -1,0 +1,40 @@
+/* QR palette: Industrial Steel (light), copied from the MRT builtin palette tokens as static values. */
+[data-mrt-palette]{
+  --mrt-surface-muted: #eef1f5;
+  --mrt-grid-border: #1e293b;
+  --mrt-grid-border-strong: #020617;
+  --mrt-info-value-bg: #ffffff;
+  --mrt-image-pad-bg: rgba(255, 255, 255, 0.98);
+  --mrt-chrome-surface: #f5f5f7;
+  --mrt-header-bg: #dce1e8;
+  --mrt-chrome-fill: rgba(255, 255, 255, 0.96);
+  --mrt-chrome-border: rgba(2, 6, 23, 0.24);
+  --mrt-rail-fill: rgba(255, 255, 255, 0.94);
+  --mrt-rail-edge: rgba(2, 6, 23, 0.22);
+  --mrt-ui-border: rgba(2, 6, 23, 0.18);
+  --mrt-ui-border-strong: rgba(2, 6, 23, 0.28);
+  --mrt-border: rgba(2, 6, 23, 0.18);
+  --mrt-border-strong: rgba(2, 6, 23, 0.28);
+  --mrt-btn-neutral-fill: #e8ecf1;
+  --mrt-btn-neutral-border: #334155;
+  --mrt-btn-neutral-fill-hover: #dce1e8;
+  --mrt-btn-secondary-fg: #0f172a;
+  --mrt-dialog-surface: #ffffff;
+  --mrt-dialog-header: #f5f5f7;
+  --mrt-dialog-border: rgba(15, 23, 42, 0.16);
+  --mrt-scrim: rgba(15, 23, 42, 0.42);
+  --mrt-shadow: 0 4px 18px rgba(15, 23, 42, 0.12);
+  --mrt-bg: #b8c0cc;
+  --mrt-workspace-canvas: #b8c0cc;
+  --mrt-surface: #ffffff;
+  --mrt-surface-glass: rgba(255, 255, 255, 0.98);
+  --mrt-text: #020617;
+  --mrt-text-muted: #1e293b;
+  --mrt-accent: #1e293b;
+  --mrt-accent-soft: rgba(30, 41, 59, 0.12);
+  --mrt-focus: #1e293b;
+  --mrt-btn-primary-bg: #6a6e77;
+  --mrt-btn-primary-fg: #ffffff;
+  --mrt-btn-primary-border: #5a5e67;
+  --mrt-btn-primary-bg-hover: #777b85;
+}

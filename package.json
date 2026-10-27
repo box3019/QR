@@ -1,0 +1,81 @@
+{
+  "name": "qr",
+  "productName": "QR",
+  "version": "0.1.0",
+  "description": "QR - Quote Request: drawing intake, problems list and route card preview",
+  "author": "Alex Krylov <box3019@gmail.com>",
+  "private": true,
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "start": "electron ./electron/main.cjs",
+    "test:core": "node scripts/test-core.cjs",
+    "dist:win": "vite build && electron-builder --win nsis --x64",
+    "selftest": "node scripts/selftest.cjs"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.65",
+    "pdfjs-dist": "4.10.38",
+    "tesseract.js": "^5.1.1",
+    "yauzl": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.27",
+    "electron": "^41.8.0",
+    "electron-builder": "^26.8.1",
+    "postcss": "^8.5.8",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "playwright": "^1.48.0"
+  },
+  "build": {
+    "appId": "com.box3019.qr",
+    "productName": "QR",
+    "copyright": "Alex Krylov",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**",
+      "electron/**",
+      "core/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "ocr",
+        "to": "ocr"
+      }
+    ],
+    "asar": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "QR_v${version}_Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "QR",
+      "uninstallDisplayName": "QR",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
