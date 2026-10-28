@@ -65,7 +65,7 @@
 /* priority-erp: MRT built-in preset tokens (copied), QR-derived tokens computed with tests/contrast.test.cjs-checked ratios */
 :is(.qr-root, .qr-pal-prev, .qr-acc-sw)[data-mrt-theme='light'][data-qr-palette='priority-erp'] {
   --mrt-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif; --mrt-radius: 8px; --qr-card-r: 8px; --qr-cell-px: 8px; --qr-row-py: 4px;
-  --mrt-bg: #b8bcc4; --mrt-workspace-canvas: #b8bcc4; --mrt-surface: #f4f5f7; --mrt-surface-glass: #f4f5f7; --mrt-surface-muted: #eceef2; --mrt-surface-hover: #e2e8f0;
+  --mrt-bg: #d3d7de; --mrt-workspace-canvas: #d3d7de; --mrt-surface: #f4f5f7; --mrt-surface-glass: #f4f5f7; --mrt-surface-muted: #eceef2; --mrt-surface-hover: #e2e8f0;
   --mrt-header-bg: #dfe3ea; --mrt-chrome-surface: #dfe3ea; --mrt-chrome-fill: #f4f5f7; --qr-rail-bg: #e6e8ee; --mrt-rail-fill: #e6e8ee;
   --mrt-text: #0a1628; --mrt-text-muted: #334155; --mrt-accent: #334155; --qr-accent-mrt: #334155; --mrt-accent-soft: #e2e4e7; --mrt-focus: #334155;
   --mrt-border: rgba(15, 23, 42, 0.18); --mrt-border-strong: rgba(15, 23, 42, 0.28); --mrt-ui-border: rgba(15, 23, 42, 0.18); --mrt-ui-border-strong: rgba(15, 23, 42, 0.28); --mrt-chrome-border: rgba(15, 23, 42, 0.28);
@@ -83,7 +83,7 @@
 /* industrial-steel: MRT built-in preset tokens (copied), QR-derived tokens computed with tests/contrast.test.cjs-checked ratios */
 :is(.qr-root, .qr-pal-prev, .qr-acc-sw)[data-mrt-theme='light'][data-qr-palette='industrial-steel'] {
   --mrt-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif; --mrt-radius: 8px; --qr-card-r: 8px; --qr-cell-px: 8px; --qr-row-py: 4px;
-  --mrt-bg: #b8c0cc; --mrt-workspace-canvas: #b8c0cc; --mrt-surface: #ffffff; --mrt-surface-glass: #ffffff; --mrt-surface-muted: #eef1f5; --mrt-surface-hover: #dce1e8;
+  --mrt-bg: #d3dae4; --mrt-workspace-canvas: #d3dae4; --mrt-surface: #ffffff; --mrt-surface-glass: #ffffff; --mrt-surface-muted: #eef1f5; --mrt-surface-hover: #dce1e8;
   --mrt-header-bg: #dce1e8; --mrt-chrome-surface: #dce1e8; --mrt-chrome-fill: #ffffff; --qr-rail-bg: #e5e9ee; --mrt-rail-fill: #e5e9ee;
   --mrt-text: #020617; --mrt-text-muted: #1e293b; --mrt-accent: #1e293b; --qr-accent-mrt: #1e293b; --mrt-accent-soft: #dfe1e4; --mrt-focus: #1e293b;
   --mrt-border: rgba(2, 6, 23, 0.18); --mrt-border-strong: rgba(2, 6, 23, 0.28); --mrt-ui-border: rgba(2, 6, 23, 0.18); --mrt-ui-border-strong: rgba(2, 6, 23, 0.28); --mrt-chrome-border: rgba(2, 6, 23, 0.28);

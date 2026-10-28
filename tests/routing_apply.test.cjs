@@ -72,7 +72,10 @@ test('specs feed the standards library: known ones get a title, each becomes an 
   assert.match(byStd['ASTM B700'].title, /silver/i);
   assert.strictEqual(byStd['GS-4P05002'].paid, false);
   for (const s of part.standards) assert.strictEqual(s.status, 'needsDoc');
-  assert.strictEqual(part.tasks.filter((t) => /^Upload /.test(t.title)).length, 3);
+  // the customer packing spec is for the route card: no quote-stage upload task (public specs still get one)
+  assert.strictEqual(byStd['GS-4P05002'].stage, 'routecard');
+  assert.strictEqual(part.tasks.filter((t) => /^Upload /.test(t.title)).length, 2);
+  assert.ok(!part.tasks.some((t) => t.refNumber === 'GS-4P05002'));
 });
 
 test('refs find chart specs: spaced ASTM, SAE-AMS-C, customer packing', () => {

@@ -51,6 +51,10 @@ function stageOfRef(ref) {
   return STAGE.NOW;
 }
 
+/** Customer-internal spec id (GEN_*, PS-*, RAFDOCS-*, GS-4P*, or any chart spec that is not a public standards body id). Never blocks the quote. */
+const PUBLIC_ID = /^(?:ASTM|AMS|SAE|MIL|MS\d|NAS|NASM|AS\d|AS-|ISO|ASME|ANSI|DIN|BS\b|EN\b|JIS|QQ|A-A|FED|SPEC|IPC|ECSS|STI)/i;
+const isCustomerSpecId = (id, kind) => { const x = String(id || '').trim(); if (!x) return false; if (/^(?:GEN_|PS-|RAFDOCS|GS-4P)/i.test(x)) return true; return kind === 'spec' && !PUBLIC_ID.test(x); };
+
 /** A task counts toward missing / tiles / next-step only when it is an open upload task of stage 'now'. */
 const taskStage = (t) => (t && t.stage) || STAGE.NOW;
 const isOpenNowTask = (t) => !!t && t.type === 'uploadDocument' && t.status !== 'done' && taskStage(t) !== STAGE.ROUTE;
@@ -90,6 +94,11 @@ function buildRouteCard(part) {
     g.items.push(rule && r.kind !== 'internal' ? { kind: 'doc', ruleId: rule.id, group: rule.group, text: rule.en, textHe: rule.he, number: r.number, line: r.raw || '', where: '' }
       : { kind: 'spec', number: r.number, desc: r.description || '', owner: r.owner || '', line: r.raw || '' });
   }
+  for (const r of part.standards || []) {
+    if (r.stage !== STAGE.ROUTE && !isCustomerSpecId(r.std, r.kind)) continue;
+    const num = r.std; if ([...groups.values()].some((g) => g.items.some((i) => i.number === num))) continue;
+    const g = grp(stepOfRef(num)); g.items.push({ kind: 'spec', number: num, desc: r.title || '', owner: part.customer || '', line: r.raw || '', inLibrary: r.status === 'ok' || r.status === 'resolved' || !!r.doc });
+  }
   const lines = [...(part.notes || []).map((n) => ({ text: n.text, where: 'note ' + n.n })), ...route.flatMap((s) => (s.items || []).map((i) => ({ text: i.text, where: 'routing ' + s.seq })))];
   for (const it of scanLines(lines)) {
     const rt = (part.refs || []).some((r) => r.kind === 'public' && it.line.includes(r.number) && stageOfRef(r) === STAGE.ROUTE && classifyText(r.number + ' ' + r.description) && classifyText(r.number + ' ' + r.description).id === it.ruleId);
@@ -114,13 +123,14 @@ function upgradePart(part) {
   if (!part) return part;
   const refs = part.refs || [];
   for (const t of part.tasks || []) {
-    if (t.type !== 'uploadDocument' || t.stage) continue;
+    if (t.type !== 'uploadDocument') continue;
+    if (t.stage && !(t.std && isCustomerSpecId(t.refNumber, 'spec'))) continue;
     const ref = refs.find((r) => r.number === t.refNumber);
-    t.stage = !t.std && ref && stageOfRef(ref) === STAGE.ROUTE ? STAGE.ROUTE : !t.std && !ref && t.refNumber !== 'SEPARATE PART LIST' && /^(?:GEN_|PS-|RAFDOCS|GS-4P)/.test(t.refNumber || '') ? STAGE.ROUTE : STAGE.NOW;
+    t.stage = isCustomerSpecId(t.refNumber, t.std ? 'spec' : '') || (!t.std && ref && stageOfRef(ref) === STAGE.ROUTE) || (!t.std && !ref && t.refNumber !== 'SEPARATE PART LIST' && /^(?:GEN_|PS-|RAFDOCS|GS-4P)/.test(t.refNumber || '')) ? STAGE.ROUTE : STAGE.NOW;
   }
-  if (!part.routeCard || part.routeCard.v !== 1) { part.routeCard = { ...buildRouteCard(part), v: 1 }; }
+  if (!part.routeCard || part.routeCard.v !== 2) { part.routeCard = { ...buildRouteCard(part), v: 2 }; }
   if (part.tasks) for (const s of part.route || []) if (s.blocked && !part.tasks.some((t) => isOpenNowTask(t) && (t.blocksVars || {}).seq === s.seq)) delete s.blocked;
   return part;
 }
 
-module.exports = { STAGE, RULES, classifyText, stageOfText, stageOfRef, taskStage, isOpenNowTask, scanLines, buildRouteCard, localizeRouteCard, upgradePart, stepFor };
+module.exports = { STAGE, RULES, isCustomerSpecId, classifyText, stageOfText, stageOfRef, taskStage, isOpenNowTask, scanLines, buildRouteCard, localizeRouteCard, upgradePart, stepFor };

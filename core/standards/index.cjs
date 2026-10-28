@@ -21,6 +21,7 @@ async function attachStandards(part, text, ctx) {
   const addQ = (key, vars, sev = 'Question') => { if (!P) return; if (probs.some((p) => p.key === key && JSON.stringify(p.vars) === JSON.stringify(vars))) return; probs.push({ id: 'P' + (probs.length + 1), ...P(sev, 'Standards', key, vars), evidence: [], status: 'open', std: true }); };
   const kits = new Set();
   for (const r of out) {
+    if (isCustomerSpecId(r.std, r.kind)) { r.stage = 'routecard'; continue; } // customer spec: for the route card, never a quote-stage task or question
     const label = r.std + (r.dash ? '-' + r.dash : '');
     if (r.status === 'needsDoc' && !tasks.some((t) => t.refNumber === r.std)) {
       const tv = { num: r.std, desc: r.title || '' };
@@ -43,4 +44,5 @@ async function uploadStandard(base, { id, rev, customer, file, owner, paid }, re
   return { ...e, file: store.blobPath(e), tableRows: Object.keys(rows).length };
 }
 const { extractTables } = require('./extract.cjs');
+const { isCustomerSpecId } = require('../docs/stage.cjs');
 module.exports = { extractTables, attachStandards, confirmStandard, uploadStandard, detectCallouts, openStore };

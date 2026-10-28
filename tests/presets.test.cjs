@@ -8,13 +8,14 @@ const en = JSON.parse(rd('src', 'i18n', 'en.json')); const he = JSON.parse(rd('s
 const css = rd('src', 'styles', 'themes.css'); const layers = rd('src', 'styles', 'layers.css');
 const panel = rd('src', 'settings', 'PresetsPanel.tsx'); const dlg = rd('src', 'settings', 'SettingsDialog.tsx');
 
+// Industrial Steel and Priority ERP canvases are lightened from MRT's #b8c0cc / #b8bcc4 (grey on grey with white cards); see the canvas-layering test.
 // id: [MRT canvas, surface, text, accent, corner radius] (values read from MRT's built-in preset token maps, 9.0.52)
 const MRT = {
   'aris-glass': ['#ebebed', '#ffffff', '#1c1c1e', '#48484a', 10],
   'icloud-windows': ['#ebebed', '#ffffff', '#1c1c1e', '#48484a', 8],
   'cleanmymac': ['#eadfeb', '#ffffff', '#111827', '#9a86b5', 8],
-  'priority-erp': ['#b8bcc4', '#f4f5f7', '#0a1628', '#334155', 8],
-  'industrial-steel': ['#b8c0cc', '#ffffff', '#020617', '#1e293b', 8],
+  'priority-erp': ['#d3d7de', '#f4f5f7', '#0a1628', '#334155', 8],
+  'industrial-steel': ['#d3dae4', '#ffffff', '#020617', '#1e293b', 8],
   'graphite': ['#252b36', '#3d4654', '#ffffff', null, 8],
   'warm-neutral': ['#e5dcc8', '#fffdf8', '#1c1917', '#57534e', 8],
   'soft-salad': ['#e2ebe4', '#ffffff', '#1c1f1e', '#526958', 8],

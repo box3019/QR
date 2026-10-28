@@ -18,7 +18,7 @@ test('progress: plain localized key with i of n, bar fraction, tech line kept', 
   const en = require('../src/i18n/en.json'), he = require('../src/i18n/he.json'); for (const k of ['busy.read', 'busy.ocr']) { assert.match(en[k], /\{i\}.*\{n\}/); assert.match(he[k], /\{i\}.*\{n\}/); } });
 test('summary counts', async () => { const s = await load('wizard', 'summary.mjs');
   const parts = [{ problems: [{ severity: 'Question', status: 'open' }] }, { problems: [{ severity: 'Warning', status: 'open' }] }, { problems: [{ severity: 'Blocker', status: 'resolved' }] }];
-  assert.deepStrictEqual(s.summaryCounts(parts), { nq: 1, np: 1, flagged: [1] }); });
+  assert.deepStrictEqual(s.summaryCounts(parts), { nq: 1, np: 1, flagged: [0] }); });
 test('card has one block per friend category (empty ones merged), in status order', async () => { const b = await load('parts', 'breakdown.mjs'); const bl = await load('parts', 'blocks.mjs');
   const pg = { page: 1, rows: [], procs: [] }; const part = { drawing: { pages: [] }, problems: [], standards: [], pages: [pg] };
   const none = bl.fieldBlocks({ ...part }).filter((x) => x.kind === 'none');

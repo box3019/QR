@@ -411,7 +411,7 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   const openTasks = tasks.filter((t) => t.type === 'uploadDocument').length;
   const readiness = status === 'rejected' ? 'n/a' : status === 'pending' ? 'Blocked: no material' : openTasks ? `Blocked by ${openTasks} task${openTasks > 1 ? 's' : ''}` : problems.some((p) => p.severity === 'Blocker') ? 'Incomplete' : 'Ready';
   for (const x of problemsFrom(requirements)) problems.push({ id: 'P' + (problems.length + 1), ...x });
-  const routeCard = { ...buildRouteCard({ route, refs, notes }), v: 1 };
+  const routeCard = { ...buildRouteCard({ route, refs, notes }), v: 2 };
   let checklist = null; try { checklist = buildChecklist({ notes, route, bom, material, status }, pages); } catch (e) { checklist = null; }
   return { routeCard, checklist, requirements: enrichRequirements(requirements0, chartInfo), chart: chartX, customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, rejectKey, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
 }
