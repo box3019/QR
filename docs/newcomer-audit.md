@@ -1,4 +1,4 @@
-﻿# Newcomer audit (v0.1.5)
+# Newcomer audit (v0.1.5)
 
 Goal: QR never confuses a first-time user. Every screen was walked as a newcomer (EN and HE, RTL) and checked against eight rules.
 Method: source walk-through of every screen plus the packaged build on a SYNTHETIC RFQ (shots in `docs/newcomer/`, synthetic data only). A pass on a real RFQ was done locally only and is not part of the repo.
@@ -18,12 +18,13 @@ Rules: (1) one primary action per screen; (2) a top "next step" line that names 
 | 7 | Top bar: Save, Save as | Disabled without a reason. | Tooltip: "Nothing to save yet" or "QR is still reading the files". | Fixed |
 | 8 | Settings: Apply look | Disabled without a reason. | Tooltip: "This look is already applied. Choose another one." | Fixed |
 | 9 | Footer: Cancel (clear the RFQ) | A confirm box with no way back; autosave then overwrote the project. | No question. The RFQ is cleared and a toast offers Undo (30 s); the project stays in History. | Fixed |
-| 10 | Footer: Next | Two or zero primary buttons on steps 1-3. | Exactly one primary per screen: Load (step 1, empty: Choose files; loaded: Next), Next part / To documents (step 2), footer Next (step 3), Export (step 4). The previous-part button explains why it is disabled on the first part. | Fixed |
+| 10 | Footer: Next | Two or zero primary buttons on steps 1-3. | Exactly one primary per screen: Load (step 1, empty: Choose files; loaded: Next), footer Next on the list views of steps 2 and 3, Next part / To documents / To summary on a part view, Export (step 4). The previous-part button explains why it is disabled on the first part. | Fixed |
 | 11 | Tabs | No close button on a single tab; hover-only x. | x always visible on every tab, middle click, Ctrl+W; busy tab asks first; project stays in History. | Fixed (earlier in this build) |
 | 12 | Whole app | "Did it save?" autosave was invisible. | "Saved hh:mm" in the top bar, Save, Save as (.qrproj), Open. | Fixed (earlier in this build) |
 | 13 | Outlook "Send to QR" with QR open | Nothing happened. | Window comes to the front, new tab (or the same email's tab), toast with the reason when there is nothing to import. | Fixed (earlier in this build) |
 | 14 | Tab dots | The dot colours were hard-coded twice (wizard.css and system.css). | Both use the `--qr-st-*` tokens, the same ones as the part status dots (grey none, green ok, orange action, red not ours). | Fixed |
 | 15 | Jargon (English) | "Intake", "Blocker", "flags", "OCR", "BOM". | "Load files", "Must fix", "open issues", "Scanned text", "Parts list". Hebrew already used plain words. | Fixed for the main screens |
+| 16 | Step 2 (and 3), three panels | "List, drawing and card at once: where do I look?" | One focus at a time. List view: tiles, then one row per part (part number, rev, status, one-line reason), the next-step line on top. Click a row: Part view with a large drawing beside that part's blocks, Back to list, Previous, Next part (the next part that needs action) and the arrow keys (mirrored in Hebrew), Esc = back. No third column. Documents & questions uses the same list, then the questions of one part at full width. | Fixed |
 
 ## Still open (needs Alex's decision or a larger change)
 
@@ -34,5 +35,5 @@ Rules: (1) one primary action per screen; (2) a top "next step" line that names 
 
 ## Before / after shots
 
-Synthetic only. Before: `sv048c` (previous build). After: the build of this commit. See `docs/newcomer/` for the pairs that are safe to keep in the repo.
+Synthetic only. Before: `sv048c` (previous build). After: the build of this commit. `docs/newcomer/before_*` and `after_*` are the pairs (steps 1 to 4, EN and HE). `onefocus_<width>_<lang>_*` show the new list and part views at 1280 and 1920 (all checked by `scripts/shots-onefocus.cjs`: no third column, arrows, Back, no overflow).
 
