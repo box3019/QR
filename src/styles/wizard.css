@@ -247,11 +247,13 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-ck-ind { display: flex; flex-direction: column; gap: 2px; font-size: var(--qr-fs-sm); margin: 4px 0 6px; }
 .qr-ck-lvl { font-weight: 600; } .qr-ck-lvl[data-lvl="veryTight"], .qr-ck-lvl[data-lvl="complex"] { text-decoration: underline; }
 .qr-ck-warn { font-size: var(--qr-fs-xs); margin: 2px 0 4px; } .qr-ck-zn { font-size: var(--qr-fs-xs); }
-.qr-ck-tab { table-layout: fixed; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
+.qr-ck-tab { table-layout: auto; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
 .qr-ck-tab td, .qr-ck-tab th { padding: 2px 6px; vertical-align: top; border-bottom: 1px solid var(--qr-line, rgba(128,128,128,.25)); text-align: start; }
-.qr-ck-gh th { font-size: var(--qr-fs-xs); font-weight: 600; opacity: .8; padding-top: 8px; }
+.qr-ck-gh th { font-size: var(--qr-fs-xs); font-weight: 600; padding-top: 8px; }
 .qr-ck-sub .qr-ck-l { padding-inline-start: 18px; }
-.qr-ck-l { width: 38%; overflow-wrap: break-word; } .qr-ck-w { overflow-wrap: anywhere; }
+.qr-ck-l { width: 1%; white-space: nowrap; overflow-wrap: normal; } .qr-ck-w { width: 99%; max-width: 0; overflow: hidden; }
+.qr-ck-gh th, .qr-ck-ind > div { white-space: nowrap; }
+.qr-ck-ind > div { overflow: hidden; text-overflow: ellipsis; }
 .qr-ck-s { font-weight: 600; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--qr-bad-text); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
 .qr-ck-items { margin: 0; padding: 0; list-style: none; } .qr-ck-where { font-size: var(--qr-fs-xs); }
 .qr-ck-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline dotted; cursor: pointer; text-align: start; }
@@ -261,7 +263,6 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-cks-tab th, .qr-cks-tab td { padding: 3px 3px; border: 1px solid var(--qr-line, rgba(128,128,128,.35)); text-align: start; vertical-align: top; white-space: nowrap; overflow-wrap: normal; word-break: keep-all; hyphens: none; }
 .qr-cks-tab th { font-weight: 600; background: var(--mrt-surface-muted, transparent); white-space: normal; vertical-align: bottom; overflow-wrap: normal; }
 .qr-cks-p .qr-ck-link, .qr-cks-p bdi { white-space: nowrap; } .qr-cks-p { text-align: start; }
-.qr-cks-tab[data-lvl="2"] .qr-cks-p { max-width: 16ch; } .qr-root .qr-cks-tab[data-lvl="2"] .qr-cks-p .qr-ck-link { display: block !important; overflow: hidden; text-overflow: ellipsis; }
 .qr-cks-t { display: block; white-space: nowrap; font-weight: 600; } .qr-cks-t[data-s="notfound"] { font-weight: 500; }
 .qr-cks-i { font-weight: 500; }
 
@@ -284,3 +285,11 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
 .qr-root .qr-ck-items li > .qr-ck-link { display: block !important; max-width: 100%; }
 .qr-root .qr-ck-items li > .qr-ck-where { flex: 0 100 auto; }
+
+/* Summary: expandable row (full checklist in full words). The expanded cell never widens the table. */
+.qr-cks-r { cursor: pointer; }
+.qr-root .qr-cks-x { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 4px !important; margin: 0 !important; min-height: 0 !important; min-width: 0 !important; height: auto !important; font: inherit; color: inherit; cursor: pointer; display: inline; }
+.qr-cks-x:dir(rtl) { transform: scaleX(-1); }
+.qr-cks-xr > td { padding: 6px 10px; white-space: normal; background: var(--mrt-surface); }
+.qr-cks-xin { width: 0; min-width: 100%; contain: inline-size; }
+.qr-cks-xin .qr-ck-tab td, .qr-cks-xin .qr-ck-tab th { border-width: 0 0 1px 0; padding: 2px 6px; background: transparent; }

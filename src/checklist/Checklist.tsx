@@ -25,14 +25,13 @@ export function Indicators({ ev }: any) {
   const whyP = p.level === 'unknown' ? t('ck.prec.whyUnknown') : p.level === 'standard' ? t('ck.prec.whyStandard') : t('ck.prec.why', { n: p.count, x: tightest });
   const whyC = t('ck.cx.why', { steps: k.steps || 0, coat: k.coatings || 0, asm: k.asmKinds || 0, thr: k.threads || 0, tight: k.tight || 0 });
   return <div className="qr-ck-ind" data-testid="ck-indicators">
-    <div title={t('tip.ckPrec', { t: ev.th.tolMm, i: ev.th.tolIn, it: ev.th.fitMaxIT, r: ev.th.raUm })}><b>{t('ck.prec.title')}</b> <span className="qr-ck-lvl" data-lvl={p.level} data-testid="ck-prec-level">{t('ck.prec.' + p.level)}</span> <span className="qr-muted" data-testid="ck-prec-why">{whyP}</span></div>
-    <div title={t('tip.ckCx')}><b>{t('ck.cx.title')}</b> <span className="qr-ck-lvl" data-lvl={c.level} data-testid="ck-cx-level">{t('ck.cx.' + c.level)}</span> <span className="qr-muted" data-testid="ck-cx-why">{whyC}</span></div>
+    <div title={t('ck.prec.title') + ': ' + t('ck.prec.' + p.level) + ' \u2014 ' + whyP + '\n' + t('tip.ckPrec', { t: ev.th.tolMm, i: ev.th.tolIn, it: ev.th.fitMaxIT, r: ev.th.raUm })}><b>{t('ck.prec.title')}</b> <span className="qr-ck-lvl" data-lvl={p.level} data-testid="ck-prec-level">{t('ck.prec.' + p.level)}</span> <span className="qr-muted" data-testid="ck-prec-why">{whyP}</span></div>
+    <div title={t('ck.cx.title') + ': ' + t('ck.cx.' + c.level) + ' \u2014 ' + whyC + '\n' + t('tip.ckCx')}><b>{t('ck.cx.title')}</b> <span className="qr-ck-lvl" data-lvl={c.level} data-testid="ck-cx-level">{t('ck.cx.' + c.level)}</span> <span className="qr-muted" data-testid="ck-cx-why">{whyC}</span></div>
   </div>;
 }
-export function ChecklistSection({ part, onFocus }: any) {
-  if (!part || !part.checklist) return <div className="qr-ck qr-muted" data-testid="checklist-none">{t('ck.none')}</div>;
+export function ChecklistBody({ part, onFocus }: any) {
   const ev = evaluate(part, getCkSettings()); const R: any = Object.fromEntries(ev.rows.map((r: any) => [r.id, r]));
-  return <details className="qr-ck" open data-testid="checklist"><summary title={t('tip.checklist')}>{t('ck.title')}</summary>
+  return <>
     <Indicators ev={ev} />
     {ev.read && !ev.read.ok && <div className="qr-ck-warn" data-testid="ck-lowread">{t('ck.lowRead')}</div>}
     {ev.zoneEstimated && <div className="qr-muted qr-ck-zn" data-testid="ck-zone-note">{t('ck.zoneNote')}</div>}
@@ -41,5 +40,11 @@ export function ChecklistSection({ part, onFocus }: any) {
       {ROWS.filter((r: any) => r.group === g).map((r: any) => { const row = R[r.id]; return <tr key={r.id} data-testid={'ck-row-' + r.id} data-s={row.state} className={r.sub ? 'qr-ck-sub' : ''}>
         <td className="qr-ck-l">{t('ck.r.' + r.id)}</td><td className="qr-ck-w"><State s={row.state} /><Items row={row} onFocus={onFocus} pid={part.id || part.partNo} /></td></tr>; })}
     </React.Fragment>)}</tbody></table>
+  </>;
+}
+export function ChecklistSection({ part, onFocus }: any) {
+  if (!part || !part.checklist) return <div className="qr-ck qr-muted" data-testid="checklist-none">{t('ck.none')}</div>;
+  return <details className="qr-ck" open data-testid="checklist"><summary title={t('tip.checklist')}>{t('ck.title')}</summary>
+    <ChecklistBody part={part} onFocus={onFocus} />
   </details>;
 }
