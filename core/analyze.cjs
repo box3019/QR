@@ -11,6 +11,7 @@ const { chartToRoute } = require('./routing/chart.cjs');
 const { findChart, materialFromChart, enrichRequirements, chartExtras } = require('./routing/apply.cjs');
 const { detectProfile } = require('./customers/index.cjs');
 const { STAGE, stageOfRef, buildRouteCard } = require('./docs/stage.cjs');
+const { buildChecklist } = require('./checklist/detect.cjs');
 
 const { normalizeMaterialTokens, isMaterialValue, materialFromTitleBlock } = require('./materials.cjs');
 const bb = (t) => [Math.round(t.x), Math.round(t.y), Math.round(t.w), Math.round(t.h)];
@@ -411,7 +412,8 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   const readiness = status === 'rejected' ? 'n/a' : status === 'pending' ? 'Blocked: no material' : openTasks ? `Blocked by ${openTasks} task${openTasks > 1 ? 's' : ''}` : problems.some((p) => p.severity === 'Blocker') ? 'Incomplete' : 'Ready';
   for (const x of problemsFrom(requirements)) problems.push({ id: 'P' + (problems.length + 1), ...x });
   const routeCard = { ...buildRouteCard({ route, refs, notes }), v: 1 };
-  return { routeCard, requirements: enrichRequirements(requirements0, chartInfo), chart: chartX, customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, rejectKey, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
+  let checklist = null; try { checklist = buildChecklist({ notes, route, bom, material, status }, pages); } catch (e) { checklist = null; }
+  return { routeCard, checklist, requirements: enrichRequirements(requirements0, chartInfo), chart: chartX, customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, rejectKey, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
 }
 
 module.exports = { detectPartNo, isMaterialCode, revFromFileName, parseEltaPartsListPages, analyzePart, normalizeMaterialTokens, isMaterialValue, parseNotes, viewThreads, normThread, detectCustomer };

@@ -45,6 +45,13 @@ function stdHtml(p, T) {
   const dim = (d) => Object.entries(d || {}).map(([k, v]) => `${k} ${v && v.mm != null ? v.mm + ' mm' : v}`).join(', ');
   return `<h4>${esc(T.stds)}</h4><table><tbody>${l.map((s) => `<tr><td>${bdi(s.std + (s.dash ? '-' + s.dash : ''))}</td><td>${esc((T.stStatus || {})[s.status] || s.status)}${s.doc && s.doc.rev ? ' · ' + bdi(s.doc.rev) : ''}</td><td>${bdi(dim(s.dims))}${(s.flags || []).filter((f) => f.drawing).map((f) => ' ✕ ' + bdi(f.drawing + ' → ' + f.required)).join('')}</td></tr>`).join('')}</tbody></table>`;
 }
+/** Checklist block of one part (rows in route-card order + Precision / Complexity with the why line); needs p._ck from the main process. */
+function checklistHtml(p, he) {
+  if (!p._ck || !p._ck.has) return '';
+  const X = require('./checklist/export.cjs'); const lang = he ? 'he' : 'en'; const tt = X.mk(lang); const ind = X.indicators(p._ck, lang);
+  const rows = X.lines(p._ck, lang); let g = '';
+  return `<h4>${esc(tt('ck.title'))}</h4><p><b>${esc(tt('ck.prec.title'))}</b>: ${esc(ind.precision)} <span class="muted">${bdi(ind.precisionWhy)}</span><br><b>${esc(tt('ck.cx.title'))}</b>: ${esc(ind.complexity)} <span class="muted">${esc(ind.complexityWhy)}</span></p><table class="ck"><tbody>${rows.map((r) => { const h = r.group !== g ? `<tr><th colspan="3" class="muted">${esc(r.groupLabel)}</th></tr>` : ''; g = r.group; return h + `<tr><td>${esc(r.label)}</td><td><b>${esc(r.stateLabel)}</b>${r.excluded ? ' <span class="muted">(' + esc(tt('ck.excluded')) + ')</span>' : ''}</td><td>${r.what ? bdi(r.what) : ''}${r.where ? ' <span class="muted">' + bdi(r.where) + '</span>' : ''}</td></tr>`; }).join('')}</tbody></table>`;
+}
 /** Neutral "For route card" block of one part: customer specs and certificate / report requirements per routing step. */
 function routeCardHtml(p, T, he) {
   const rc = p.routeCard; if (!rc || !rc.count) return '';
@@ -62,7 +69,7 @@ function reportHtml(parts, lang = 'he', meta = {}) {
     return `<section class="part"><h3>${bdi(p.partNo || '?')} <span class="muted">${esc(T.rev)} ${bdi(p.rev || '-')}</span> ${label(plainStatus(p))}</h3>${p.title ? `<div class="muted">${bdi(p.title)}</div>` : ''}
     <table class="kv">${row('material', f.material)}${row('heat', f.heat)}${row('coat', f.coat)}${row('paint', f.paint)}${row('mask', f.mask)}</table>
     <h4>${esc(T.seq)}</h4>${f.seq.length ? `<ol class="seq">${f.seq.map((s) => `<li><b>${bdi(s.seq)}</b> ${bdi(s.text)}</li>`).join('')}</ol>` : `<p class="muted">${T.none}</p>`}
-    ${stdHtml(p, T)}${routeCardHtml(p, T, he)}<h4>${esc(T.flags)}</h4>${f.flags.length ? `<ul class="flags">${f.flags.map((x) => `<li><span class="sev">${esc(T.sev[x.sev] || x.sev)}</span> ${bdi(x.text)}</li>`).join('')}</ul>` : `<p class="muted">${T.none}</p>`}</section>`; }).join('');
+    ${checklistHtml(p, he)}${stdHtml(p, T)}${routeCardHtml(p, T, he)}<h4>${esc(T.flags)}</h4>${f.flags.length ? `<ul class="flags">${f.flags.map((x) => `<li><span class="sev">${esc(T.sev[x.sev] || x.sev)}</span> ${bdi(x.text)}</li>`).join('')}</ul>` : `<p class="muted">${T.none}</p>`}</section>`; }).join('');
   const qs = buildQuestions(parts, he ? 'he' : 'en');
   const qHtml = qs.filter((g) => g.questions.some((q) => q.severity !== 'Document'));
   const docs = parts.flatMap((p) => (p.tasks || []).filter(isOpenDoc).map((t) => ({ pn: p.partNo, ref: t.refNumber })));

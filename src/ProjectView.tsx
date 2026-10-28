@@ -1,4 +1,5 @@
 // One project (tab): its own wizard step, parts, problems, viewer and background run; saves itself and reports its tab meta.
+import { setCkSettings } from './checklist/store';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { t, getLang } from './i18n';
 import { Stepper } from './components/wizard/Stepper';
@@ -26,6 +27,7 @@ import { exposeTestHooks } from './hooks/testHooks';
 const qr = () => (window as any).qr;
 type Part = any;
 export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, notify, over, onMeta, register, recent, onReopen, onHistory }: any) {
+  setCkSettings(settings); // the checklist thresholds (Settings > Precision) for the screens below
   const I = initial || {};
   const [parts, setParts] = useState((I.parts || []) as Part[]); const [unknown, setUnknown] = useState((I.unknown || []) as string[]);
   const [partOpen, setPartOpen] = useState(false); const [sel, setSel] = useState(I.sel || 0); const [step, setStep] = useState(I.step || 1); const [tab, setTab] = useState(I.tab || 'drawing');

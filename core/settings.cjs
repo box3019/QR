@@ -27,6 +27,7 @@ const DEFAULTS = {
   outlookDrag: true,
   outlookSaveFolder: '',
   assistant: true,
+  precision: { tolMm: 0.01, tolIn: 0.0005, fitMaxIT: 7, gdtMm: 0.02, gdtIn: 0.001, raUm: 0.8, decimalsMm: 3, decimalsIn: 4 }, // what counts as a tight / unusual dimension in the checklist (Settings > Precision)
   floatPos: {}, // remembered positions of draggable windows: { key: { x, y } }
 };
 /** Pure: stored object -> full settings with the capability catalog merged over the defaults. */
@@ -48,6 +49,7 @@ function normalizeSettings(stored) {
   if (!ROW_HEIGHTS.includes(s.rowHeight)) s.rowHeight = DEFAULTS.rowHeight;
   s.assistant = s.assistant !== false;
   s.floatPos = sanitizeFloatPos(s.floatPos);
+  { const p = (stored && stored.precision) || {}; const out = {}; for (const k of Object.keys(DEFAULTS.precision)) { const v = typeof p[k] === 'string' ? parseFloat(p[k].replace(',', '.')) : p[k]; out[k] = Number.isFinite(v) && v >= 0 ? v : DEFAULTS.precision[k]; } s.precision = out; }
   delete s.materials; // pre-0.1.3 regex allow-list, replaced by the catalog
   s.materialsCatalog = mergeCatalog(MATERIALS, s.materialsCatalog);
   s.processesCatalog = mergeCatalog(PROCESSES, s.processesCatalog);

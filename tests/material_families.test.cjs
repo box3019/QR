@@ -41,8 +41,8 @@ test('brass and bronze: UNS C, EN/DIN, ASTM B16/B124/B150, QQ-B; "aluminium bron
   for (const s of ['PHOSPHOR BRONZE C51000', 'C54400 BRONZE', 'ALUMINUM BRONZE C95400', 'C63000', 'TIN BRONZE C93200', 'CuSn8', 'CuAl10Ni5Fe4', 'ASTM B150 C63000', 'QQ-B-750']) assert.strictEqual(p(s).group, 'bronze', s);
   assert.strictEqual(p('C36000 ROD').form, 'rod');
 });
-test('not recognised: titanium, plastics, nickel alloys, iron; other copper is its own (disabled) group', () => {
-  for (const s of ['TITANIUM TI-6AL-4V', 'DELRIN', 'PEEK', 'INCONEL 718', 'GRAY IRON', 'SILVER PLATING PER ASTM B700']) assert.strictEqual(p(s), null, s);
+test('not recognised: titanium, other plastics (Delrin/POM and Teflon/PTFE are ours), nickel alloys, iron; other copper is its own (disabled) group', () => {
+  for (const s of ['TITANIUM TI-6AL-4V', 'NYLON 6/6', 'PEEK', 'INCONEL 718', 'GRAY IRON', 'SILVER PLATING PER ASTM B700']) assert.strictEqual(p(s), null, s);
   assert.strictEqual(p('COPPER C11000').group, 'copper-other');
 });
 test('stock size and form are normalised; one line EN and HE', () => {
@@ -57,7 +57,7 @@ test('stock size and form are normalised; one line EN and HE', () => {
 test('catalog: families are rows in the editable list; group on/off decides, explicit alloys win', () => {
   const cat = defaultCatalog().materials;
   const rules = cat.filter((r) => r.rule);
-  assert.deepStrictEqual(rules.map((r) => r.group).sort(), ['aluminium-cast', 'aluminium-wrought', 'brass', 'bronze', 'copper-other', 'stainless', 'steel-alloy', 'steel-carbon', 'tool-steel']);
+  assert.deepStrictEqual(rules.map((r) => r.group).sort(), ['aluminium-cast', 'aluminium-wrought', 'brass', 'bronze', 'copper-other', 'plastic-pom', 'plastic-ptfe', 'stainless', 'steel-alloy', 'steel-carbon', 'tool-steel']);
   for (const r of rules) { assert.ok(r.nameEn && r.nameHe); assert.strictEqual(r.enabled, r.group !== 'copper-other'); }
   for (const s of ['6061-T651 PLATE', 'CuZn39Pb3', 'C51000 PHOSPHOR BRONZE', 'AISI 304', 'A356.0-T6 CASTING', 'D2 TOOL STEEL']) assert.strictEqual(matchMaterial(s, cat).allowed, true, s);
   const t = matchMaterial('TITANIUM TI-6AL-4V', cat); assert.strictEqual(t.allowed, false); assert.match(t.reason, /not in the materials list/);

@@ -14,14 +14,16 @@ const GROUPS = [
   { group: 'tool-steel', family: 'Tool steel', grade: 'A2/D2/O1/H13...', en: 'Tool steel (A2, D2, O1, S7, H13, M2...)', he: 'פלדת כלים (A2, D2, O1, S7, H13, M2...)', on: true },
   { group: 'brass', family: 'Brass', grade: 'C2xxxx-C4xxxx', en: 'Brass (C26000, C36000, C46400, CuZn37, CuZn39Pb3...)', he: 'פליז (C26000, C36000, C46400, CuZn37, CuZn39Pb3...)', on: true },
   { group: 'bronze', family: 'Bronze', grade: 'C5xxxx-C6xxxx, C9xxxx', en: 'Bronze (phosphor C51000/C54400, aluminium C95400/C63000, tin C93200, CuSn8, CuAl10Ni5Fe4...)', he: 'ברונזה (פוספור C51000/C54400, אלומיניום C95400/C63000, בדיל C93200, CuSn8, CuAl10Ni5Fe4...)', on: true },
+  { group: 'plastic-pom', family: 'Plastic', grade: 'POM', en: 'Delrin (POM / acetal) plastic', he: 'דלרין (POM / אצטל), פלסטיק', on: true },
+  { group: 'plastic-ptfe', family: 'Plastic', grade: 'PTFE', en: 'Teflon (PTFE) plastic', he: 'טפלון (PTFE), פלסטיק', on: true },
   { group: 'copper-other', family: 'Copper', grade: 'C1xxxx, C17200, C7xxxx', en: 'Copper, Cu-Be, cupro-nickel, nickel silver (confirm before enabling)', he: 'נחושת, Cu-Be, קופרו-ניקל, כסף ניקל (לאשר לפני הפעלה)', on: false },
 ];
 /** Rows for the materials catalog (Settings > Materials). */
 const GROUP_ROWS = GROUPS.map((g) => ({ id: 'grp-' + g.group, rule: true, group: g.group, family: g.family, grade: g.grade, nameEn: g.en, nameHe: g.he, aliases: [], tempers: [], enabled: g.on }));
 
 const up = (s) => String(s || '').toUpperCase().replace(/_/g, ' ').replace(/ALUMINIUM/g, 'ALUMINUM').replace(/\s+/g, ' ');
-const NAMES = { 'aluminium-wrought': 'Aluminium', 'aluminium-cast': 'Aluminium (cast)', 'steel-carbon': 'Carbon steel', 'steel-alloy': 'Alloy steel', stainless: 'Stainless steel', 'tool-steel': 'Tool steel', brass: 'Brass', bronze: 'Bronze', 'copper-other': 'Copper alloy' };
-const FAMILY = { 'aluminium-wrought': 'Aluminium', 'aluminium-cast': 'Aluminium', 'steel-carbon': 'Steel', 'steel-alloy': 'Steel', stainless: 'Stainless steel', 'tool-steel': 'Tool steel', brass: 'Brass', bronze: 'Bronze', 'copper-other': 'Copper' };
+const NAMES = { 'aluminium-wrought': 'Aluminium', 'aluminium-cast': 'Aluminium (cast)', 'steel-carbon': 'Carbon steel', 'steel-alloy': 'Alloy steel', stainless: 'Stainless steel', 'tool-steel': 'Tool steel', brass: 'Brass', bronze: 'Bronze', 'plastic-pom': 'Delrin (POM)', 'plastic-ptfe': 'Teflon (PTFE)', 'copper-other': 'Copper alloy' };
+const FAMILY = { 'aluminium-wrought': 'Aluminium', 'aluminium-cast': 'Aluminium', 'steel-carbon': 'Steel', 'steel-alloy': 'Steel', stainless: 'Stainless steel', 'tool-steel': 'Tool steel', brass: 'Brass', bronze: 'Bronze', 'plastic-pom': 'Plastic', 'plastic-ptfe': 'Plastic', 'copper-other': 'Copper' };
 
 // ---- copper base ----
 function copperGroupFromUns(n) { // n = 5 digits after C
@@ -168,6 +170,9 @@ function specsOf(u) {
 function parseMaterial(raw) {
   const u = up(raw);
   if (!u.trim()) return null;
+  // plastics we machine (Delrin / POM / acetal, Teflon / PTFE) are ours
+  if (/\bDELRIN\b|\bPOM(?:-[CH])?\b|\bACETAL\b|\bPOLYOXYMETHYLENE\b/.test(u) && !/\bALUMIN|\bSTEEL\b|\bBRASS\b|\bBRONZE\b/.test(u)) return { group: 'plastic-pom', family: 'Plastic', grade: 'POM', temper: '', form: formOf(u), stock: stockGeneric(u), uns: '', specs: [], name: 'Delrin (POM)' };
+  if (/\bPTFE\b|\bTEFLON\b|\bPOLYTETRAFLUOROETHYLENE\b/.test(u) && !/\bALUMIN|\bSTEEL\b|\bBRASS\b|\bBRONZE\b/.test(u)) return { group: 'plastic-ptfe', family: 'Plastic', grade: 'PTFE', temper: '', form: formOf(u), stock: stockGeneric(u), uns: '', specs: [], name: 'Teflon (PTFE)' };
   // order matters: "ALUMINUM BRONZE" is bronze; copper-base first, then aluminium, then steels
   const cu0 = copper(u, raw); let r = cu0 ? { ...cu0 } : null;
   if (!r) r = aluminium(u);

@@ -96,10 +96,25 @@ ipcMain.handle('qr:exportQuestions', async (_e, parts, lang, target) => {
   fs.writeFileSync(txt, '\ufeff' + questionsText(parts, lang), 'utf8');
   return { pdf: out, txt };
 });
+/** Evaluated checklist (Settings > Precision thresholds applied) attached to each part for the exports. */
+async function attachChecklist(parts) {
+  const live = await import(require('url').pathToFileURL(path.join(__dirname, '..', 'core', 'checklist', 'live.mjs')).href); const s = loadSettings();
+  for (const p of parts || []) { try { p._ck = live.evaluate(p, s); } catch { p._ck = null; } }
+  return parts;
+}
+function ckColumns(p) {
+  const X = require('../core/checklist/export.cjs'); if (!p._ck || !p._ck.has) return {}; const o = {}; const ind = X.indicators(p._ck, 'en');
+  for (const id of X.COLS) o['Checklist: ' + X.colLabel(id, 'en')] = X.cell(p._ck, id, 'en');
+  o['Precision level'] = ind.precision; o['Precision why'] = ind.precisionWhy; o['Complexity'] = ind.complexity; o['Complexity why'] = ind.complexityWhy; return o;
+}
 function summaryRows(parts) {
-  return parts.map((p) => ({ Part: p.partNo, Rev: p.rev, Customer: p.customer, Title: p.title, Material: p.material?.normalized || p.material?.raw || '', Status: p.status === 'rejected' ? 'Rejected: ' + p.rejectReason : 'Accepted', Readiness: require('../core/report.cjs').LABELS.en.g[require('../core/report.cjs').plainStatus(p)], Blockers: p.problems.filter((x) => x.severity === 'Blocker').length, Questions: p.problems.filter((x) => x.severity === 'Question').length, Tasks: p.tasks.filter(require('../core/docs/stage.cjs').isOpenNowTask).length, 'For route card': ((p.routeCard && p.routeCard.groups) || []).map((g) => (g.key === 'general' ? 'General' : g.seq + ' ' + (g.title || g.type)) + ': ' + g.items.map((i) => (i.kind === 'spec' ? i.number : i.text)).join(', ')).join(' | '), Model: p.model ? path.basename(p.model.path) : 'not found', 'Text mode': p.textMode }));
+  return parts.map((p) => ({ ...summaryRows1(p), ...ckColumns(p) }));
+}
+function summaryRows1(p) {
+  return ([p].map((p) => ({ Part: p.partNo, Rev: p.rev, Customer: p.customer, Title: p.title, Material: p.material?.normalized || p.material?.raw || '', Status: p.status === 'rejected' ? 'Rejected: ' + p.rejectReason : 'Accepted', Readiness: require('../core/report.cjs').LABELS.en.g[require('../core/report.cjs').plainStatus(p)], Blockers: p.problems.filter((x) => x.severity === 'Blocker').length, Questions: p.problems.filter((x) => x.severity === 'Question').length, Tasks: p.tasks.filter(require('../core/docs/stage.cjs').isOpenNowTask).length, 'For route card': ((p.routeCard && p.routeCard.groups) || []).map((g) => (g.key === 'general' ? 'General' : g.seq + ' ' + (g.title || g.type)) + ': ' + g.items.map((i) => (i.kind === 'spec' ? i.number : i.text)).join(', ')).join(' | '), Model: p.model ? path.basename(p.model.path) : 'not found', 'Text mode': p.textMode })))[0];
 }
 ipcMain.handle('qr:exportSummary', async (_e, parts, kind, target) => {
+  await attachChecklist(parts);
   const rows = summaryRows(parts);
   const out = await pickSave(`QR_Order_Summary.${kind}`, [{ name: kind.toUpperCase(), extensions: [kind] }], target);
   if (!out) return null;
@@ -118,6 +133,7 @@ ipcMain.handle('qr:exportReport', async (_e, parts, lang, meta, target) => {
   const { reportHtml } = require('../core/report.cjs'); const m = meta || {};
   const out = await pickSave(`QR_Report_${String(m.rfq || (parts[0] || {}).partNo || 'RFQ').replace(/[^\w.-]+/g, '_')}_${lang}.pdf`, [{ name: 'PDF', extensions: ['pdf'] }], target);
   if (!out) return null;
+  await attachChecklist(parts);
   await htmlToPdf(reportHtml(parts || [], lang, m), out);
   const docs = require('../core/standards/export.cjs').copyStandardDocs(parts || [], out.replace(/\.pdf$/i, '') + '_standards');
   return { path: out, docs };
