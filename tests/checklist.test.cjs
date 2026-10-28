@@ -89,7 +89,7 @@ test('settings: precision defaults, normalization and the Settings tab', () => {
 test('UI wiring: part card + summary sections, click-to-zoom focus, tooltips, token fonts, no reamer code anywhere', () => {
   const rd = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
   assert.match(rd('src/components/partcard/PartCard.tsx'), /<ChecklistSection part=\{part\} onFocus=\{onFocus\}/); assert.match(rd('src/components/wizard/StepSummary.tsx'), /<ChecklistSummary/);
-  const ck = rd('src/checklist/Checklist.tsx'); assert.match(ck, /onFocus\(f\)/); assert.match(ck, /title=\{t\('ck\.show'\)\}/); assert.match(ck, /ck-zone-note/);
+  const ck = rd('src/checklist/Checklist.tsx'); assert.match(ck, /onFocus\(f\)/); assert.match(ck, /title=\{t\('ck\.show'\) \+ ': ' \+ full\}/); assert.match(ck, /ck-zone-note/);
   const css = rd('src/styles/wizard.css'); const block = css.slice(css.indexOf('/* Checklist')); assert.ok(!/font-size:\s*\d/.test(block), 'token font sizes only'); assert.ok(!/background(-color)?:\s*#(0|1|2|3)/i.test(block), 'no dark fills');
   const files = ['core/checklist/detect.cjs', 'core/checklist/live.mjs', 'core/checklist/zones.cjs', 'core/checklist/export.cjs', 'src/checklist/Checklist.tsx', 'src/checklist/ChecklistSummary.tsx', 'src/settings/SettingsDialog.tsx', 'core/settings.cjs', 'src/i18n/en.json'];
   for (const f of files) assert.doesNotMatch(rd(f), /reamer/i, f);
