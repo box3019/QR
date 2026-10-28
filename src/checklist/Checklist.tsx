@@ -15,7 +15,8 @@ function Items({ row, onFocus, pid }: any) {
   const rows = items.slice(0, MAXI);
   return <ul className="qr-ck-items">{rows.map((i: any, n: number) => { const f = onFocus ? focusOf(i, 'ck-' + pid + '-' + row.id + n) : null; const w = whereText(i);
     const body = <><span data-testid="ck-what">{itemWhat(i)}</span>{i.derived ? <span className="qr-muted"> ({t('ck.derived', { x: t('ck.r.' + (i.derived === 'fit' ? 'tight' : 'threads')) })})</span> : null}{row.excluded ? <span className="qr-muted"> ({t('ck.excluded')})</span> : null}</>;
-    return <li key={n} data-testid="ck-item" data-zone={i.zone ? i.zone.label : ''}>{f ? <button type="button" className="qr-ck-link" title={t('ck.show')} onClick={() => onFocus(f)}>{body}</button> : body}{w ? <span className="qr-ck-where qr-muted" data-testid="ck-where"> {'\u2014'} {w}</span> : null}</li>; })}
+    const full = itemWhat(i) + (w ? ' \u2014 ' + w : '');
+    return <li key={n} data-testid="ck-item" data-zone={i.zone ? i.zone.label : ''} title={full}>{f ? <button type="button" className="qr-ck-link" title={t('ck.show') + ': ' + full} onClick={() => onFocus(f)}>{body}</button> : body}{w ? <span className="qr-ck-where qr-muted" data-testid="ck-where"> {'\u2014'} {w}</span> : null}</li>; })}
     {items.length > MAXI && <li className="qr-muted">{t('ck.more', { n: items.length - MAXI })}</li>}</ul>;
 }
 export function Indicators({ ev }: any) {

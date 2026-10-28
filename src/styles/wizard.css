@@ -271,7 +271,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-table td, .qr-root .qr-table th, .qr-root .qr-hist-t td, .qr-root .qr-hist-t th, .qr-root .qr-wsum-table td, .qr-root .qr-wsum-table th, .qr-root .qr-catalog td, .qr-root .qr-catalog th { overflow-wrap: anywhere; word-break: normal; min-width: 0; }
 .qr-root .qr-hist-body, .qr-root .qr-modal-b, .qr-root .qr-settings-body, .qr-root .qr-summary-step, .qr-root .qr-wiz > .qr-wiz-main { overflow-x: hidden !important; }
 .qr-root .qr-ck-link, .qr-root .qr-cks-p .qr-ck-link { white-space: nowrap; max-width: 100%; text-align: start; }
-.qr-root .qr-ck-link > *, .qr-root .qr-ck-items li, .qr-root .qr-ck-items li * { white-space: normal; overflow-wrap: anywhere; min-width: 0; }
+.qr-root .qr-ck-link > *, .qr-root .qr-ck-items li, .qr-root .qr-ck-items li * { white-space: nowrap; overflow-wrap: normal; min-width: 0; }
 .qr-root .qr-ck-items li { max-width: 100%; }
 .qr-root .qr-ck-link { padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; min-width: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; line-height: inherit; display: inline; }
 
@@ -279,3 +279,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
    (tests/no_wrap.test.cjs, scripts/check-layout.cjs). Long descriptive text may still wrap between words. */
 .qr-root .qr-cks-p .qr-ck-link > * { white-space: nowrap; }
 .qr-root th, .qr-root button, .qr-root summary, .qr-root .qr-stat-l, .qr-root .qr-stat-n, .qr-root .qr-chip, .qr-root .qr-pcard-tag, .qr-root .qr-pcard-badge, .qr-root .qr-brand-badge, .qr-root .qr-lbl, .qr-root .qr-warnbar button { white-space: nowrap; }
+/* Part card checklist: one item = one line (what + where); a too-long item is shortened with an ellipsis, the full text is the tooltip. */
+.qr-root .qr-ck-items li { display: flex; align-items: baseline; gap: 4px; }
+.qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.qr-root .qr-ck-items li > .qr-ck-link { display: block !important; max-width: 100%; }
+.qr-root .qr-ck-items li > .qr-ck-where { flex: 0 100 auto; }
