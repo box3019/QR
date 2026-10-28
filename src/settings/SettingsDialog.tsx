@@ -33,7 +33,7 @@ export default function SettingsDialog({ settings, onClose, onSave, initialTab }
       <div className="qr-settings-nav">{TABS.map((k) => <button key={k} className="qr-settings-tab" data-active={tab === k} data-testid={'stab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('st.tab.' + k)}</button>)}</div>
       <div className="qr-settings-body">
         {tab === 'general' && <>
-          <Field label={t('st.uiLang')}><select className="qr-input" value={s.uiLanguage} data-testid="ui-lang" onChange={(e) => live('uiLanguage', e.target.value)}><option value="en">English</option><option value="he">עברית (Hebrew)</option></select></Field>
+          <Field label={t('st.uiLang')}><select className="qr-input" value={s.uiLanguage} data-testid="ui-lang" onChange={(e) => live('uiLanguage', e.target.value)}><option value="en">English</option><option value="he">עברית</option><option value="ru">Русский</option></select>{s.uiLanguage === 'ru' && <div className="qr-muted" data-testid="ru-note">{t('st.ruNote')}</div>}</Field>
           <Field label={t('st.qLang')}><select className="qr-input" value={s.questionsLanguage} data-testid="questions-lang" onChange={(e) => set('questionsLanguage', e.target.value)}><option value="he">{t('st.heDefault')}</option><option value="en">{t('st.english')}</option></select><QuestionSample lang={s.questionsLanguage} /></Field>
           <Field label={t('st.textSize')}><select className="qr-input" value={s.textSize} data-testid="text-size" onChange={(e) => live('textSize', e.target.value)}>{['normal', 'large', 'xlarge', 'huge'].map((k) => <option key={k} value={k}>{t('size.' + k)}</option>)}</select></Field>
         </>}

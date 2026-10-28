@@ -3,6 +3,7 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { MRT_ACTION_BTN, MRT_ACTION_BTN_PRIMARY } from '../ui/mrtButtons';
 import { TOUR_TEXT, tourFor, tourLang } from './tour.mjs';
+import { useFloat } from '../ui/useFloat';
 
 type R = { x: number; y: number; w: number; h: number } | null;
 const find = (id: string): HTMLElement | null => (Array.from(document.querySelectorAll(`[data-testid="${id}"]`)) as HTMLElement[]).find((e) => e.offsetParent && e.getBoundingClientRect().width > 0) || null;
@@ -26,8 +27,9 @@ function Demo({ kind, d }: { kind: string | null; d: Record<string, string> }) {
 }
 
 export function Tour({ lang0, stage, onClose, first }: { lang0: string; stage?: number; onClose: () => void; first?: boolean }) {
-  const [lang, setLang] = useState(tourLang(lang0));
+  const lang = tourLang(lang0); // the single language comes from Settings (no selector here)
   const steps = tourFor(stage); const [i, setI] = useState(0); const [r, setR] = useState<R>(null); const [real, setReal] = useState(false);
+  const f = useFloat(first ? 'tour:first' : 'tour');
   const T = TOUR_TEXT[lang]; const s = steps[i]; const last = i === steps.length - 1; const [h, p] = T.s[s.id];
   useEffect(() => { const w = window as any; if (s.stage && w.__qrStep && (w.__qrParts || []).length) w.__qrStep(s.stage); }, [i]);
   useLayoutEffect(() => {
@@ -44,10 +46,8 @@ export function Tour({ lang0, stage, onClose, first }: { lang0: string; stage?: 
   })();
   return <div className="qr-tour" data-testid={first ? 'first-run' : 'tutorial'} data-step={s.id} data-real={real}>
     {r ? <div className="qr-tour-hole" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} /> : <div className="qr-tour-dim" />}
-    <div className="qr-tour-card" dir={T.dir} lang={lang} style={{ ...pos, width: cw }} data-testid="tutorial-card" role="dialog" aria-label={h}>
-      <div className="qr-tour-head"><b data-testid="tutorial-title">{h}</b>
-        <select className="qr-tour-lang" aria-label={T.ui.lang} title={T.ui.lang} value={lang} data-testid="tutorial-lang" onChange={(e) => setLang(e.target.value as any)}>
-          {Object.keys(TOUR_TEXT).map((k) => <option key={k} value={k}>{(TOUR_TEXT as any)[k].name}</option>)}</select></div>
+    <div className="qr-tour-card" dir={T.dir} lang={lang} ref={f.ref} style={{ ...pos, ...f.style, width: cw }} data-testid="tutorial-card" role="dialog" aria-label={h}>
+      <div className="qr-tour-head" title={T.ui.tipDrag} data-testid="tutorial-head" {...f.headProps}><b data-testid="tutorial-title">{h}</b></div>
       <p className="qr-tour-p">{p}</p>
       {!real && <Demo kind={s.demo} d={T.demo} />}
       <div className="qr-tour-dots" data-testid="tutorial-step">{steps.map((x, n) => <button type="button" key={x.id} className="qr-tour-dot" data-on={n === i} title={`${T.ui.tipDot} ${n + 1} ${T.ui.of} ${steps.length}`} aria-label={`${n + 1} ${T.ui.of} ${steps.length}`} onClick={() => setI(n)} />)}</div>

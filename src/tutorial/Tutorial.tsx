@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { MRT_ACTION_BTN, MRT_ACTION_BTN_PRIMARY } from '../ui/mrtButtons';
 import { TUT, TLang } from './steps';
+import { useFloat } from '../ui/useFloat';
 
 /** Step-by-step tutorial in Hebrew, Russian or English. The whole view uses one language. */
 export function Tutorial({ lang0, onClose }: { lang0: string; onClose: () => void }) {
-  const [lang, setLang] = useState<TLang>((['he', 'ru', 'en'].includes(lang0) ? lang0 : 'he') as TLang);
+  const lang = ((['he', 'ru', 'en'].includes(lang0) ? lang0 : 'he') as TLang); // language comes from Settings; no selector here
   const [i, setI] = useState(0);
+  const f = useFloat('modal:tutorial', 'offset');
   const T = TUT[lang]; const s = T.steps[i]; const last = i === T.steps.length - 1;
   return <div className="qr-modal-bg" onClick={onClose}>
-    <div className="qr-modal" dir={T.dir} lang={lang} data-testid="tutorial" onClick={(e) => e.stopPropagation()}>
-      <div className="qr-modal-h">{T.ui.title}<span style={{ flex: 1 }} />
-        <select className="qr-input" aria-label={T.ui.lang} title={T.ui.tipLang} value={lang} data-testid="tutorial-lang" onChange={(e) => setLang(e.target.value as TLang)}>
-          {(Object.keys(TUT) as TLang[]).map((k) => <option key={k} value={k}>{TUT[k].name}</option>)}
-        </select>
+    <div className="qr-modal" ref={f.ref} style={f.style} dir={T.dir} lang={lang} data-testid="tutorial" onClick={(e) => e.stopPropagation()}>
+      <div className="qr-modal-h" title={T.ui.tipDrag} {...f.headProps}>{T.ui.title}<span style={{ flex: 1 }} />
         <button className={MRT_ACTION_BTN} title={T.ui.tipDone} aria-label={T.ui.tipDone} onClick={onClose}>✕</button></div>
       <div className="qr-modal-b">
         <div className="qr-muted" data-testid="tutorial-step">{T.ui.step} {i + 1} / {T.steps.length}</div>

@@ -11,7 +11,7 @@ const SYN = `<html><body style="font:14px Arial;padding:40px"><h2>PART NO 9900-0
   const shot = async (n) => { await win.waitForTimeout(500); await win.screenshot({ path: path.join(out, `v015_${n}.png`) }); console.log('shot', n); };
   await win.waitForSelector('[data-testid=first-run]', { timeout: 60000 });
   for (const l of ['he', 'ru', 'en']) {
-    await win.selectOption('[data-testid=tutorial-lang]', l);
+    await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x }), l);
     while (await win.$('[data-testid=tutorial-prev]:not([disabled])')) await win.click('[data-testid=tutorial-prev]');
     const want = [1, 4, 9]; let i = 1;
     for (const w of want) { while (i < w) { await win.click('[data-testid=tutorial-next]'); i++; } await shot(`tour_${l}_${w}`); }

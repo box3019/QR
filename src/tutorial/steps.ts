@@ -1,9 +1,9 @@
 /** Tutorial text. One language per view, never mixed. Keep the three languages in the same order and count. */
 export type TLang = 'he' | 'ru' | 'en';
-export const TUT: Record<TLang, { dir: 'rtl' | 'ltr'; name: string; ui: { title: string; prev: string; next: string; done: string; step: string; lang: string; tipPrev: string; tipNext: string; tipDone: string; tipLang: string }; steps: { h: string; p: string }[] }> = {
+export const TUT: Record<TLang, { dir: 'rtl' | 'ltr'; name: string; ui: { tipDrag: string; title: string; prev: string; next: string; done: string; step: string; lang: string; tipPrev: string; tipNext: string; tipDone: string; tipLang: string }; steps: { h: string; p: string }[] }> = {
   he: {
     dir: 'rtl', name: 'עברית',
-    ui: { title: 'מדריך QR', prev: 'הקודם', next: 'הבא', done: 'סיום', step: 'שלב', lang: 'שפת המדריך', tipPrev: 'לשלב הקודם', tipNext: 'לשלב הבא', tipDone: 'סגירת המדריך', tipLang: 'בחירת שפת המדריך' },
+    ui: { tipDrag: 'גררו להזזה, לחיצה כפולה לאיפוס המיקום', title: 'מדריך QR', prev: 'הקודם', next: 'הבא', done: 'סיום', step: 'שלב', lang: 'שפת המדריך', tipPrev: 'לשלב הקודם', tipNext: 'לשלב הבא', tipDone: 'סגירת המדריך', tipLang: 'בחירת שפת המדריך' },
     steps: [
       { h: 'מה QR עושה', p: 'QR קורא שרטוטים של לקוח, רשימות חלקים ומודלים, ומכין מסמכים חסרים ושאלות ללקוח. אין מחירים ואין ERP. העבודה מתקדמת בארבעה שלבים שמופיעים למעלה.' },
       { h: 'שלב 1: קליטה', p: 'גררו לחלון את המייל של הלקוח, ארכיון ZIP/RAR או שרטוטים, או לחצו "בחירת קבצים". בסיום QR עובר לבד לשלב הבא.' },
@@ -15,7 +15,7 @@ export const TUT: Record<TLang, { dir: 'rtl' | 'ltr'; name: string; ui: { title:
   },
   ru: {
     dir: 'ltr', name: 'Русский',
-    ui: { title: 'Руководство QR', prev: 'Назад', next: 'Далее', done: 'Готово', step: 'Шаг', lang: 'Язык руководства', tipPrev: 'Предыдущий шаг', tipNext: 'Следующий шаг', tipDone: 'Закрыть руководство', tipLang: 'Выбор языка руководства' },
+    ui: { tipDrag: 'Перетащите, чтобы переместить; двойной щелчок - вернуть на место', title: 'Руководство QR', prev: 'Назад', next: 'Далее', done: 'Готово', step: 'Шаг', lang: 'Язык руководства', tipPrev: 'Предыдущий шаг', tipNext: 'Следующий шаг', tipDone: 'Закрыть руководство', tipLang: 'Выбор языка руководства' },
     steps: [
       { h: 'Что делает QR', p: 'QR читает чертежи заказчика, спецификации и модели и готовит недостающие документы и вопросы заказчику. Без цен и без ERP. Работа идёт в четыре шага, показанных сверху.' },
       { h: 'Шаг 1: Приём', p: 'Перетащите в окно письмо заказчика, архив ZIP/RAR или чертежи, или нажмите «Выбрать файлы». После обработки QR сам перейдёт к следующему шагу.' },
@@ -27,7 +27,7 @@ export const TUT: Record<TLang, { dir: 'rtl' | 'ltr'; name: string; ui: { title:
   },
   en: {
     dir: 'ltr', name: 'English',
-    ui: { title: 'QR tutorial', prev: 'Back', next: 'Next', done: 'Done', step: 'Step', lang: 'Tutorial language', tipPrev: 'Previous step', tipNext: 'Next step', tipDone: 'Close the tutorial', tipLang: 'Choose the tutorial language' },
+    ui: { tipDrag: 'Drag to move, double-click to reset position', title: 'QR tutorial', prev: 'Back', next: 'Next', done: 'Done', step: 'Step', lang: 'Tutorial language', tipPrev: 'Previous step', tipNext: 'Next step', tipDone: 'Close the tutorial', tipLang: 'Choose the tutorial language' },
     steps: [
       { h: 'What QR does', p: 'QR reads customer drawings, parts lists and models, and prepares missing documents and customer questions. No prices, no ERP. The work goes in four steps shown at the top.' },
       { h: 'Step 1: Intake', p: 'Drop the customer email, a ZIP/RAR archive or drawings onto the window, or click "Choose files". When it is done, QR moves to the next step by itself.' },

@@ -496,5 +496,7 @@
   "std.dim.majorIn": "Major diameter",
   "std.dim.basicMinorIn": "Minor diameter",
   "std.dim.tapDrillMm": "Tap drill",
-  "blk.route": "Steps: {n}"
+  "blk.route": "Steps: {n}",
+  "tip.drag": "Drag to move, double-click to reset position",
+  "st.ruNote": "Russian: the tutorial and the step hints are in Russian; the rest of the interface stays in English until it is translated."
 }

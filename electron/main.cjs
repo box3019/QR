@@ -48,7 +48,8 @@ ipcMain.handle('qr:getSettings', () => loadSettings());
 ipcMain.handle('qr:questionSample', (_e, lang) => sampleQuestion(lang));
 ipcMain.handle('qr:newCustomer', (_e, from, ids) => newCustomer(from, ids));
 ipcMain.handle('qr:catalogPatterns', (_e, entries) => (entries || []).map((x) => entryPattern(x) || ''));
-ipcMain.handle('qr:setSettings', (_e, s) => { const n = normalizeSettings({ ...loadSettings(), ...s }); saveSettings(n); return n; });
+ipcMain.handle('qr:setSettings', (_e, s) => { const cur = loadSettings(); const n = normalizeSettings({ ...cur, ...s, floatPos: cur.floatPos }); saveSettings(n); return n; }); // floatPos only changes through setFloatPos (a stale settings object must not undo it)
+ipcMain.handle('qr:setFloatPos', (_e, key, pos) => { const cur = loadSettings(); const fp = { ...(cur.floatPos || {}) }; if (pos) fp[String(key)] = pos; else delete fp[String(key)]; const n = normalizeSettings({ ...cur, floatPos: fp }); saveSettings(n); return n.floatPos; });
 ipcMain.handle('qr:pickFiles', async () => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Drawings, models, ZIP/RAR/7z, e-mails', extensions: ['pdf', 'zip', 'rar', '7z', 'msg', 'eml', 'step', 'stp', 'igs', 'iges', 'sldprt', 'x_t', 'x_b'] }, { name: 'All files', extensions: ['*'] }] });
   return r.canceled ? [] : r.filePaths;

@@ -19,7 +19,7 @@ export const TOUR = [
 
 export const TOUR_TEXT = {
   he: { dir: 'rtl', name: 'עברית',
-    ui: { back: 'הקודם', next: 'הבא', skip: 'דילוג', done: 'סיום', of: 'מתוך', lang: 'שפת ההדרכה', tipBack: 'לכרטיס הקודם', tipNext: 'לכרטיס הבא', tipSkip: 'סגירת ההדרכה', tipDot: 'מעבר לכרטיס' },
+    ui: { tipDrag: 'גררו להזזה, לחיצה כפולה לאיפוס המיקום', back: 'הקודם', next: 'הבא', skip: 'דילוג', done: 'סיום', of: 'מתוך', lang: 'שפת ההדרכה', tipBack: 'לכרטיס הקודם', tipNext: 'לכרטיס הבא', tipSkip: 'סגירת ההדרכה', tipDot: 'מעבר לכרטיס' },
     demo: { send: 'שליחה ל־QR', drop: 'גררו קבצים לכאן', importing: 'קורא את הקבצים…', ours: 'שלנו', check: 'לבדיקה', notOurs: 'לא שלנו', confirm: 'אישור', ask: 'שאלה', upload: 'העלאה', q: 'שאלות', x: 'גיליון', pdf: 'דוח', tab: 'בקשה' },
     s: {
       outlook: ['מתחילים מהמייל', 'במייל של הלקוח לוחצים על "שליחה ל־QR", או גוררים את הקבצים לכאן.'],
@@ -37,7 +37,7 @@ export const TOUR_TEXT = {
       settings: ['הגדרות', 'כאן בוחרים שפה, גודל טקסט, לקוחות וחומרים.'],
     } },
   ru: { dir: 'ltr', name: 'Русский',
-    ui: { back: 'Назад', next: 'Далее', skip: 'Пропустить', done: 'Готово', of: 'из', lang: 'Язык обучения', tipBack: 'Предыдущая карточка', tipNext: 'Следующая карточка', tipSkip: 'Закрыть обучение', tipDot: 'Перейти к карточке' },
+    ui: { tipDrag: 'Перетащите, чтобы переместить; двойной щелчок - вернуть на место', back: 'Назад', next: 'Далее', skip: 'Пропустить', done: 'Готово', of: 'из', lang: 'Язык обучения', tipBack: 'Предыдущая карточка', tipNext: 'Следующая карточка', tipSkip: 'Закрыть обучение', tipDot: 'Перейти к карточке' },
     demo: { send: 'Отправить в QR', drop: 'Перетащите файлы сюда', importing: 'Читаю файлы…', ours: 'Наше', check: 'Проверить', notOurs: 'Не наше', confirm: 'Подтвердить', ask: 'Вопрос', upload: 'Загрузить', q: 'Вопросы', x: 'Таблица', pdf: 'Отчёт', tab: 'Запрос' },
     s: {
       outlook: ['Начните с письма', 'В письме клиента нажмите «Отправить в QR» или перетащите файлы сюда.'],
@@ -55,7 +55,7 @@ export const TOUR_TEXT = {
       settings: ['Настройки', 'Здесь выбираются язык, размер текста, клиенты и материалы.'],
     } },
   en: { dir: 'ltr', name: 'English',
-    ui: { back: 'Back', next: 'Next', skip: 'Skip', done: 'Done', of: 'of', lang: 'Tutorial language', tipBack: 'Previous card', tipNext: 'Next card', tipSkip: 'Close the tutorial', tipDot: 'Go to this card' },
+    ui: { tipDrag: 'Drag to move, double-click to reset position', back: 'Back', next: 'Next', skip: 'Skip', done: 'Done', of: 'of', lang: 'Tutorial language', tipBack: 'Previous card', tipNext: 'Next card', tipSkip: 'Close the tutorial', tipDot: 'Go to this card' },
     demo: { send: 'Send to QR', drop: 'Drop files here', importing: 'Reading the files…', ours: 'Ours', check: 'To check', notOurs: 'Not ours', confirm: 'Confirm', ask: 'Question', upload: 'Upload', q: 'Questions', x: 'Sheet', pdf: 'Report', tab: 'Request' },
     s: {
       outlook: ['Start from the email', "In the customer's email, click \"Send to QR\", or drop the files here."],
