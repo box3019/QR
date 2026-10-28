@@ -5,7 +5,7 @@ import { newId, reorder, closeNeedsConfirm, routeOutlook } from './store.mjs';
 
 const qr = () => (window as any).qr;
 export type Proj = { id: string; initial: any; pending?: string[] };
-export function useProjects() {
+export function useProjects(notify?: (n: any) => void) {
   const [list, setList] = useState([] as Proj[]); const [active, setActive] = useState(''); const [metas, setMetas] = useState({} as Record<string, any>);
   const runners = useRef({} as Record<string, (p: string[]) => any>); const loaded = useRef(false); const S = useRef({ list, active, metas }); S.current = { list, active, metas };
   useEffect(() => { qr().listProjects().then((r: any) => { const ps = r.projects.length ? r.projects.map((p: any) => ({ id: p.id, initial: p.data })) : [{ id: newId(), initial: null }];
@@ -18,9 +18,9 @@ export function useProjects() {
     setList(out); if (S.current.active === id) setActive((out[Math.max(0, i - 1)] || out[0]).id); delete runners.current[id];
   };
   const importOutlook = async (files: string[]) => {
-    const key = await qr().peekRfq(files).catch(() => null); const { list: l, active: a, metas: m } = S.current;
-    const r = routeOutlook(l.map((p) => ({ id: p.id, ...(m[p.id] || {}) })), key, a);
-    if (r.kind === 'focus') setActive(r.id!); else if (r.kind === 'active') runners.current[a]?.(files); else add(files);
+    const pk = await qr().peekMail(files).catch(() => null); const { list: l, active: a, metas: m } = S.current;
+    const r = routeOutlook(l.map((p) => ({ id: p.id, ...(m[p.id] || {}) })), pk ? pk.keys : [], a);
+    if (r.kind === 'focus') { setActive(r.id!); notify && notify({ code: 'sameMail' }); } else if (r.kind === 'active') runners.current[a]?.(files); else add(files);
   };
   /** History: focus the tab when open, else load it from disk into a new tab (same step and state). */
   const reopen = async (id: string) => { if (S.current.list.some((p) => p.id === id)) { setActive(id); return true; }

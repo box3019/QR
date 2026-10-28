@@ -169,3 +169,7 @@
 
 /* drawing viewer: dragging pans, never selects text */
 [data-testid=drawing-viewport] { user-select: none; -webkit-user-select: none; }
+
+/* notice card (Outlook hand-off problems etc.): top of the window, never over the footer buttons */
+.qr-root .qr-notice { top: 3.25rem; bottom: auto; z-index: 60; }
+.qr-notice-x { margin-inline-start: auto; }

@@ -11,15 +11,16 @@ export function tabMeta(s) {
   const label = (r && (r.rfq_no || r.subject)) || (parts[0] && parts[0].partNo) || '';
   const customer = cust(r && r.customer) || cust(parts[0] && parts[0].customer);
   const status = s.busy ? 'busy' : !parts.length ? 'empty' : parts.some(blocking) ? 'check' : 'ready';
-  return { key, label, customer, status, frac: importProgress(s.view).frac, step: s.step || 1, nParts: parts.length, dirty: !!s.dirty, lastRun: s.lastRun || null };
+  return { key, label, customer, status, frac: importProgress(s.view).frac, mailKeys: (s.rfqs || []).map((r) => r && r.mail_key).filter(Boolean), step: s.step || 1, nParts: parts.length, dirty: !!s.dirty, lastRun: s.lastRun || null };
 }
 /** Move item from index a to index b. */
 export function reorder(list, a, b) { if (a === b || a < 0 || b < 0 || a >= list.length || b >= list.length) return list; const l = [...list]; const [x] = l.splice(a, 1); l.splice(b, 0, x); return l; }
-/** Ask before closing only when the project is still working or has changes. */
-export const closeNeedsConfirm = (m) => !!(m && (m.status === 'busy' || m.dirty));
-/** Outlook 'Send to QR': same RFQ open -> focus that tab; the current tab is empty -> use it; otherwise a new tab. */
-export function routeOutlook(tabs, key, activeId) {
-  const same = key && tabs.find((x) => x.key && x.key === key);
+/** Ask before closing only while a job is running in the tab (closing never deletes: the project stays in History and on disk). */
+export const closeNeedsConfirm = (m) => !!(m && m.status === 'busy');
+/** Outlook 'Send to QR': a tab opens for every e-mail. Only the SAME e-mail (same Message-ID / fingerprint) focuses its open tab; the current tab is reused only when it is empty. keys = mail keys of the import. */
+export function routeOutlook(tabs, keys, activeId) {
+  const ks = (Array.isArray(keys) ? keys : [keys]).filter(Boolean);
+  const same = ks.length && tabs.find((x) => (x.mailKeys || []).some((k) => ks.includes(k)));
   if (same) return { kind: 'focus', id: same.id };
   const cur = tabs.find((x) => x.id === activeId);
   if (cur && cur.status === 'empty') return { kind: 'active', id: activeId };

@@ -136,6 +136,7 @@ ipcMain.handle('qr:history:list', () => history.readHistory(app.getPath('userDat
 ipcMain.handle('qr:history:touch', (_e, entry) => history.touchHistory(app.getPath('userData'), entry).list);
 ipcMain.handle('qr:history:remove', (_e, id, deleteData) => history.removeHistory(app.getPath('userData'), id, !!deleteData));
 ipcMain.handle('qr:projects:load', (_e, id) => history.loadProject(app.getPath('userData'), id));
+ipcMain.handle('qr:peekMail', (_e, paths) => projects.peekMail(paths, require('../core/email/readers.cjs').readMail, require('../core/email/key.cjs').mailKey));
 ipcMain.handle('qr:peekRfq', (_e, paths) => projects.peekRfq(paths, require('../core/email/readers.cjs').readMail));
 ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.getPath('temp'), 'qr-outlook', String(Date.now()))));
 ipcMain.handle('qr:std:confirm', (_e, s, customer) => require('../core/standards/index.cjs').confirmStandard(app.getPath('userData'), s, customer));
@@ -149,13 +150,21 @@ ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
 
 // Single instance: a second launch focuses the existing window instead of starting a hidden duplicate.
 // Outlook 'Send to QR': QR.exe --import <dir> (first launch or a second instance).
-const { importArg, msgFiles } = require('./importArg.cjs');
+const { importArg, msgFiles, importProblem, bringToFront } = require('./importArg.cjs');
 let pendingImport = importArg(process.argv);
-function sendImport(dir) { const files = msgFiles(dir); mainLog('import ' + dir + ' files=' + files.length); if (!files.length) return; if (win && !win.isDestroyed() && !win.webContents.isLoading()) win.webContents.send('qr:import', files); else pendingImport = dir; }
+// Never silent: a hand-off that cannot be used shows a notice in the window (code -> text in the renderer).
+let pendingNotice = [];
+function notify(n) { if (win && !win.isDestroyed() && !win.webContents.isLoading()) win.webContents.send('qr:notify', n); else pendingNotice.push(n); }
+function sendImport(dir, tries = 0) {
+  if (!(win && !win.isDestroyed() && !win.webContents.isLoading())) { if (tries < 40) { pendingImport = null; return setTimeout(() => sendImport(dir, tries + 1), 250); } return; }
+  const files = msgFiles(dir); mainLog('import ' + dir + ' files=' + files.length);
+  if (!files.length) { notify({ code: importProblem(dir), dir }); return; }
+  win.webContents.send('qr:import', files);
+}
 if (!app.requestSingleInstanceLock()) { mainLog('another instance holds the lock; exiting'); app.quit(); }
 else {
-  app.on('second-instance', (_e, argv) => { const d = importArg(argv || []); if (d) setTimeout(() => sendImport(d), 50); mainLog('second-instance: focusing'); if (win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } else createWindow(); });
-  app.whenReady().then(() => { mainLog('ready'); createWindow(); win.webContents.once('did-finish-load', () => { if (pendingImport) { const d = pendingImport; pendingImport = null; setTimeout(() => sendImport(d), 300); } }); }).catch((e) => mainLog('whenReady failed ' + e));
+  app.on('second-instance', (_e, argv) => { const d = importArg(argv || []); mainLog('second-instance argv=' + JSON.stringify(argv) + ' import=' + d); if (!(win && !win.isDestroyed())) createWindow(); bringToFront(win, app); if (d) setTimeout(() => sendImport(d), 50); else if ((argv || []).includes('--import')) notify({ code: 'noFolder', dir: '' }); });
+  app.whenReady().then(() => { mainLog('ready'); createWindow(); win.webContents.on('did-finish-load', () => { const n = pendingNotice; pendingNotice = []; setTimeout(() => n.forEach((x) => notify(x)), 300); if (pendingImport) { const d = pendingImport; pendingImport = null; setTimeout(() => sendImport(d), 300); } }); }).catch((e) => mainLog('whenReady failed ' + e));
   app.on('window-all-closed', () => app.quit());
 }
 app.on('window-all-closed', () => app.quit());

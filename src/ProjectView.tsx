@@ -17,13 +17,14 @@ import { openQuestions } from './wizard/summary.mjs';
 import { afterImport } from './wizard/importView.mjs';
 import { dropPlan } from './wizard/dropGuard.mjs';
 import { tabMeta, persisted } from './projects/store.mjs';
+import { noPartsReason } from './projects/notice.mjs';
 import { useHistoryTouch } from './projects/useHistory';
 import { useBusy } from './hooks/useBusy';
 import { exposeTestHooks } from './hooks/testHooks';
 
 const qr = () => (window as any).qr;
 type Part = any;
-export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, over, onMeta, register, recent, onReopen, onHistory }: any) {
+export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, notify, over, onMeta, register, recent, onReopen, onHistory }: any) {
   const I = initial || {};
   const [parts, setParts] = useState((I.parts || []) as Part[]); const [unknown, setUnknown] = useState((I.unknown || []) as string[]);
   const [sel, setSel] = useState(I.sel || 0); const [step, setStep] = useState(I.step || 1); const [tab, setTab] = useState(I.tab || 'drawing');
@@ -38,7 +39,8 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
     const prev = partsRef.current; let append = prev.length > 0; start(append);
     try { const r = await qr().process(paths, id);
       if (append && dropPlan(true, rfqsRef.current, r.rfqs) === 'ask') append = (await new Promise<'append' | 'new'>((res) => setAsk(() => res))) === 'append';
-      setAsk(null); const all = append ? [...prev, ...r.parts] : r.parts; if (!append) { setSel(0); setFocus(null); } setParts(all); setUnknown((u) => [...(append ? u : []), ...(r.unknown || []), ...(r.other || [])]);
+      setAsk(null); if (!(r.parts || []).length && notify) { const w = noPartsReason(r); notify({ code: w.key, vars: w.vars }); }
+      const all = append ? [...prev, ...r.parts] : r.parts; if (!append) { setSel(0); setFocus(null); } setParts(all); setUnknown((u) => [...(append ? u : []), ...(r.unknown || []), ...(r.other || [])]);
       setRfqs((x) => [...(append ? x : []), ...(r.rfqs || [])]); setLastRun((l: any) => ({ seconds: r.seconds, files: [...(append && l ? l.files : []), ...r.files] }));
       if (all.length) { setStep((s: number) => afterImport(s, all.length)); setTab('drawing'); } }
     catch (e: any) { alert(t('err.processing', { text: e?.message || e })); }

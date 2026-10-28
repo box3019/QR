@@ -15,4 +15,6 @@ function listProjects(base) {
 const rfqKey = (subject) => { const s = String(subject || '').replace(/^\s*((re|fw|fwd)\s*:\s*)+/i, '').trim(); return (s.match(/\b(\d{6})\b/) || [])[1] || s || null; };
 /** Reads only the first e-mail of an Outlook import to find which RFQ it is (before the full run). */
 async function peekRfq(paths, readMail) { for (const f of paths || []) if (/\.(msg|eml)$/i.test(f)) { try { const m = await readMail(f); const k = rfqKey(m && m.subject); if (k) return k; } catch {} } return null; }
-module.exports = { saveProject, saveIndex, listProjects, rfqKey, peekRfq };
+/** Identity of the e-mail(s) of an Outlook import before the full run: { rfq: RFQ key of the first mail, keys: [mail key] }. */
+async function peekMail(paths, readMail, keyOf) { const keys = []; let rfq = null; for (const f of paths || []) if (/\.(msg|eml)$/i.test(f)) { try { const m = await readMail(f); const k = keyOf(m); if (k) keys.push(k); rfq = rfq || rfqKey(m && m.subject); } catch {} } return { rfq, keys }; }
+module.exports = { saveProject, saveIndex, listProjects, rfqKey, peekRfq, peekMail };

@@ -560,5 +560,15 @@
   "wz.xDesc": "Table of all parts with their questions, one row per part.",
   "wz.busyCard": "Working",
   "blk.mat.ours": "ours",
-  "blk.mat.notOurs": "not ours"
+  "blk.mat.notOurs": "not ours",
+  "notice.title": "Notice",
+  "notice.close": "Close this notice",
+  "notice.noMail": "QR did not find an e-mail file in the folder that Outlook sent. Try 'Send to QR' again.",
+  "notice.noFolder": "Outlook did not give QR a folder to read. Try 'Send to QR' again.",
+  "notice.sameMail": "This e-mail is already open in a tab.",
+  "notice.noAttach": "No drawings: the e-mail {subject} has no usable attachments (pictures in the text and signature images are skipped).",
+  "notice.otherOnly": "No drawings: the attachments of {subject} are not drawings or models ({names}). QR reads PDF drawings, models and ZIP/RAR/7z archives.",
+  "notice.specOnly": "No drawings: {subject} has only specification documents ({names}).",
+  "notice.unreadable": "Could not read: {names} (e-mail {subject}).",
+  "notice.noDrawings": "No drawings were found in {subject} ({names})."
 }

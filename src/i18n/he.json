@@ -560,5 +560,15 @@
   "wz.xDesc": "טבלת כל החלקים עם השאלות, שורה לכל חלק.",
   "wz.busyCard": "בעבודה",
   "blk.mat.ours": "שלנו",
-  "blk.mat.notOurs": "לא שלנו"
+  "blk.mat.notOurs": "לא שלנו",
+  "notice.title": "הודעה",
+  "notice.close": "סגירת ההודעה",
+  "notice.noMail": "QR לא מצא קובץ דוא\"ל בתיקייה ש-Outlook שלח. נסה שוב \"שלח ל-QR\".",
+  "notice.noFolder": "Outlook לא העביר ל-QR תיקייה לקריאה. נסה שוב \"שלח ל-QR\".",
+  "notice.sameMail": "הדוא\"ל הזה כבר פתוח בלשונית.",
+  "notice.noAttach": "אין שרטוטים: בדוא\"ל {subject} אין קבצים מצורפים שאפשר לקרוא (תמונות בגוף ההודעה ובחתימה מדולגות).",
+  "notice.otherOnly": "אין שרטוטים: הקבצים המצורפים ל-{subject} אינם שרטוטים או מודלים ({names}). QR קורא שרטוטי PDF, מודלים וארכיוני ZIP/RAR/7z.",
+  "notice.specOnly": "אין שרטוטים: ב-{subject} יש רק מסמכי מפרט ({names}).",
+  "notice.unreadable": "לא ניתן לקרוא: {names} (דוא\"ל {subject}).",
+  "notice.noDrawings": "לא נמצאו שרטוטים ב-{subject} ({names})."
 }

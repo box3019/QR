@@ -11,7 +11,7 @@ function readMsg(file) {
   const dec = (h) => (!h ? '' : typeof h === 'string' ? h : Buffer.from(h).toString('utf8'));
   const date = d.messageDeliveryTime || d.clientSubmitTime || null;
   return {
-    subject: d.subject || '', body: d.body || '', html: dec(d.html || d.bodyHtml),
+    subject: d.subject || '', body: d.body || '', html: dec(d.html || d.bodyHtml), messageId: d.messageId || '',
     sender: { name: d.senderName || '', email: d.senderSmtpAddress || d.senderEmail || '' },
     date: date ? new Date(date).toISOString() : null,
     attachments: (d.attachments || []).map((a) => { const x = r.getAttachment(a); return { name: a.fileName || x.fileName || '', data: Buffer.from(x.content), hidden: !!a.attachmentHidden }; }),
@@ -23,7 +23,7 @@ async function readEml(file) {
   const m = await simpleParser(fs.readFileSync(file));
   const from = (m.from && m.from.value && m.from.value[0]) || {};
   return {
-    subject: m.subject || '', body: m.text || '', html: m.html || '',
+    subject: m.subject || '', body: m.text || '', html: m.html || '', messageId: m.messageId || '',
     sender: { name: from.name || '', email: from.address || '' },
     date: m.date ? m.date.toISOString() : null,
     attachments: (m.attachments || []).map((a) => ({ name: a.filename || '', data: a.content, hidden: a.related || a.contentDisposition === 'inline' })),

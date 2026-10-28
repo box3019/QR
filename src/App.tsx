@@ -15,6 +15,7 @@ import { TabsBar } from './components/tabs/TabsBar';
 import { ProjectView } from './ProjectView';
 import { HistoryDialog } from './components/history/HistoryDialog';
 import { recent } from './projects/history.mjs';
+import { Notice } from './ui/Notice';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
@@ -35,7 +36,10 @@ export default function App() {
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
   if (settings) { setLang(settings.uiLanguage); setAssistantLang(settings.assistantLanguage); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
-  const P = useProjects();
+  const [notice, setNotice] = useState('');
+  const notify = (n: any) => setNotice(typeof n === 'string' ? n : t('notice.' + n.code, n.vars || n));
+  useEffect(() => qr().onNotify ? qr().onNotify((n: any) => notify(n)) : undefined, []);
+  const P = useProjects(notify);
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => P.importOutlook(files)) : undefined, []); // Outlook 'Send to QR': new tab, or the tab of the same RFQ
   const drop = useDrop(P.runActive, settings, setOver); // drops go into the current tab
   const w = window as any; w.__qrAddTab = P.add; w.__qrTabs = () => P.list.map((p) => ({ id: p.id, active: p.id === P.active, ...(P.metas[p.id] || {}) })); w.__qrSelectTab = P.setActive; w.__qrMoveTab = P.move; w.__qrHistory = () => hist; w.__qrReopen = P.reopen;
@@ -57,8 +61,9 @@ export default function App() {
       </div>
       <div className="qr-projs">
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
-          details={details} setDetails={setDetails} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
+          details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
       </div>
+      {notice && <Notice text={notice} onClose={() => setNotice('')} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} />}
       {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={settings.assistantLanguage} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}

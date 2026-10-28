@@ -5,6 +5,7 @@ const path = require('path');
 const { readMail } = require('./readers.cjs');
 const { parseRfqTable } = require('./rfqTable.cjs');
 const { buildRfq } = require('./rfq.cjs');
+const { mailKey } = require('./key.cjs');
 
 const SKIP = /^(~WRD|image\d|email_signature|Outlook-)/i;
 const safeName = (n) => path.basename(String(n)).replace(/[<>:"/\\|?*\x00-\x1f]/g, '_');
@@ -19,6 +20,7 @@ async function readEmail(file, outDir, opts = {}) {
   }
   const rfq = buildRfq(mail, parseRfqTable(mail), path.basename(file), opts.customers);
   rfq.attachments = attachmentFiles.map((f) => path.basename(f));
+  rfq.mail_key = mailKey(mail);
   return { rfq, attachmentFiles };
 }
 module.exports = { readEmail };
