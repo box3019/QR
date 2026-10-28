@@ -25,6 +25,7 @@ Rules: (1) one primary action per screen; (2) a top "next step" line that names 
 | 14 | Tab dots | The dot colours were hard-coded twice (wizard.css and system.css). | Both use the `--qr-st-*` tokens, the same ones as the part status dots (grey none, green ok, orange action, red not ours). | Fixed |
 | 15 | Jargon (English) | "Intake", "Blocker", "flags", "OCR", "BOM". | "Load files", "Must fix", "open issues", "Scanned text", "Parts list". Hebrew already used plain words. | Fixed for the main screens |
 | 16 | Step 2 (and 3), three panels | "List, drawing and card at once: where do I look?" | One focus at a time. List view: tiles, then one row per part (part number, rev, status, one-line reason), the next-step line on top. Click a row: Part view with a large drawing beside that part's blocks, Back to list, Previous, Next part (the next part that needs action) and the arrow keys (mirrored in Hebrew), Esc = back. No third column. Documents & questions uses the same list, then the questions of one part at full width. | Fixed |
+| 17 | Top bar | A loose "Saved 11:42" text wedged between buttons; Save/Save as greyed without a reason; buttons of different widths. | Save, Save as and Open live under ONE File menu (each item explains why it is disabled); an unsaved dot on the project tab until the save finishes; "Saved hh:mm" quietly in a slim status bar at the bottom (also in the File tooltip); all toolbar buttons have the same width. Checked by scripts/shots-toolbar.cjs. | Fixed |
 
 ## Still open (needs Alex's decision or a larger change)
 

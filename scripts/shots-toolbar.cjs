@@ -12,9 +12,9 @@ let bad = 0; const ok = (c, m) => { console.log(c ? 'ok   ' : 'FAIL ', m); if (!
   const setL = async (l) => { await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x, assistantLanguage: x, textSize: 'normal', palette: 'industrial-steel' }), l); await win.waitForTimeout(400); };
   const shot = (n) => win.screenshot({ path: path.join(out, n + '.png') });
   const widths = () => win.evaluate(() => [...document.querySelectorAll('.qr-topbar .mrt-topbar-cmd')].map((b) => Math.round(b.getBoundingClientRect().width)));
-  const f = path.join(out, 'SYN_9800-0001_A.pdf');
-  const b64 = await app.evaluate(async ({ BrowserWindow }, h) => { const w = new BrowserWindow({ show: false }); await w.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(h)); const b = await w.webContents.printToPDF({ pageSize: 'A4' }); w.destroy(); return b.toString('base64'); }, '<html><body style="font:14px Arial;padding:40px"><h2>PART NO 9800-0001 REV A</h2><ol><li>MATERIAL: ALUMINUM 6061-T6 BAR PER AMS-QQ-A-250/11</li><li>ANODIZE PER MIL-A-8625 TYPE II CLASS 1 BLACK</li></ol></body></html>');
-  fs.writeFileSync(f, Buffer.from(b64, 'base64'));
+  const doc = (pn) => `<html><body style="font:14px Arial;padding:40px"><h2>PART NO ${pn} REV A</h2><p>TITLE: DEMO PART ${pn}</p><p>NOTES:</p><ol><li>MATERIAL: ALUMINUM 6061-T6 BAR PER AMS-QQ-A-250/11</li><li>PORT PER AS5202-03 .4375-20 UNF-2B, 2 PLACES</li><li>ANODIZE PER MIL-A-8625 TYPE II CLASS 1 BLACK</li></ol></body></html>`;
+  const files = []; for (let i = 1; i <= 2; i++) { const pn = '9800-000' + i; const f = path.join(out, `SYN_${pn}_A.pdf`);
+    const b64 = await app.evaluate(async ({ BrowserWindow }, h) => { const w = new BrowserWindow({ show: false }); await w.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(h)); const b = await w.webContents.printToPDF({ pageSize: 'A4' }); w.destroy(); return b.toString('base64'); }, doc(pn)); fs.writeFileSync(f, Buffer.from(b64, 'base64')); files.push(f); }
   for (const l of ['en', 'he']) {
     await setL(l); await win.evaluate(() => window.__qrStep(1)); await win.waitForTimeout(400);
     let w = await widths(); ok(new Set(w).size === 1, `${l}: all toolbar buttons have the same width (${w})`);
@@ -26,8 +26,8 @@ let bad = 0; const ok = (c, m) => { console.log(c ? 'ok   ' : 'FAIL ', m); if (!
     await win.keyboard.press('Escape'); await win.waitForTimeout(200); ok(!(await win.$('[data-testid=file-menu]')), `${l}: Esc closes the menu`);
     ok((await win.$$('[data-testid=saved-at]')).length === 0, `${l}: empty: status bar shows no Saved text`);
   }
-  await setL('en'); await win.evaluate((p) => { window.__qrRun(p); }, [f]);
-  await win.waitForFunction(() => !document.querySelector('[data-testid=busy]') && (window.__qrParts || []).length >= 1, null, { timeout: 180000 });
+  await setL('en'); await win.evaluate((p) => { window.__qrRun(p); }, files);
+  await win.waitForFunction(() => !document.querySelector('[data-testid=busy]') && (window.__qrParts || []).length >= 2, null, { timeout: 180000 });
   let sawDot = false; for (let i = 0; i < 20 && !sawDot; i++) { sawDot = !!(await win.$('[data-testid=tab-unsaved]')); if (!sawDot) await win.waitForTimeout(50); }
   await win.waitForSelector('[data-testid=saved-at]', { timeout: 15000 }); await win.waitForTimeout(800);
   ok(!(await win.$('[data-testid=tab-unsaved]')), 'unsaved dot is gone once saved (dot was seen while saving: ' + sawDot + ')');
