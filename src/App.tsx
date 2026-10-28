@@ -16,6 +16,7 @@ import { ProjectView } from './ProjectView';
 import { HistoryDialog } from './components/history/HistoryDialog';
 import { recent } from './projects/history.mjs';
 import { hhmm, shortcutAction, splitProjectFiles } from './projects/store.mjs';
+import { saveWhy } from './wizard/nextstep.mjs';
 import { Notice } from './ui/Notice';
 
 declare global { interface Window { qr: any } }
@@ -38,7 +39,8 @@ export default function App() {
   if (settings) { setLang(settings.uiLanguage); setAssistantLang(settings.assistantLanguage); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
   const [notice, setNotice] = useState('');
-  const notify = (n: any) => setNotice(typeof n === 'string' ? n : t('notice.' + n.code, n.vars || n));
+  const [undoBox, setUndo] = useState(null as null | { fn: () => void });
+  const notify = (n: any) => { setUndo(n && n.undo ? { fn: n.undo } : null); setNotice(typeof n === 'string' ? n : t('notice.' + n.code, n.vars || n)); };
   useEffect(() => qr().onNotify ? qr().onNotify((n: any) => notify(n)) : undefined, []);
   const P = useProjects(notify);
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => P.importOutlook(files)) : undefined, []); // Outlook 'Send to QR': new tab, or the tab of the same RFQ
@@ -62,8 +64,8 @@ export default function App() {
         {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
         {m.nParts > 0 && m.savedAt && <span className="qr-saved" data-testid="saved-at" title={t('tip.saved')}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}
-        <TopButton icon={<Ico name="save" />} label={t('top.save')} tip={t('tip.save')} testid="btn-save" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.save()} />
-        <TopButton icon={<Ico name="saveas" />} label={t('top.saveAs')} tip={t('tip.saveAs')} testid="btn-save-as" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.saveAs()} />
+        <TopButton icon={<Ico name="save" />} label={t('top.save')} tip={saveWhy(m.nParts || 0, m.status === 'busy') ? t(saveWhy(m.nParts || 0, m.status === 'busy')!) : t('tip.save')} testid="btn-save" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.save()} />
+        <TopButton icon={<Ico name="saveas" />} label={t('top.saveAs')} tip={saveWhy(m.nParts || 0, m.status === 'busy') ? t(saveWhy(m.nParts || 0, m.status === 'busy')!) : t('tip.saveAs')} testid="btn-save-as" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.saveAs()} />
         <TopButton icon={<Ico name="open" />} label={t('top.open')} tip={t('tip.open')} testid="btn-open-project" onClick={() => P.openProject()} />
         <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
         <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
@@ -73,7 +75,7 @@ export default function App() {
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
           details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
       </div>
-      {notice && <Notice text={notice} onClose={() => setNotice('')} />}
+      {notice && <Notice text={notice} action={undoBox ? { label: t('notice.undo'), run: () => { undoBox.fn(); setUndo(null); setNotice(''); } } : null} onClose={() => { setNotice(''); setUndo(null); }} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} />}
       {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={settings.assistantLanguage} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}

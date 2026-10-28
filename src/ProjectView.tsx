@@ -13,6 +13,7 @@ import { WizardFooter } from './components/wizard/WizardFooter';
 import { DropChoice } from './components/wizard/DropChoice';
 import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
 import { hintFor } from './wizard/hints.mjs';
+import { nextAction } from './wizard/nextstep.mjs';
 import { openQuestions } from './wizard/summary.mjs';
 import { afterImport } from './wizard/importView.mjs';
 import { dropPlan } from './wizard/dropGuard.mjs';
@@ -60,10 +61,14 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   const updatePart = (fn: (p: Part) => Part) => { setDirty(true); setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p))); };
   const pick = (i: number) => { setSel(i); setFocus(null); };
   const hint = hintFor(step, { hasParts: has, nParts: parts.length, busy: !!busy, nQuestions: parts.reduce((n, p) => n + openQuestions(p), 0) });
+  const nextLine = nextAction(step, parts, !!busy);
+  const goNext = (go: any) => { if (!go) return; if (go.part != null) pick(go.part); if (go.step) setStep(go.step); if (go.action === 'files') qr().pickFiles().then((f: string[]) => run(f)); if (go.action === 'export') setTimeout(() => (document.querySelector('[data-testid=btn-export-xlsx-all]') as HTMLElement | null)?.click(), 0); };
+  // Cancel clears the RFQ without a question: a toast offers Undo instead (nothing is lost)
+  const clearAll = () => { const snap = { parts, rfqs, unknown, lastRun, sel, step }; reset(); notify({ code: 'cleared', undo: () => { setParts(snap.parts); setRfqs(snap.rfqs); setUnknown(snap.unknown); setLastRun(snap.lastRun); setSel(snap.sel); setStep(snap.step); setDirty(false); } }); };
   return <div className={'qr-proj' + (active ? '' : ' qr-proj-off')} data-testid="project" data-id={id} data-step={step} aria-hidden={!active}>
     <div className="qr-wiz">
       <RailContext rfqs={rfqs} parts={parts} files={lastRun?.files || []} />
-      <StepHeader step={step} hint={hint} assistant={assistant} />
+      <StepHeader step={step} hint={hint} assistant={assistant} next={nextLine} onGo={goNext} />
       <Stepper step={step} setStep={setStep} hasParts={has} />
       <main className="qr-wiz-main">
         {step === 1 && <StepIntake view={view} parts={parts} files={lastRun?.files || []} onNext={() => setStep(2)} onPart={(i: number) => { pick(i); setStep(2); }} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} recent={recent} onReopen={onReopen} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
@@ -71,7 +76,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
         {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} pick={pick} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setTab('drawing'); setFocus(loc); }} />}
         {step === 4 && has && <StepSummary parts={parts} lang={parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'} meta={tabMeta({ parts, rfqs })} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => { pick(i); setStep(2); }} />}
       </main>
-      <WizardFooter step={step} setStep={setStep} hasParts={has} onCancel={() => confirm(t('wz.cancelAsk')) && reset()} onClose={() => window.close()} />
+      <WizardFooter step={step} setStep={setStep} hasParts={has} onCancel={clearAll} onClose={() => window.close()} />
     </div>
     {active && ask && <DropChoice onChoose={(c: 'append' | 'new') => ask(c)} />}
     {active && busy && view?.active && step !== 1 && <ProgressToast busy={busy} details={details} />}

@@ -36,6 +36,6 @@ export default function PresetsPanel({ committed, previewed, onPreview, onApply 
       </div>)}
     </div>
     <div className="qr-pres-bar" data-testid="preset-bar"><span className="qr-pres-state" data-testid="preset-state">{t(previewed === committed ? 'st.presetApplied' : 'st.presetPreviewing', { name: t('pal.' + previewed) })}</span>
-      <button type="button" className={MRT_BTN_PRIMARY} data-testid="preset-apply" disabled={previewed === committed} title={t('tip.presetApply')} onClick={onApply}>{t('st.presetApply')}</button></div>
+      <button type="button" className={MRT_BTN_PRIMARY} data-testid="preset-apply" disabled={previewed === committed} title={previewed === committed ? t('dis.presetSame') : t('tip.presetApply')} onClick={onApply}>{t('st.presetApply')}</button></div>
   </div>;
 }

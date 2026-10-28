@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 // The 11 MRT built-in visual presets, reimplemented in QR: one test per preset (token spot-checks copied from MRT 9.0.52,
 // i18n names and taglines in EN and HE, a mini mock, contrast), plus default, persistence and the Settings > Interface structure.
 const test = require('node:test'); const assert = require('node:assert'); const fs = require('fs'); const path = require('path'); const os = require('os');
@@ -69,7 +69,7 @@ test('Settings > Interface is the presets screen: intro, chip row, card grid wit
   for (const tid of ['"presets"', '"palettes"', 'selected-badge', 'preset-apply', '"preset-chips"', "'chip-'", "'pal-'", "'mock-'"]) assert.ok(panel.includes(tid), tid);
   for (const part of ['qm-top', 'qm-input', 'qm-grid', 'qm-txt', 'qm-st']) assert.ok(panel.includes(part) && layers.includes(part), part);
   assert.match(panel, /onPreview/); assert.match(panel, /onApply/); assert.match(dlg, /onApplyPreset/);
-  assert.match(panel, /title=\{t\('tip\.presetApply'\)\}/); assert.match(panel, /title=\{t\('tip\.presetChip'\)\}/);
+  assert.match(panel, /title=\{[^}]*t\('tip\.presetApply'\)\}/); assert.match(panel, /t\('dis\.presetSame'\)/); assert.match(panel, /title=\{t\('tip\.presetChip'\)\}/);
   assert.ok(!dlg.includes("t('st.ifaceTheme')"), 'the simple light/dark option is replaced');
 });
 test('the preset cards are tiles, not buttons (MRT: tiles are not buttons) and each mock is themed with its own preset id', () => {

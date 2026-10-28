@@ -28,11 +28,11 @@ export function StepSummary({ parts, openDialog, goPart, lang, meta }: any) {
     <div className="qr-sum-grid">
       <Box title={t('wz.secQ')} testid="box-export-questions">
         <p className="qr-box-text">{t(nq === 1 && np === 1 ? 'wz.qText1' : 'wz.qText', { n: nq, p: np })}</p>
-        <button className={MRT_BTN_PRIMARY} data-testid="btn-questions" title={t('tip.questions')} onClick={() => openDialog('questions')}>{t('wz.qBtn')}</button>
+        <button className={nq > 0 ? MRT_BTN_PRIMARY : MRT_BTN} data-testid="btn-questions" title={t('tip.questions')} onClick={() => openDialog('questions')}>{t('wz.qBtn')}</button>
       </Box>
       <Box title={t('wz.secX')} testid="box-export-xlsx">
         <p className="qr-box-text">{t('wz.xDesc')}</p>
-        <button className={MRT_BTN_PRIMARY} data-testid="btn-export-xlsx-all" title={t('tip.exportXlsx')} onClick={xlsx}>{t('wz.xBtn')}</button>
+        <button className={nq > 0 ? MRT_BTN : MRT_BTN_PRIMARY} data-testid="btn-export-xlsx-all" title={t('tip.exportXlsx')} onClick={xlsx}>{t('wz.xBtn')}</button>
       </Box>
       <Box title={t('wz.secShow')} testid="box-show-report">
         <p className="qr-box-text">{t('wz.showText')}</p>
@@ -40,7 +40,7 @@ export function StepSummary({ parts, openDialog, goPart, lang, meta }: any) {
       </Box>
       <Box title={t('wz.secPdf')} testid="box-export-pdf">
         <p className="qr-box-text">{t('wz.pdfText')}</p>
-        <button className={MRT_BTN_PRIMARY} data-testid="btn-export-pdf" title={t('tip.exportPdf')} onClick={() => exportReport(parts, lang, meta)}>{t('wz.pdfBtn')}</button>
+        <button className={MRT_BTN} data-testid="btn-export-pdf" title={t('tip.exportPdf')} onClick={() => exportReport(parts, lang, meta)}>{t('wz.pdfBtn')}</button>
       </Box>
     </div>
   </div></div>;
