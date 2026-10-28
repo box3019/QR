@@ -626,5 +626,15 @@
   "rsn.needsDoc": "חסר מסמך {std}",
   "rsn.needsDocN": "חסרים {n} מסמכים, הראשון {std}",
   "rsn.pending": "ממתין לבדיקה שלך",
-  "rsn.notOurs": "חומר או תהליך שלא שלנו"
+  "rsn.notOurs": "חומר או תהליך שלא שלנו",
+  "top.file": "קובץ",
+  "top.unsaved": "שינויים שלא נשמרו",
+  "tab.unsaved": "שינויים שלא נשמרו: הם יישמרו בעוד רגע",
+  "tip.file": "שמירה, שמירה בשם ופתיחה של קובץ פרויקט",
+  "tip.fileSaved": "תפריט קובץ. נשמר ב-{time}",
+  "tip.savedAt": "נשמר ב-{time}",
+  "tip.saveAgain": "נשמר ב-{time}. שמירה נוספת עכשיו (Ctrl+S)",
+  "menu.hint.save": "Ctrl+S",
+  "menu.hint.saveAs": "Ctrl+Shift+S",
+  "menu.hint.open": "Ctrl+O"
 }

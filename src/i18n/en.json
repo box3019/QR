@@ -626,5 +626,15 @@
   "rsn.needsDoc": "Needs document {std}",
   "rsn.needsDocN": "Needs {n} documents, first {std}",
   "rsn.pending": "Waiting for your check",
-  "rsn.notOurs": "Not our material or process"
+  "rsn.notOurs": "Not our material or process",
+  "top.file": "File",
+  "top.unsaved": "Unsaved changes",
+  "tab.unsaved": "Unsaved changes: they are saved in a moment",
+  "tip.file": "Save, Save as and Open a project file",
+  "tip.fileSaved": "File menu. Saved at {time}",
+  "tip.savedAt": "Saved at {time}",
+  "tip.saveAgain": "Saved at {time}. Save again now (Ctrl+S)",
+  "menu.hint.save": "Ctrl+S",
+  "menu.hint.saveAs": "Ctrl+Shift+S",
+  "menu.hint.open": "Ctrl+O"
 }

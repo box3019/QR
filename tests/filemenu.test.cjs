@@ -1,0 +1,20 @@
+'use strict';
+// Top bar: no loose "Saved" text, one File menu, unsaved dot on the tab, quiet status bar, equal button widths. Synthetic only.
+const test = require('node:test'); const assert = require('node:assert'); const fs = require('fs'); const path = require('path'); const { pathToFileURL } = require('url');
+const src = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8').replace(/^\uFEFF/, '');
+const load = (f) => import(pathToFileURL(path.join(__dirname, '..', 'src', f)).href);
+test('saveStatus: none without parts, unsaved after a change, saved otherwise', async () => { const s = await load('projects/store.mjs');
+  assert.strictEqual(s.saveStatus(null), 'none'); assert.strictEqual(s.saveStatus({ nParts: 0, savedAt: 'x' }), 'none');
+  assert.strictEqual(s.saveStatus({ nParts: 2, unsaved: true, savedAt: 'x' }), 'unsaved'); assert.strictEqual(s.saveStatus({ nParts: 2, savedAt: '2026-10-28T09:42:00Z' }), 'saved'); assert.strictEqual(s.saveStatus({ nParts: 2 }), 'none');
+  assert.strictEqual(s.tabMeta({ parts: [{}], unsaved: true }).unsaved, true); assert.strictEqual(s.tabMeta({ parts: [] }).unsaved, false); });
+test('toolbar: no loose Saved text between buttons; Save, Save as, Open only inside the File menu', () => { const a = src('src/App.tsx'); const f = src('src/components/FileMenu.tsx');
+  const bar = a.slice(a.indexOf('qr-topbar mrt-workspace-topbar-chrome'), a.indexOf('className="qr-projs"'));
+  assert.ok(!/saved-at|top\.saved|qr-saved/.test(bar)); assert.ok(!/btn-save|btn-open-project/.test(bar) && /<FileMenu/.test(bar));
+  for (const id of ['btn-file', 'btn-save', 'btn-save-as', 'btn-open-project']) assert.ok(f.includes(id), id);
+  assert.ok(/role="menu"/.test(f) && /role="menuitem"/.test(f) && /Escape/.test(f) && /title=\{tip\}/.test(f) && /title=\{saved \? t\('tip\.fileSaved'/.test(f)); assert.ok(/why \? t\(why\)/.test(f)); });
+test('status bar shows Saved hh:mm quietly, unsaved note; tab dot clears on save', () => { const a = src('src/App.tsx'); const bar = a.slice(a.indexOf('className="qr-statusbar"'));
+  assert.ok(/saved-at/.test(bar) && /unsaved-note/.test(bar) && /tip\.savedAt/.test(bar));
+  const v = src('src/ProjectView.tsx'); assert.ok(/changeRev/.test(v) && /setUnsaved\(true\)/.test(v) && /if \(changeRev\.current === rev\) setUnsaved\(false\)/.test(v));
+  const t = src('src/components/tabs/TabsBar.tsx'); assert.ok(/tb\.unsaved && tb\.nParts > 0/.test(t) && /data-testid="tab-unsaved"/.test(t) && /tab\.unsaved/.test(t)); });
+test('all toolbar buttons have the same width; i18n keys en and he', () => { const css = src('src/styles/wizard.css'); assert.ok(/\.qr-topbar \.mrt-topbar-cmd \{ width: 72px !important; min-width: 72px !important/.test(css));
+  for (const l of ['en', 'he']) { const j = JSON.parse(src('src/i18n/' + l + '.json')); for (const k of ['top.file', 'top.unsaved', 'tab.unsaved', 'tip.file', 'tip.fileSaved', 'tip.savedAt', 'tip.saveAgain']) assert.ok(j[k], l + ' ' + k); assert.ok(/\{time\}/.test(j['tip.savedAt']) && /\{time\}/.test(j['tip.saveAgain'])); } });

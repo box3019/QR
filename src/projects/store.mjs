@@ -20,7 +20,7 @@ export function tabMeta(s) {
   const label = (r && (r.rfq_no || r.subject)) || (parts[0] && parts[0].partNo) || '';
   const customer = cust(r && r.customer) || cust(parts[0] && parts[0].customer);
   const status = s.busy ? 'busy' : !parts.length ? 'empty' : parts.some(blocking) ? 'check' : 'ready';
-  return { key, label, customer, status, frac: importProgress(s.view).frac, mailKeys: (s.rfqs || []).map((r) => r && r.mail_key).filter(Boolean), step: s.step || 1, nParts: parts.length, dirty: !!s.dirty, lastRun: s.lastRun || null, savedAt: s.savedAt || null };
+  return { key, label, customer, status, frac: importProgress(s.view).frac, mailKeys: (s.rfqs || []).map((r) => r && r.mail_key).filter(Boolean), step: s.step || 1, nParts: parts.length, dirty: !!s.dirty, unsaved: !!s.unsaved, lastRun: s.lastRun || null, savedAt: s.savedAt || null };
 }
 /** Move item from index a to index b. */
 export function reorder(list, a, b) { if (a === b || a < 0 || b < 0 || a >= list.length || b >= list.length) return list; const l = [...list]; const [x] = l.splice(a, 1); l.splice(b, 0, x); return l; }
@@ -37,3 +37,5 @@ export function routeOutlook(tabs, keys, activeId) {
 }
 /** The part of a project that is saved to disk. */
 export const persisted = (s) => ({ step: s.step, parts: s.parts, rfqs: s.rfqs, unknown: s.unknown, lastRun: s.lastRun, sel: s.sel, tab: s.tab, dirty: !!s.dirty });
+/** Save state of a tab for the dot, the status bar and tooltips: 'none' (nothing to save), 'unsaved' (changed since the last save) or 'saved'. */
+export const saveStatus = (m) => (!m || !m.nParts ? 'none' : m.unsaved ? 'unsaved' : m.savedAt ? 'saved' : 'none');

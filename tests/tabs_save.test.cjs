@@ -21,8 +21,8 @@ test('closing: only a running job asks; never deletes', async () => { const s = 
 test('tab x: on every tab (also the only one), MRT icon, middle click', () => { const t = src('src/components/tabs/TabsBar.tsx');
   assert.ok(!/tabs\.length\s*>\s*1/.test(t)); assert.ok(/strokeWidth="2\.25"/.test(t) && /width="12"/.test(t)); assert.ok(/mrt-workspace-tab__close/.test(t) && /onAuxClick/.test(t) && /title=\{t\('tab\.close'\)\}/.test(t));
   const css = src('src/styles/wizard.css'); assert.ok(!/__close \{[^}]*opacity: 0/.test(css)); });
-test('Save, Save as, Open buttons with tooltips; shortcuts; Saved indicator; .qrproj drop', () => { const a = src('src/App.tsx');
-  for (const id of ['btn-save', 'btn-save-as', 'btn-open-project', 'saved-at']) assert.ok(a.includes('"' + id + '"'), id);
+test('Save, Save as, Open under one File menu with tooltips; shortcuts; Saved indicator; .qrproj drop', () => { const a = src('src/App.tsx') + src('src/components/FileMenu.tsx');
+  for (const id of ['btn-file', 'btn-save', 'btn-save-as', 'btn-open-project', 'saved-at']) assert.ok(a.includes('"' + id + '"') || a.includes("'" + id + "'"), id);
   assert.ok(/shortcutAction/.test(a) && /splitProjectFiles/.test(a) && /openProject/.test(a) && /tip\.save/.test(a) && /tip\.saveAs/.test(a) && /tip\.open/.test(a));
   const v = src('src/ProjectView.tsx'); assert.ok(/doSave/.test(v) && /savedAt/.test(v) && /busyRef\.current\) return null/.test(v));
   const m = src('electron/main.cjs'); for (const c of ['qr:projects:saveAs', 'qr:projects:pickOpen', 'qr:projects:import']) assert.ok(m.includes(c), c); });

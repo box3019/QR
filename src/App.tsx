@@ -15,9 +15,10 @@ import { TabsBar } from './components/tabs/TabsBar';
 import { ProjectView } from './ProjectView';
 import { HistoryDialog } from './components/history/HistoryDialog';
 import { recent } from './projects/history.mjs';
-import { hhmm, shortcutAction, splitProjectFiles } from './projects/store.mjs';
+import { hhmm, shortcutAction, splitProjectFiles, saveStatus } from './projects/store.mjs';
 import { saveWhy } from './wizard/nextstep.mjs';
 import { Notice } from './ui/Notice';
+import { FileMenu } from './components/FileMenu';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
@@ -63,10 +64,7 @@ export default function App() {
         <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
         {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
-        {m.nParts > 0 && m.savedAt && <span className="qr-saved" data-testid="saved-at" title={t('tip.saved')}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}
-        <TopButton icon={<Ico name="save" />} label={t('top.save')} tip={saveWhy(m.nParts || 0, m.status === 'busy') ? t(saveWhy(m.nParts || 0, m.status === 'busy')!) : t('tip.save')} testid="btn-save" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.save()} />
-        <TopButton icon={<Ico name="saveas" />} label={t('top.saveAs')} tip={saveWhy(m.nParts || 0, m.status === 'busy') ? t(saveWhy(m.nParts || 0, m.status === 'busy')!) : t('tip.saveAs')} testid="btn-save-as" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.saveAs()} />
-        <TopButton icon={<Ico name="open" />} label={t('top.open')} tip={t('tip.open')} testid="btn-open-project" onClick={() => P.openProject()} />
+        <FileMenu why={saveWhy(m.nParts || 0, m.status === 'busy')} status={saveStatus(m)} at={m.savedAt ? hhmm(m.savedAt) : ''} onSave={() => P.save()} onSaveAs={() => P.saveAs()} onOpen={() => P.openProject()} />
         <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
         <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
         <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => { setTourStage(0); setDialog('tutorial'); }} />
@@ -75,6 +73,7 @@ export default function App() {
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
           details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
       </div>
+      <div className="qr-statusbar" data-testid="status-bar" role="status">{saveStatus(m) === 'saved' && <span data-testid="saved-at" title={t('tip.savedAt', { time: hhmm(m.savedAt) })}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}{saveStatus(m) === 'unsaved' && <span data-testid="unsaved-note" title={t('tab.unsaved')}>{t('top.unsaved')}</span>}</div>
       {notice && <Notice text={notice} action={undoBox ? { label: t('notice.undo'), run: () => { undoBox.fn(); setUndo(null); setNotice(''); } } : null} onClose={() => { setNotice(''); setUndo(null); }} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} />}
       {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={settings.assistantLanguage} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}

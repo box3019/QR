@@ -17,7 +17,7 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onMove }: any)
         onMouseDown={(e) => { if (e.button === 1) e.preventDefault(); }} onAuxClick={(e) => { if (e.button === 1) { e.preventDefault(); onClose(tb.id); } }}>
         <button type="button" role="tab" aria-selected={on} className="mrt-workspace-tab__label" title={[label, tb.customer, t('tab.st.' + tb.status)].filter(Boolean).join(' \u00b7 ')} onClick={() => onSelect(tb.id)}>
           {tb.status === 'busy' ? <span className="qr-tab-prog" aria-hidden><span style={{ width: Math.round((tb.frac || 0) * 100) + '%' }} /></span> : <span className="qr-tab-dot" data-status={tb.status} aria-hidden />}
-          <bdi>{label}</bdi>{tb.customer && <span className="qr-tab-cust"><bdi>{tb.customer}</bdi></span>}{tb.dirty && <span className="qr-tab-dirty" aria-hidden>{'\u2022'}</span>}
+          <bdi>{label}</bdi>{tb.customer && <span className="qr-tab-cust"><bdi>{tb.customer}</bdi></span>}{tb.unsaved && tb.nParts > 0 && <span className="qr-tab-dirty" data-testid="tab-unsaved" title={t('tab.unsaved')} aria-label={t('tab.unsaved')}>{'\u25cf'}</span>}
         </button>
         <button type="button" className="mrt-workspace-tab__close" data-testid="tab-close" title={t('tab.close')} aria-label={t('tab.close')} onClick={(e) => { e.stopPropagation(); onClose(tb.id); }}><CloseX /></button>
       </div>; })}

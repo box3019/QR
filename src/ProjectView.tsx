@@ -54,10 +54,12 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   // Save now (also what autosave calls): writes the project and stamps the time shown as 'Saved hh:mm'; never while a run is still adding parts.
   const snapRef = useRef(null as any); const busyRef = useRef(false); busyRef.current = !!busy; const savedRef = useRef(savedAt); savedRef.current = savedAt;
   snapRef.current = persisted({ step, parts, rfqs, unknown, lastRun, sel, tab, dirty });
-  const doSave = useCallback(async () => { if (busyRef.current) return null; const at = new Date().toISOString(); await qr().saveProject(id, { ...snapRef.current, savedAt: at }); setSavedAt(at); return at; }, []);
+  const changeRev = useRef(0); const firstChange = useRef(true); const [unsaved, setUnsaved] = useState(false);
+  useEffect(() => { if (firstChange.current) { firstChange.current = false; return; } changeRev.current++; setUnsaved(true); }, [parts, rfqs, unknown, lastRun]); // content changed since the last save: the tab dot
+  const doSave = useCallback(async () => { if (busyRef.current) return null; const rev = changeRev.current; const at = new Date().toISOString(); await qr().saveProject(id, { ...snapRef.current, savedAt: at }); setSavedAt(at); if (changeRev.current === rev) setUnsaved(false); return at; }, []);
   useEffect(() => { register(id, run, { save: doSave, snapshot: () => ({ ...snapRef.current, savedAt: savedRef.current }) }); if (pending && pending.length) run(pending); }, []);
   useEffect(() => { if (busy) return; const h = setTimeout(() => doSave().catch(() => {}), 500); return () => clearTimeout(h); }, [busy, step, parts, rfqs, unknown, lastRun, sel, tab, dirty]);
-  useEffect(() => { onMeta(id, tabMeta({ parts, rfqs, busy, view, step, lastRun, dirty, savedAt })); }, [parts, rfqs, busy, view, step, lastRun, dirty, savedAt]);
+  useEffect(() => { onMeta(id, tabMeta({ parts, rfqs, busy, view, step, lastRun, dirty, unsaved, savedAt })); }, [parts, rfqs, busy, view, step, lastRun, dirty, unsaved, savedAt]);
   useHistoryTouch(id, active, busy, parts, rfqs, step, onHistory);
   if (active) exposeTestHooks({ setDetails, setStep: stepTo, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); setPartOpen(true); if (tb) { setTab(tb); setStep(2); } } });
   const has = parts.length > 0;
