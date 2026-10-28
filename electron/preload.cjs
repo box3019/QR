@@ -4,6 +4,7 @@ const { contextBridge, ipcRenderer, webFrame, webUtils } = require('electron');
 webFrame.setZoomFactor(1);
 contextBridge.exposeInMainWorld('qr', {
   getSettings: () => ipcRenderer.invoke('qr:getSettings'),
+  getVersion: () => ipcRenderer.invoke('qr:getVersion'),
   setSettings: (s) => ipcRenderer.invoke('qr:setSettings', s),
   setFloatPos: (key, pos) => ipcRenderer.invoke('qr:setFloatPos', key, pos),
   catalogPatterns: (entries) => ipcRenderer.invoke('qr:catalogPatterns', entries),

@@ -14,12 +14,12 @@ function clampBounds(b, wa) {
   return { x, y, width, height };
 }
 
-function createMainWindow({ stateFile, webPreferences, icon, maximize = true, log = () => {}, fallbackMs = 3000 }) {
+function createMainWindow({ title, stateFile, webPreferences, icon, maximize = true, log = () => {}, fallbackMs = 3000 }) {
   let saved = null; try { saved = JSON.parse(fs.readFileSync(stateFile, 'utf8')); } catch {}
   const display = saved ? screen.getDisplayMatching(saved) : screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   const wa = display.workArea;
   const b = clampBounds(saved || { x: wa.x, y: wa.y, width: wa.width, height: wa.height }, wa);
-  const win = new BrowserWindow({ ...b, title: 'QR', minWidth: Math.min(960, wa.width), minHeight: Math.min(560, wa.height), show: false, backgroundColor: '#f1f5f9', icon, webPreferences });
+  const win = new BrowserWindow({ ...b, title: title || 'QR', minWidth: Math.min(960, wa.width), minHeight: Math.min(560, wa.height), show: false, backgroundColor: '#f1f5f9', icon, webPreferences });
   win.removeMenu();
   win.on('page-title-updated', (e) => e.preventDefault());
   // Always show: ready-to-show is preferred, but a fallback timer guarantees the window appears even if it never fires.

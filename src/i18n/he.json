@@ -636,5 +636,7 @@
   "tip.saveAgain": "נשמר ב-{time}. שמירה נוספת עכשיו (Ctrl+S)",
   "menu.hint.save": "Ctrl+S",
   "menu.hint.saveAs": "Ctrl+Shift+S",
-  "menu.hint.open": "Ctrl+O"
+  "menu.hint.open": "Ctrl+O",
+  "about.title": "אודות",
+  "about.version": "{name}: הגרסה המותקנת"
 }

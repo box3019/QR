@@ -636,5 +636,7 @@
   "tip.saveAgain": "Saved at {time}. Save again now (Ctrl+S)",
   "menu.hint.save": "Ctrl+S",
   "menu.hint.saveAs": "Ctrl+Shift+S",
-  "menu.hint.open": "Ctrl+O"
+  "menu.hint.open": "Ctrl+O",
+  "about.title": "About",
+  "about.version": "{name}: the installed version"
 }

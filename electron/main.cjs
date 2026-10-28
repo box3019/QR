@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { runPipeline } = require('../core/pipeline.cjs');
 const { createMainWindow } = require('./window.cjs');
+const { appTitle } = require('./title.cjs');
 const { saveOutlookSelection } = require('../core/email/outlook.cjs');
 const { renderPreview } = require('../core/pdf.cjs');
 const { normalizeSettings, catalogOf } = require('../core/settings.cjs');
@@ -37,7 +38,7 @@ let win = null;
 let lastResult = { parts: [], unknown: [], files: [] };
 
 function createWindow() {
-  win = createMainWindow({ log: mainLog, stateFile: path.join(app.getPath('userData'), 'window.json'), maximize: process.env.QR_MAXIMIZE !== '0', icon: path.join(__dirname, '..', 'build', 'icon.png'),
+  win = createMainWindow({ title: appTitle(app.getVersion()), log: mainLog, stateFile: path.join(app.getPath('userData'), 'window.json'), maximize: process.env.QR_MAXIMIZE !== '0', icon: path.join(__dirname, '..', 'build', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: false } });
   const devUrl = process.env.QR_DEV_URL;
   if (devUrl) win.loadURL(devUrl); else win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
@@ -45,6 +46,7 @@ function createWindow() {
 
 const slim = (part) => part; // pipeline already strips tokens from parts
 ipcMain.handle('qr:getSettings', () => loadSettings());
+ipcMain.handle('qr:getVersion', () => app.getVersion());
 ipcMain.handle('qr:questionSample', (_e, lang) => sampleQuestion(lang));
 ipcMain.handle('qr:newCustomer', (_e, from, ids) => newCustomer(from, ids));
 ipcMain.handle('qr:catalogPatterns', (_e, entries) => (entries || []).map((x) => entryPattern(x) || ''));

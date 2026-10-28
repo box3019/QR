@@ -6,6 +6,7 @@ import CustomersTab from './CustomersTab';
 import { t } from '../i18n';
 import { ACCENTS, DENSITIES, ROW_HEIGHTS, themeAttrs } from '../theme/themes';
 import PresetsPanel from './PresetsPanel';
+import { AppVersion } from '../about/AppVersion';
 
 function QuestionSample({ lang }: { lang: string }) {
   const [t, setT] = useState('');
@@ -35,7 +36,7 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
   (window as any).__qrSettingsTab = setTab;
   return <Modal title={t('st.title')} wide onClose={cancel} testid="settings-dialog" footer={<><button className={MRT_BTN} title={t('tip.cancel')} onClick={cancel}>{t('st.cancel')}</button><button className={MRT_BTN_PRIMARY} data-testid="settings-save" title={t('tip.save')} onClick={() => onSave(s)}>{t('st.save')}</button></>}>
     <div className="qr-settings">
-      <div className="qr-settings-nav">{TABS.map((k) => <button key={k} className="qr-settings-tab" data-active={tab === k} data-testid={'stab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('st.tab.' + k)}</button>)}</div>
+      <div className="qr-settings-nav">{TABS.map((k) => <button key={k} className="qr-settings-tab" data-active={tab === k} data-testid={'stab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('st.tab.' + k)}</button>)}<div className="qr-settings-about" data-testid="settings-about"><span>{t('about.title')}</span> <AppVersion className="qr-ver qr-ver-about" /></div></div>
       <div className="qr-settings-body">
         {tab === 'interface' && <>
           <Field label={t('st.uiLang')}><select className="qr-input" value={s.uiLanguage} data-testid="ui-lang" onChange={(e) => live('uiLanguage', e.target.value)}><option value="en">English</option><option value="he">עברית</option></select></Field>

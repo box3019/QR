@@ -19,6 +19,7 @@ import { hhmm, shortcutAction, splitProjectFiles, saveStatus } from './projects/
 import { saveWhy } from './wizard/nextstep.mjs';
 import { Notice } from './ui/Notice';
 import { FileMenu } from './components/FileMenu';
+import { AppVersion } from './about/AppVersion';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
@@ -60,7 +61,7 @@ export default function App() {
   return (
     <div className="qr-root" {...themeAttrs(settings)} data-step={m.step || 1} {...drop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
-        <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
+        <div className="qr-brand"><span className="qr-brand-badge">QR</span><AppVersion /></div>
         <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
         {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
