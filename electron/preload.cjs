@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('qr', {
   touchHistory: (entry) => ipcRenderer.invoke('qr:history:touch', entry),
   removeHistory: (id, deleteData) => ipcRenderer.invoke('qr:history:remove', id, deleteData),
   loadProject: (id) => ipcRenderer.invoke('qr:projects:load', id),
+  saveProjectAs: (id, state, label, target) => ipcRenderer.invoke('qr:projects:saveAs', id, state, label, target),
+  pickProjectFile: (target) => ipcRenderer.invoke('qr:projects:pickOpen', target), importProject: (file) => ipcRenderer.invoke('qr:projects:import', file),
   exportRequirements: (parts, target) => ipcRenderer.invoke('qr:exportRequirements', parts, target),
   outlookSelection: () => ipcRenderer.invoke('qr:outlookSelection'),
   onImport: (cb) => { const h = (_e, files) => cb(files); ipcRenderer.on('qr:import', h); return () => ipcRenderer.removeListener('qr:import', h); },

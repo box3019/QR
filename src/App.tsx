@@ -1,6 +1,6 @@
 import { Ico } from './components/Ico';
 // QR window shell: top bar with project tabs, settings/help, and one ProjectView per open project (kept mounted so each keeps its own state).
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
 import { t, setLang, setAssistantLang, setTextSize, getLang } from './i18n';
@@ -15,13 +15,14 @@ import { TabsBar } from './components/tabs/TabsBar';
 import { ProjectView } from './ProjectView';
 import { HistoryDialog } from './components/history/HistoryDialog';
 import { recent } from './projects/history.mjs';
+import { hhmm, shortcutAction, splitProjectFiles } from './projects/store.mjs';
 import { Notice } from './ui/Notice';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
 
-function TopButton({ icon, label, tip, onClick, testid, active }: any) {
-  return <button type="button" title={tip || label} data-active={active} className={MRT_ACTION_BTN_TOPBAR} onClick={onClick} data-testid={testid}><span className="ico" aria-hidden>{icon}</span><span>{label}</span></button>;
+function TopButton({ icon, label, tip, onClick, testid, active, disabled }: any) {
+  return <button type="button" title={tip || label} data-active={active} disabled={disabled} className={MRT_ACTION_BTN_TOPBAR} onClick={onClick} data-testid={testid}><span className="ico" aria-hidden>{icon}</span><span>{label}</span></button>;
 }
 
 export default function App() {
@@ -41,7 +42,12 @@ export default function App() {
   useEffect(() => qr().onNotify ? qr().onNotify((n: any) => notify(n)) : undefined, []);
   const P = useProjects(notify);
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => P.importOutlook(files)) : undefined, []); // Outlook 'Send to QR': new tab, or the tab of the same RFQ
-  const drop = useDrop(P.runActive, settings, setOver); // drops go into the current tab
+  const Pr = useRef(P); Pr.current = P; const dlgRef = useRef(dialog); dlgRef.current = dialog;
+  useEffect(() => { const h = (e: KeyboardEvent) => { const a = shortcutAction(e); if (!a || (dlgRef.current && a !== 'save')) return; e.preventDefault(); const p = Pr.current;
+    if (a === 'save') p.save(); else if (a === 'saveAs') p.saveAs(); else if (a === 'close') p.close(p.active); else p.openProject(); };
+    window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h); }, []);
+  // drops go into the current tab; a dropped .qrproj opens as a project
+  const drop = useDrop((paths: string[]) => { const s = splitProjectFiles(paths); s.projects.forEach((f) => P.openProject(f)); if (s.rest.length) return P.runActive(s.rest); }, settings, setOver);
   const w = window as any; w.__qrAddTab = P.add; w.__qrTabs = () => P.list.map((p) => ({ id: p.id, active: p.id === P.active, ...(P.metas[p.id] || {}) })); w.__qrSelectTab = P.setActive; w.__qrMoveTab = P.move; w.__qrHistory = () => hist; w.__qrReopen = P.reopen;
   const saveSettings = async (s: any) => setSettings(await qr().setSettings(s));
   const assistant = useAssistant(settings, saveSettings);
@@ -55,6 +61,10 @@ export default function App() {
         <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
         {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
+        {m.nParts > 0 && m.savedAt && <span className="qr-saved" data-testid="saved-at" title={t('tip.saved')}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}
+        <TopButton icon={<Ico name="save" />} label={t('top.save')} tip={t('tip.save')} testid="btn-save" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.save()} />
+        <TopButton icon={<Ico name="saveas" />} label={t('top.saveAs')} tip={t('tip.saveAs')} testid="btn-save-as" disabled={!m.nParts || m.status === 'busy'} onClick={() => P.saveAs()} />
+        <TopButton icon={<Ico name="open" />} label={t('top.open')} tip={t('tip.open')} testid="btn-open-project" onClick={() => P.openProject()} />
         <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
         <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
         <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => { setTourStage(0); setDialog('tutorial'); }} />

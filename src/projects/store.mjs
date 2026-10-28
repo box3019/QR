@@ -4,6 +4,15 @@ export const newId = () => 'p' + Date.now().toString(36) + '-' + Math.random().t
 const cust = (c) => (c && typeof c === 'object' ? c.name || c.id || '' : c || '');
 const subjKey = (s) => { const x = String(s || '').replace(/^\s*((re|fw|fwd)\s*:\s*)+/i, '').trim(); return (x.match(/\b(\d{6})\b/) || [])[1] || x || null; };
 const blocking = (p) => (p.problems || []).some((q) => (q.severity === 'Blocker' || q.severity === 'Question') && q.status !== 'resolved');
+/** hh:mm (24 h, local time) of an ISO time; '' when invalid. */
+export const hhmm = (iso) => { const d = new Date(iso); return iso && !isNaN(d) ? String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') : ''; };
+/** Keyboard shortcuts: Ctrl+S save, Ctrl+Shift+S save as, Ctrl+W close the tab, Ctrl+O open a project file. */
+export function shortcutAction(e) {
+  if (!e || !(e.ctrlKey || e.metaKey) || e.altKey) return null; const k = String(e.key || '').toLowerCase();
+  return k === 's' ? (e.shiftKey ? 'saveAs' : 'save') : k === 'w' && !e.shiftKey ? 'close' : k === 'o' && !e.shiftKey ? 'open' : null;
+}
+/** Dropped paths: .qrproj project files open as projects, everything else is imported as before. */
+export const splitProjectFiles = (paths) => ({ projects: (paths || []).filter((p) => /\.qrproj$/i.test(p)), rest: (paths || []).filter((p) => !/\.qrproj$/i.test(p)) });
 /** Tab meta: label (RFQ no., subject or first part), customer, status busy|check|ready|empty, progress 0..1. */
 export function tabMeta(s) {
   const parts = s.parts || []; const r = (s.rfqs || [])[0];
@@ -11,7 +20,7 @@ export function tabMeta(s) {
   const label = (r && (r.rfq_no || r.subject)) || (parts[0] && parts[0].partNo) || '';
   const customer = cust(r && r.customer) || cust(parts[0] && parts[0].customer);
   const status = s.busy ? 'busy' : !parts.length ? 'empty' : parts.some(blocking) ? 'check' : 'ready';
-  return { key, label, customer, status, frac: importProgress(s.view).frac, mailKeys: (s.rfqs || []).map((r) => r && r.mail_key).filter(Boolean), step: s.step || 1, nParts: parts.length, dirty: !!s.dirty, lastRun: s.lastRun || null };
+  return { key, label, customer, status, frac: importProgress(s.view).frac, mailKeys: (s.rfqs || []).map((r) => r && r.mail_key).filter(Boolean), step: s.step || 1, nParts: parts.length, dirty: !!s.dirty, lastRun: s.lastRun || null, savedAt: s.savedAt || null };
 }
 /** Move item from index a to index b. */
 export function reorder(list, a, b) { if (a === b || a < 0 || b < 0 || a >= list.length || b >= list.length) return list; const l = [...list]; const [x] = l.splice(a, 1); l.splice(b, 0, x); return l; }

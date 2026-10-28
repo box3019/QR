@@ -1,6 +1,9 @@
 export function newId(): string;
-export function tabMeta(s: any): { key: string | null; label: string; customer: string; status: 'busy' | 'check' | 'ready' | 'empty'; frac: number; step: number; nParts: number; dirty: boolean; lastRun: any };
+export function tabMeta(s: any): { key: string | null; label: string; customer: string; status: 'busy' | 'check' | 'ready' | 'empty'; frac: number; step: number; nParts: number; dirty: boolean; lastRun: any; mailKeys: string[]; savedAt: string | null };
 export function reorder<T>(list: T[], a: number, b: number): T[];
 export function closeNeedsConfirm(m: any): boolean;
-export function routeOutlook(tabs: any[], key: string | null, activeId: string): { kind: 'focus' | 'active' | 'new'; id?: string };
+export function routeOutlook(tabs: any[], keys: string[], activeId: string): { kind: 'focus' | 'active' | 'new'; id?: string };
 export function persisted(s: any): any;
+export function shortcutAction(e: any): 'save' | 'saveAs' | 'close' | 'open' | null;
+export const hhmm: (iso: any) => string;
+export const splitProjectFiles: (paths: string[]) => { projects: string[]; rest: string[] };

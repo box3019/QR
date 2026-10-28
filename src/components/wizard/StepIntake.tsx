@@ -5,9 +5,12 @@ import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import { RfqBar } from './RfqBar';
 import { ImportView } from './ImportView';
 import { showDrop } from '../../wizard/importView.mjs';
+import { showLoaded } from '../../wizard/loaded.mjs';
+import { LoadedSummary } from './LoadedSummary';
 import { RecentList } from '../history/RecentList';
 
-export function StepIntake({ view, nParts, rfqs, over, details, unknown, onFiles, onFolder, recent, onReopen }: any) {
+export function StepIntake({ view, parts, files, nParts, rfqs, over, details, unknown, onFiles, onFolder, recent, onReopen, onNext, onPart }: any) {
+  if (showLoaded(view, nParts)) return <LoadedSummary rfqs={rfqs} parts={parts} files={files} unknown={unknown} details={details} onNext={onNext} onPart={onPart} onFiles={onFiles} onFolder={onFolder} />;
   if (!showDrop(view, nParts)) return <div className="qr-step-intake">{view && <ImportView view={view} />}</div>;
   return <div className="qr-step-intake">
     {rfqs.map((r: any, i: number) => <RfqBar key={i} rfq={r} />)}

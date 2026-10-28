@@ -3,6 +3,9 @@ const P: Record<string, string> = {
   details: 'M4 5h16M4 10h16M4 15h10M4 20h7',
   history: 'M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6M3 4v4h4',
   settings: 'M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1',
+  save: 'M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6',
+  saveas: 'M5 4h11l3 3v5M8 4v5h7V4M5 4v16h6M17 14v7M13.5 17.5h7',
+  open: 'M3 6h6l2 2h10v3M3 6v12h15l3-7H6l-3 7',
   help: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.5',
 };
 export const ICONS = Object.keys(P);

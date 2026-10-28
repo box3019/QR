@@ -135,6 +135,19 @@ const history = require('../core/history.cjs');
 ipcMain.handle('qr:history:list', () => history.readHistory(app.getPath('userData')));
 ipcMain.handle('qr:history:touch', (_e, entry) => history.touchHistory(app.getPath('userData'), entry).list);
 ipcMain.handle('qr:history:remove', (_e, id, deleteData) => history.removeHistory(app.getPath('userData'), id, !!deleteData));
+const qrproj = require('../core/qrproj.cjs');
+// Save as: the whole project (state + every file it points to) as one .qrproj; Open: unpack it into a NEW project folder.
+ipcMain.handle('qr:projects:saveAs', async (_e, id, state, label, target) => {
+  const name = String(label || 'QR project').replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').slice(0, 80) || 'QR project';
+  const out = await pickSave(name + '.qrproj', [{ name: 'QR project', extensions: ['qrproj'] }], target); if (!out) return null;
+  return qrproj.exportProject(state, /\.qrproj$/i.test(out) ? out : out + '.qrproj', { id, label, appVersion: app.getVersion() });
+});
+ipcMain.handle('qr:projects:pickOpen', async (_e, target) => { if (target) return target; const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: [{ name: 'QR project', extensions: ['qrproj'] }] }); return r.canceled ? '' : r.filePaths[0]; });
+ipcMain.handle('qr:projects:import', async (_e, file) => {
+  const base = app.getPath('userData'); const id = 'p' + Date.now().toString(36) + '-' + require('crypto').randomBytes(3).toString('hex');
+  try { const r = await qrproj.importProject(file, path.join(base, 'projects', id, 'files')); projects.saveProject(base, id, r.state); return { id, data: r.state }; }
+  catch (e) { try { fs.rmSync(path.join(base, 'projects', id), { recursive: true, force: true }); } catch {} throw e; }
+});
 ipcMain.handle('qr:projects:load', (_e, id) => history.loadProject(app.getPath('userData'), id));
 ipcMain.handle('qr:peekMail', (_e, paths) => projects.peekMail(paths, require('../core/email/readers.cjs').readMail, require('../core/email/key.cjs').mailKey));
 ipcMain.handle('qr:peekRfq', (_e, paths) => projects.peekRfq(paths, require('../core/email/readers.cjs').readMail));
