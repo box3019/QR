@@ -7,7 +7,7 @@ import { getCkSettings } from './store';
 import { itemWhat } from './format';
 
 const GLYPH: any = { yes: '\u2713', no: '\u2013', notfound: '?' };
-const W: any = { part: 11, prec: 9, cx: 10, material: 11, machining: 20, precision: 10, coating: 9, assembly: 9, final: 11 };
+const W: any = { part: 12, prec: 9, cx: 11, material: 11, machining: 17, precision: 10, coating: 9, assembly: 10, final: 11 };
 export function ChecklistSummary({ parts, goPart }: any) {
   const list = (parts || []).filter((p: any) => p.status !== 'rejected'); if (!list.length) return null;
   const s = getCkSettings(); const evs = list.map((p: any) => evaluate(p, s));
