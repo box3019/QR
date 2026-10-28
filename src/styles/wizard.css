@@ -225,3 +225,15 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-ver { font-size: 0.6875rem; line-height: 1; color: var(--mrt-text-muted); white-space: nowrap; unicode-bidi: isolate; direction: ltr; }
 .qr-settings-about { margin-block-start: auto; padding: 0.6rem 0.5rem 0; font-size: 0.75rem; color: var(--mrt-text-muted); }
 .qr-settings-about .qr-ver { margin-inline-start: 0.25rem; }
+/* Settings > Language: large radio cards */
+.qr-lang-h { margin: 0 0 0.35rem; font-size: 1.1rem; font-weight: 600; }
+.qr-lang-note { margin: 0 0 1rem; }
+.qr-langcards { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+.qr-langcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; min-width: 9rem; padding: 1rem 1.25rem; background: var(--mrt-surface); color: var(--mrt-text); border: 2px solid var(--mrt-border); border-radius: var(--mrt-radius, 8px); font: inherit; cursor: pointer; }
+.qr-langcard:hover:not([data-soon='true']), .qr-langcard:focus-visible { border-color: var(--mrt-accent); outline: none; }
+.qr-langcard[data-active='true'] { border-color: var(--mrt-accent); box-shadow: 0 0 0 1px var(--mrt-accent) inset; background: color-mix(in srgb, var(--mrt-accent) 10%, var(--mrt-surface)); }
+.qr-langcard[data-soon='true'] { opacity: 0.55; cursor: default; }
+.qr-langcard-code { font-size: 0.75rem; color: var(--mrt-text-muted); letter-spacing: 0.06em; }
+.qr-langcard-name { font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+.qr-langcard-st { min-height: 1em; font-size: 0.75rem; color: var(--mrt-text-muted); }
+.qr-langcard[data-active='true'] .qr-langcard-st { color: var(--mrt-text); font-weight: 600; }

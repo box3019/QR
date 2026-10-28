@@ -7,6 +7,7 @@ import { t } from '../i18n';
 import { ACCENTS, DENSITIES, ROW_HEIGHTS, themeAttrs } from '../theme/themes';
 import PresetsPanel from './PresetsPanel';
 import { AppVersion } from '../about/AppVersion';
+import LanguagePanel from './LanguagePanel';
 
 function QuestionSample({ lang }: { lang: string }) {
   const [t, setT] = useState('');
@@ -14,7 +15,7 @@ function QuestionSample({ lang }: { lang: string }) {
   return <div className="qr-sample" dir={lang === 'he' ? 'rtl' : 'ltr'} data-testid="question-sample">{t}</div>;
 }
 
-const TABS = ['interface', 'general', 'ocr', 'materials', 'processes', 'customers', 'outlook', 'folders', 'assistant'] as const;
+const TABS = ['interface', 'general', 'language', 'ocr', 'materials', 'processes', 'customers', 'outlook', 'folders', 'assistant'] as const;
 type Tab = typeof TABS[number];
 
 function Field({ label, children }: any) { return <div className="qr-field"><label>{label}</label><div>{children}</div></div>; }
@@ -39,7 +40,6 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
       <div className="qr-settings-nav">{TABS.map((k) => <button key={k} className="qr-settings-tab" data-active={tab === k} data-testid={'stab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('st.tab.' + k)}</button>)}<div className="qr-settings-about" data-testid="settings-about"><span>{t('about.title')}</span> <AppVersion className="qr-ver qr-ver-about" /></div></div>
       <div className="qr-settings-body">
         {tab === 'interface' && <>
-          <Field label={t('st.uiLang')}><select className="qr-input" value={s.uiLanguage} data-testid="ui-lang" onChange={(e) => live('uiLanguage', e.target.value)}><option value="en">English</option><option value="he">עברית</option></select></Field>
           <PresetsPanel committed={s.palette} previewed={prev} onPreview={(id: string) => { setPrev(id); (window as any).__qrSetSettings?.({ palette: id }); }} onApply={() => { const n = { ...s, palette: prev }; setS(n); orig.current = structuredClone(n); onApplyPreset?.(n); }} />
           <h3 className="qr-pres-title qr-fine">{t('st.fineTune')}</h3>
           <Field label={t('st.ifaceAccent')}><div className="qr-accs" role="radiogroup" aria-label={t('st.ifaceAccent')} data-testid="accents">{ACCENTS.map((id) => <button key={id} type="button" role="radio" aria-checked={s.accent === id} className="qr-acc" data-active={s.accent === id} data-acc={id} data-testid={'acc-' + id} title={t('tip.accent')} onClick={() => live('accent', id)}><span className="qr-acc-sw" {...themeAttrs({ palette: prev, accent: id })} aria-hidden />{t('acc.' + id)}</button>)}</div></Field>
@@ -50,6 +50,7 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
         {tab === 'general' && <>
           <Field label={t('st.qLang')}><select className="qr-input" value={s.questionsLanguage} data-testid="questions-lang" onChange={(e) => set('questionsLanguage', e.target.value)}><option value="he">{t('st.heDefault')}</option><option value="en">{t('st.english')}</option></select><QuestionSample lang={s.questionsLanguage} /></Field>
         </>}
+        {tab === 'language' && <LanguagePanel value={s.uiLanguage} onPick={(l: string) => live('uiLanguage', l)} />}
         {tab === 'ocr' && <>
           <Field label={t('st.tab.ocr')}><label className="qr-row"><input type="checkbox" checked={s.ocr !== false} onChange={(e) => set('ocr', e.target.checked)} /> {t('st.ocrOn')}</label></Field>
           <Field label={t('st.resolution')}><select className="qr-input" value={s.ocrDpi} onChange={(e) => set('ocrDpi', +e.target.value)}>{[400, 500, 600].map((d) => <option key={d} value={d}>{d} DPI</option>)}</select></Field>

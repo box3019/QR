@@ -30,7 +30,7 @@ test('assistant language is independent of the UI language; a legacy Russian UI 
 });
 test('Settings dialog: Interface, General and Assistant sections with live preview', () => {
   const st = rd('src', 'settings', 'SettingsDialog.tsx');
-  for (const id of ['stab-', "'interface'", 'ui-lang', 'accents', 'text-size', 'density', 'row-height', 'assistant-lang', 'assistant-on', 'restart-tour']) assert.ok(st.includes(id), id);
+  for (const id of ['stab-', "'interface'", "'language'", 'accents', 'text-size', 'density', 'row-height', 'assistant-lang', 'assistant-on', 'restart-tour']) assert.ok(st.includes(id), id);
   assert.match(st, /themeAttrs\(/); assert.match(st, /PresetsPanel/); assert.match(rd('src', 'settings', 'PresetsPanel.tsx'), /title=\{t\('tip\.presetCard'\)\}/);
   for (const k of ['st.tab.interface', 'st.tab.general', 'st.tab.assistant', 'st.restartTour', 'st.assistLang', 'st.assistantOn', 'tip.palette', 'tip.accent']) assert.ok(en[k] && he[k], k);
 });

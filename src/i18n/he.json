@@ -638,5 +638,11 @@
   "menu.hint.saveAs": "Ctrl+Shift+S",
   "menu.hint.open": "Ctrl+O",
   "about.title": "אודות",
-  "about.version": "{name}: הגרסה המותקנת"
+  "about.version": "{name}: הגרסה המותקנת",
+  "st.tab.language": "שפה",
+  "st.langExplain": "שפת התפריטים והמסכים. שפת העוזר נבחרת בנפרד בלשונית העוזר.",
+  "tip.langCard": "שימוש ב{name} בתפריטים ובמסכים",
+  "st.langCurrent": "בשימוש",
+  "st.langSoon": "מסכים ברוסית עדיין לא זמינים. רוסית זמינה לעוזר: הגדרות, עוזר.",
+  "st.langSoonShort": "עוד לא"
 }
