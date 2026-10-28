@@ -18,7 +18,7 @@ Rules: (1) one primary action per screen; (2) a top "next step" line that names 
 | 7 | Top bar: Save, Save as | Disabled without a reason. | Tooltip: "Nothing to save yet" or "QR is still reading the files". | Fixed |
 | 8 | Settings: Apply look | Disabled without a reason. | Tooltip: "This look is already applied. Choose another one." | Fixed |
 | 9 | Footer: Cancel (clear the RFQ) | A confirm box with no way back; autosave then overwrote the project. | No question. The RFQ is cleared and a toast offers Undo (30 s); the project stays in History. | Fixed |
-| 10 | Footer: Next | Never the primary button on steps 2-3, so no primary action on those screens. | Next is the one primary on steps 2 and 3. On step 1 the summary's Next is the primary. | Fixed |
+| 10 | Footer: Next | Two or zero primary buttons on steps 1-3. | Exactly one primary per screen: Load (step 1, empty: Choose files; loaded: Next), Next part / To documents (step 2), footer Next (step 3), Export (step 4). The previous-part button explains why it is disabled on the first part. | Fixed |
 | 11 | Tabs | No close button on a single tab; hover-only x. | x always visible on every tab, middle click, Ctrl+W; busy tab asks first; project stays in History. | Fixed (earlier in this build) |
 | 12 | Whole app | "Did it save?" autosave was invisible. | "Saved hh:mm" in the top bar, Save, Save as (.qrproj), Open. | Fixed (earlier in this build) |
 | 13 | Outlook "Send to QR" with QR open | Nothing happened. | Window comes to the front, new tab (or the same email's tab), toast with the reason when there is nothing to import. | Fixed (earlier in this build) |
@@ -35,3 +35,4 @@ Rules: (1) one primary action per screen; (2) a top "next step" line that names 
 ## Before / after shots
 
 Synthetic only. Before: `sv048c` (previous build). After: the build of this commit. See `docs/newcomer/` for the pairs that are safe to keep in the repo.
+

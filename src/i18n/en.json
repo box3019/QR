@@ -608,5 +608,6 @@
   "dis.busySave": "QR is still reading the files. Saving is possible when it finishes.",
   "dis.presetSame": "This look is already applied. Choose another one to enable Apply.",
   "notice.cleared": "RFQ cleared. Nothing is deleted: it stays in History.",
-  "notice.undo": "Undo"
+  "notice.undo": "Undo",
+  "dis.firstPart": "This is the first part: there is no previous one."
 }

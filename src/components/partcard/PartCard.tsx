@@ -42,7 +42,7 @@ export function PartCard({ part, n, sel, setSel, details, onFocus, goStep }: any
       {pages.some((p: any) => p.rows.length) && <button type="button" className={MRT_BTN + ' qr-sec-table'} data-testid="btn-bd-table" title={t('tip.bdTable')} onClick={() => setTable(true)}>{t('bd.table')}</button>}
     </div>
     <div className="qr-card-nav">
-      <button type="button" className={MRT_BTN} data-testid="btn-prev-part" disabled={sel === 0} title={t('tip.prevPart')} onClick={() => setSel(sel - 1)}>{t('bd.prev')}</button>
+      <button type="button" className={MRT_BTN} data-testid="btn-prev-part" disabled={sel === 0} title={sel === 0 ? t('dis.firstPart') : t('tip.prevPart')} onClick={() => setSel(sel - 1)}>{t('bd.prev')}</button>
       <button type="button" className={MRT_BTN_PRIMARY} data-testid="btn-next-part" title={last ? t('tip.toDocs') : t('tip.nextPart')} onClick={() => (last ? goStep(3) : setSel(sel + 1))}>{last ? t('bd.toDocs') : t('bd.nextPart')}</button>
     </div>
     {table && <TableDialog part={part} onClose={() => setTable(false)} />}
