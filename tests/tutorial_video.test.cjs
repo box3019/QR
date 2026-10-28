@@ -62,7 +62,7 @@ test('packaging + IPC wiring: resources entry, manifest helper in files, handler
 test('Watch video buttons: in the tutorial card (tour language) and in Settings > Assistant (assistant language)', () => {
   const tv = rd('src/tutorial/TourView.tsx'), sd = rd('src/settings/SettingsDialog.tsx');
   assert.ok(/<WatchVideo lang=\{lang\} testid="tour-watch-video" label=\{T\.ui\.watch\}/.test(tv));
-  assert.ok(/<WatchVideo lang=\{s\.assistantLanguage\} testid="settings-watch-video"/.test(sd));
+  assert.ok(/<WatchVideo lang=\{resolveAssistantLang\(s\)\} testid="settings-watch-video"/.test(sd));
   assert.ok(sd.indexOf('assistant-lang') < sd.indexOf('settings-watch-video'), 'in the Assistant tab, after the language row');
 });
 test('player: play/pause, seek, chapters, subtitles toggle as an overlay from the VTT text; every button has a tooltip', () => {

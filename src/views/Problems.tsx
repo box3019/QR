@@ -24,7 +24,7 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
   const sorted = [...part.problems].sort((a, b) => order[a.severity] - order[b.severity]);
   const main = sorted.filter((p: any) => p.severity !== 'Info');
   const info = sorted.filter((p: any) => p.severity === 'Info');
-  const uploads = part.tasks.filter((x: any) => x.type === 'uploadDocument');
+  const uploads = part.tasks.filter((x: any) => x.type === 'uploadDocument' && x.stage !== 'routecard');
   const verify = part.tasks.filter((x: any) => x.type === 'verify');
   const attach = async (tk: any) => {
     let f: string[] = []; let doc: any = null;

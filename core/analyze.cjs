@@ -10,6 +10,7 @@ const { parseMaterial, oneLine } = require('./catalog/families.cjs');
 const { chartToRoute } = require('./routing/chart.cjs');
 const { findChart, materialFromChart, enrichRequirements, chartExtras } = require('./routing/apply.cjs');
 const { detectProfile } = require('./customers/index.cjs');
+const { STAGE, stageOfRef, buildRouteCard } = require('./docs/stage.cjs');
 
 const { normalizeMaterialTokens, isMaterialValue, materialFromTitleBlock } = require('./materials.cjs');
 const bb = (t) => [Math.round(t.x), Math.round(t.y), Math.round(t.w), Math.round(t.h)];
@@ -345,12 +346,13 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
     if (r.number === id.partNo) { r.kind = 'self'; continue; }
     const inLib = (library || []).find((d) => d.number === r.number);
     if (inLib) { r.docId = inLib.path; continue; }
+    if (stageOfRef(r) === STAGE.ROUTE) { r.stage = STAGE.ROUTE; continue; } // customer spec: for the route card, not a quote-stage document
     const st = stepOfRef(r.number);
     const bv = st ? { seq: st.seq, title: st.title, type: st.type } : {};
     const blocks = msgText('task.blocks', bv, 'en');
     r.blocks = blocks; r.blocksVars = bv;
     const tv = { num: r.number, desc: r.description };
-    tasks.push({ id: 'T' + (tasks.length + 1), type: 'uploadDocument', refNumber: r.number, title: msgText('task.upload', tv, 'en'), key: 'task.upload', vars: tv, blocks, blocksVars: bv, status: 'open' });
+    tasks.push({ id: 'T' + (tasks.length + 1), type: 'uploadDocument', refNumber: r.number, title: msgText('task.upload', tv, 'en'), key: 'task.upload', vars: tv, stage: STAGE.NOW, blocks, blocksVars: bv, status: 'open' });
     if (st) st.blocked = true;
   }
 
@@ -408,7 +410,8 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   const openTasks = tasks.filter((t) => t.type === 'uploadDocument').length;
   const readiness = status === 'rejected' ? 'n/a' : status === 'pending' ? 'Blocked: no material' : openTasks ? `Blocked by ${openTasks} task${openTasks > 1 ? 's' : ''}` : problems.some((p) => p.severity === 'Blocker') ? 'Incomplete' : 'Ready';
   for (const x of problemsFrom(requirements)) problems.push({ id: 'P' + (problems.length + 1), ...x });
-  return { requirements: enrichRequirements(requirements0, chartInfo), chart: chartX, customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, rejectKey, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
+  const routeCard = { ...buildRouteCard({ route, refs, notes }), v: 1 };
+  return { routeCard, requirements: enrichRequirements(requirements0, chartInfo), chart: chartX, customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, rejectKey, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
 }
 
 module.exports = { detectPartNo, isMaterialCode, revFromFileName, parseEltaPartsListPages, analyzePart, normalizeMaterialTokens, isMaterialValue, parseNotes, viewThreads, normThread, detectCustomer };

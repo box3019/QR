@@ -514,7 +514,7 @@
   "row.normal": "Normal",
   "row.relaxed": "Relaxed",
   "st.assistLang": "Assistant and tutorial language",
-  "st.assistLangNote": "Independent of the program language. The tutorial card and the step hints follow it.",
+  "st.assistLangNote": "Default: the step hints and the tutorial follow the program language. Pick another language only if you want them different.",
   "st.restartTour": "Restart tutorial",
   "tip.restartTour": "Close Settings and start the tutorial from the first step",
   "pal.aris-glass": "Aris Liquid Glass / iOS 27",
@@ -658,5 +658,13 @@
   "tip.videoSeek": "Drag to jump to another moment",
   "tip.videoSubs": "Show or hide the subtitles",
   "tip.videoChapter": "Jump to this step",
-  "tip.videoClose": "Close the video"
+  "tip.videoClose": "Close the video",
+  "rcard.title": "For route card",
+  "rcard.sumTitle": "For route card, by part",
+  "rcard.note": "Customer specs and certificate or report requirements. Not needed for the quote; kept here for the route card.",
+  "rcard.general": "General / at delivery",
+  "rcard.spec": "customer spec",
+  "tip.routeCard": "Customer specs and certificate, report and traceability requirements for the production route card. Not needed to quote.",
+  "prov.note": "Analysis is still running. These counts are provisional and may change.",
+  "st.assistAuto": "Same as the program language"
 }

@@ -1,11 +1,13 @@
 // Parts list grouping by plain status. Pure logic, no UI. Order is fixed; empty groups are dropped.
 export const GROUP_ORDER = ['ready', 'needsDoc', 'needsAnswer', 'notOurs'];
 const open = (p) => p.status !== 'resolved';
+/** An upload task that can make a part 'needs document': open, and needed NOW to evaluate. Route-card documents (stage 'routecard': customer specs, certificates) never count. */
+export const isOpenDoc = (x) => !!x && x.type === 'uploadDocument' && x.status !== 'done' && x.stage !== 'routecard';
 /** One plain status per part: not ours > needs document > needs answer > ready. */
 export function plainStatus(part) {
   const probs = part.problems || [], tasks = part.tasks || [];
   if (part.status === 'rejected' || probs.some((x) => open(x) && x.internal)) return 'notOurs';
-  if (tasks.some((x) => x.type === 'uploadDocument' && x.status !== 'done')) return 'needsDoc';
+  if (tasks.some(isOpenDoc)) return 'needsDoc';
   if (part.status === 'pending' || probs.some((x) => open(x) && (x.severity === 'Blocker' || x.severity === 'Question'))) return 'needsAnswer';
   return 'ready';
 }

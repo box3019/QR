@@ -11,9 +11,10 @@ const DENSITIES = ['comfortable', 'normal', 'compact'];
 const ROW_HEIGHTS = ['compact', 'normal', 'relaxed'];
 const TEXT_SIZES = ['normal', 'large', 'xlarge', 'huge'];
 const ASSISTANT_LANGS = ['he', 'en', 'ru'];
+const ASSISTANT_CHOICES = ['auto', ...ASSISTANT_LANGS]; // 'auto' = the hints and the tutorial follow the program language (default)
 const DEFAULTS = {
   uiLanguage: 'en', // program language: en | he
-  assistantLanguage: 'en', // tutorial + step hints: he | en | ru, independent of uiLanguage
+  assistantLanguage: 'auto', // tutorial + step hints: auto (= program language) | he | en | ru. A different language only when the user picked one (assistantLanguageSet)
   palette: 'industrial-steel', /* MRT's default preset */ accent: 'slate', density: 'normal', rowHeight: 'normal',
   firstRunDone: false,
   textSize: 'large',
@@ -38,7 +39,9 @@ function normalizeSettings(stored) {
     if (s.uiLanguage === 'ru' && !hadAssistant) s.assistantLanguage = 'ru';
     s.uiLanguage = 'en';
   }
-  if (!ASSISTANT_LANGS.includes(s.assistantLanguage) || (!hadAssistant && s.assistantLanguage !== 'ru')) s.assistantLanguage = s.uiLanguage; // first run: the assistant follows the program language until chosen
+  // one clear rule: the hints follow the program language unless the user explicitly picked another language in Settings > Assistant
+  if (!ASSISTANT_CHOICES.includes(s.assistantLanguage) || (s.assistantLanguage !== 'auto' && !s.assistantLanguageSet && !(!hadAssistant && s.assistantLanguage === 'ru'))) s.assistantLanguage = 'auto';
+  if (s.assistantLanguage !== 'auto') s.assistantLanguageSet = true;
   if (!PALETTES.includes(s.palette)) s.palette = DEFAULTS.palette;
   if (!ACCENTS.includes(s.accent)) s.accent = DEFAULTS.accent;
   if (!DENSITIES.includes(s.density)) s.density = DEFAULTS.density;
@@ -53,4 +56,6 @@ function normalizeSettings(stored) {
 }
 /** Pure: settings -> the catalog object the checks use. */
 const catalogOf = (s) => ({ materials: s.materialsCatalog, processes: s.processesCatalog });
-module.exports = { DEFAULTS, normalizeSettings, catalogOf, PALETTES, ACCENTS, DENSITIES, ROW_HEIGHTS, TEXT_SIZES, ASSISTANT_LANGS };
+/** The concrete language of the hints and the tutorial for a settings object. */
+const resolveAssistantLang = (s) => (s && s.assistantLanguage && s.assistantLanguage !== 'auto' ? s.assistantLanguage : (s && s.uiLanguage) === 'he' ? 'he' : 'en');
+module.exports = { resolveAssistantLang, ASSISTANT_CHOICES, DEFAULTS, normalizeSettings, catalogOf, PALETTES, ACCENTS, DENSITIES, ROW_HEIGHTS, TEXT_SIZES, ASSISTANT_LANGS };

@@ -4,6 +4,7 @@ import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import { exportReport } from '../../wizard/report';
 import { Box } from './Box';
+import { RouteCardSummary } from '../partcard/RouteCardSection';
 import { tileCounts, GROUP_ORDER, DOT } from '../../parts/groups.mjs';
 import { summaryCounts } from '../../wizard/summary.mjs';
 
@@ -25,6 +26,7 @@ export function StepSummary({ parts, openDialog, goPart, lang, meta }: any) {
       {GROUP_ORDER.map((k: string) => <Stat key={k} k={k} n={counts[k]} label={t('tile.' + k)} dot={(DOT as any)[k]} />)}
       <Stat k="questions" n={nq} label={t('wz.questions')} dot={nq ? 'warn' : 'ok'} />
     </div>
+    <RouteCardSummary parts={parts} />
     <div className="qr-sum-grid">
       <Box title={t('wz.secQ')} testid="box-export-questions">
         <p className="qr-box-text">{t(nq === 1 && np === 1 ? 'wz.qText1' : 'wz.qText', { n: nq, p: np })}</p>

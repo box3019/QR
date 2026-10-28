@@ -3,7 +3,7 @@ import { Ico } from './components/Ico';
 import React, { useEffect, useRef, useState } from 'react';
 import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
-import { t, setLang, setAssistantLang, setTextSize, getLang } from './i18n';
+import { t, setLang, setAssistantLang, setTextSize, getLang, resolveAssistantLang } from './i18n';
 import { themeAttrs } from './theme/themes';
 import { FirstRun } from './ui/simple';
 import { Tour } from './tutorial/TourView';
@@ -38,7 +38,7 @@ export default function App() {
   useEffect(() => { qr().listHistory?.().then(setHist).catch(() => {}); }, []);
   const [details, setDetails] = useState(false);
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
-  if (settings) { setLang(settings.uiLanguage); setAssistantLang(settings.assistantLanguage); setTextSize(settings.textSize); }
+  if (settings) { setLang(settings.uiLanguage); setAssistantLang(resolveAssistantLang(settings)); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
   const [notice, setNotice] = useState('');
   const [undoBox, setUndo] = useState(null as null | { fn: () => void });
@@ -77,9 +77,9 @@ export default function App() {
       <div className="qr-statusbar" data-testid="status-bar" role="status">{saveStatus(m) === 'saved' && <span data-testid="saved-at" title={t('tip.savedAt', { time: hhmm(m.savedAt) })}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}{saveStatus(m) === 'unsaved' && <span data-testid="unsaved-note" title={t('tab.unsaved')}>{t('top.unsaved')}</span>}</div>
       {notice && <Notice text={notice} action={undoBox ? { label: t('notice.undo'), run: () => { undoBox.fn(); setUndo(null); setNotice(''); } } : null} onClose={() => { setNotice(''); setUndo(null); }} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} />}
-      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={settings.assistantLanguage} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
+      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={resolveAssistantLang(settings)} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}
-      {dialog === 'tutorial' && <Tour lang0={settings?.assistantLanguage || 'en'} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
+      {dialog === 'tutorial' && <Tour lang0={resolveAssistantLang(settings) || 'en'} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
     </div>
   );
 }

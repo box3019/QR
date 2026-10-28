@@ -23,10 +23,10 @@ test('settings: defaults, validation and persistence of the interface fields', (
   assert.deepStrictEqual(normalizeSettings(JSON.parse(JSON.stringify(s))), s, 'round trip through JSON is stable');
 });
 test('assistant language is independent of the UI language; a legacy Russian UI becomes English UI + Russian assistant', () => {
-  const a = normalizeSettings({ uiLanguage: 'en', assistantLanguage: 'ru' }); assert.deepStrictEqual([a.uiLanguage, a.assistantLanguage], ['en', 'ru']);
-  const b = normalizeSettings({ uiLanguage: 'he', assistantLanguage: 'en' }); assert.deepStrictEqual([b.uiLanguage, b.assistantLanguage], ['he', 'en']);
+  const a = normalizeSettings({ uiLanguage: 'en', assistantLanguage: 'ru', assistantLanguageSet: true }); assert.deepStrictEqual([a.uiLanguage, a.assistantLanguage], ['en', 'ru']);
+  const b = normalizeSettings({ uiLanguage: 'he', assistantLanguage: 'en', assistantLanguageSet: true }); assert.deepStrictEqual([b.uiLanguage, b.assistantLanguage], ['he', 'en']);
   const c = normalizeSettings({ uiLanguage: 'ru' }); assert.deepStrictEqual([c.uiLanguage, c.assistantLanguage], ['en', 'ru']);
-  const d = normalizeSettings({ uiLanguage: 'he' }); assert.strictEqual(d.assistantLanguage, 'he');
+  const d = normalizeSettings({ uiLanguage: 'he' }); assert.strictEqual(d.assistantLanguage, 'auto'); assert.strictEqual(require('../core/settings.cjs').resolveAssistantLang(d), 'he', 'auto follows the program language'); assert.strictEqual(require('../core/settings.cjs').resolveAssistantLang(normalizeSettings({ uiLanguage: 'en' })), 'en');
 });
 test('Settings dialog: Interface, General and Assistant sections with live preview', () => {
   const st = rd('src', 'settings', 'SettingsDialog.tsx');

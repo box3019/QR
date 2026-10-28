@@ -27,6 +27,7 @@ function localizePart(part) {
     s.typeHe = T.step(s.type); s.titleHe = T.title(s.title); s.sourceHe = T.loc(s.source);
     for (const i of s.items || []) if (i.key) i.textHe = text(i.key, i.vars, 'he');
   }
+  require('../docs/stage.cjs').localizeRouteCard(part.routeCard, T);
   const H = require('../requirements/he.cjs').he;
   for (const r of part.requirements || []) {
     if (r.summary) for (const k of ['heatTreat', 'masking', 'coatings', 'paint', 'flow']) r.summary[k + 'He'] = H(r.summary[k]);

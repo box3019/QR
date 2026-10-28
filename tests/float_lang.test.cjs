@@ -22,8 +22,9 @@ test('settings: floatPos is remembered and sanitized, uiLanguage is en/he, assis
   assert.deepStrictEqual(normalizeSettings({ floatPos: { tour: { x: 5.2, y: 7 }, bad: { x: 'z' } } }).floatPos, { tour: { x: 5, y: 7 } });
   for (const l of ['en', 'he']) assert.strictEqual(normalizeSettings({ uiLanguage: l }).uiLanguage, l);
   assert.strictEqual(normalizeSettings({ uiLanguage: 'fr' }).uiLanguage, 'en');
-  for (const l of ['he', 'en', 'ru']) assert.strictEqual(normalizeSettings({ uiLanguage: 'he', assistantLanguage: l }).assistantLanguage, l, 'assistant language is independent of the UI language');
-  assert.strictEqual(normalizeSettings({ uiLanguage: 'he', assistantLanguage: 'fr' }).assistantLanguage, 'he', 'unknown assistant language falls back to the UI language');
+  for (const l of ['he', 'en', 'ru']) assert.strictEqual(normalizeSettings({ uiLanguage: 'he', assistantLanguage: l, assistantLanguageSet: true }).assistantLanguage, l, 'an explicitly chosen assistant language is independent of the UI language');
+  assert.strictEqual(normalizeSettings({ uiLanguage: 'he', assistantLanguage: 'fr' }).assistantLanguage, 'auto', 'unknown assistant language falls back to auto (= the UI language)');
+  assert.strictEqual(normalizeSettings({ uiLanguage: 'en', assistantLanguage: 'he' }).assistantLanguage, 'auto', 'a stored language that was never picked in Settings (old auto-follow) becomes auto: no Hebrew hint in an English UI');
   const main = rd('electron', 'main.cjs'); assert.match(main, /qr:setFloatPos/);
   assert.match(main, /floatPos: cur\.floatPos/, 'setSettings must not overwrite remembered positions');
   assert.match(rd('electron', 'preload.cjs'), /setFloatPos/);
@@ -41,7 +42,7 @@ test('language selectors exist only in Settings: UI language (he/en) in Interfac
   assert.match(st, /<LanguagePanel/); assert.ok(!/data-testid="ui-lang"/.test(st), 'the selector lives in LanguagePanel only'); assert.match(st, /data-testid="assistant-lang"/); assert.match(st, /data-testid="restart-tour"/);
   for (const o of ['>עברית<', '>English<', '>Русский<']) assert.ok(st.includes(o), 'Settings language option ' + o);
   const lp = rd('src', 'settings', 'LanguagePanel.tsx'); assert.ok(/id: 'ru'[^}]*soon: true/.test(lp), 'Russian is listed but not selectable as a program language'); assert.ok(/disabled=\{!!l\.soon\}/.test(lp));
-  assert.match(rd('src', 'App.tsx'), /lang0=\{settings\.assistantLanguage/);
+  assert.match(rd('src', 'App.tsx'), /lang0=\{resolveAssistantLang\(settings\)/);
   const i = rd('src', 'i18n', 'index.ts'); assert.match(i, /setAssistantLang/); assert.match(i, /assistantDir/); assert.ok(!/getContentLang/.test(i));
 });
 test('ru hints exist for the assistant; every ru key exists in en', () => {

@@ -1,5 +1,5 @@
 // One-focus Check parts: the one-line reason per part, the next part needing action, arrow-key direction. Pure logic.
-import { plainStatus } from './groups.mjs';
+import { plainStatus, isOpenDoc } from './groups.mjs';
 const open = (x) => x.status !== 'resolved';
 /** Sort order of the list: what needs a person first, ready parts last. */
 export const LIST_ORDER = ['needsDoc', 'needsAnswer', 'notOurs', 'ready'];
@@ -7,7 +7,7 @@ export const LIST_ORDER = ['needsDoc', 'needsAnswer', 'notOurs', 'ready'];
 export function reasonFor(part) {
   const status = plainStatus(part); const probs = (part.problems || []).filter(open);
   if (status === 'notOurs') { const p = probs.find((x) => x.internal); return p ? { status, prob: p } : part.rejectReason ? { status, text: String(part.rejectReason) } : { status, key: 'rsn.notOurs', vars: {} }; }
-  if (status === 'needsDoc') { const ts = (part.tasks || []).filter((x) => x.type === 'uploadDocument' && x.status !== 'done'); return { status, key: ts.length > 1 ? 'rsn.needsDocN' : 'rsn.needsDoc', vars: { n: ts.length, std: ts[0] ? ts[0].refNumber || '' : '' } }; }
+  if (status === 'needsDoc') { const ts = (part.tasks || []).filter(isOpenDoc); return { status, key: ts.length > 1 ? 'rsn.needsDocN' : 'rsn.needsDoc', vars: { n: ts.length, std: ts[0] ? ts[0].refNumber || '' : '' } }; }
   if (status === 'needsAnswer') { const p = probs.find((x) => x.severity === 'Blocker') || probs.find((x) => x.severity === 'Question'); return p ? { status, prob: p } : { status, key: 'rsn.pending', vars: {} }; }
   return { status, key: 'rsn.ready', vars: {} };
 }

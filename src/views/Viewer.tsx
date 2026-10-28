@@ -2,7 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Chip } from '../ui/common';
-import { t, tReadiness, getLang } from '../i18n';
+import { t, getLang } from '../i18n';
+import { PlainStatusBadge } from '../ui/simple';
 import { zoomStep, fitSheet, centerScroll, panTo } from '../wizard/dropGuard.mjs';
 
 const qr = () => (window as any).qr;
@@ -62,7 +63,7 @@ export function RouteCard({ part }: any) {
   return <div className="qr-route-card" data-testid="route-card">
     <div className="head">
       <div><b>{t('rc.part')}</b><span className="qr-ltr">{part.partNo}</span></div><div><b>{t('rc.rev')}</b>{part.rev || '-'}</div><div><b>{t('rc.customer')}</b>{part.customer}</div><div><b>{t('rc.material')}</b><span>{L(part.material, 'normalized') || '—'}</span></div>
-      <div style={{ gridColumn: 'span 2' }}><b>{t('rc.title')}</b>{part.title}</div><div><b>{t('rc.source')}</b>{L(part, 'routeSource')}</div><div><b>{t('rc.status')}</b>{tReadiness(part.readiness)} · {t('rc.readOnly')}</div>
+      <div style={{ gridColumn: 'span 2' }}><b>{t('rc.title')}</b>{part.title}</div><div><b>{t('rc.source')}</b>{L(part, 'routeSource')}</div><div><b>{t('rc.status')}</b><PlainStatusBadge part={part} /> · {t('rc.readOnly')}</div>
     </div>
     <table className="qr-table">
       <thead><tr><th style={{ width: 50 }}>{t('rc.step')}</th><th style={{ width: 120 }}>{t('rc.operation')}</th><th>{t('rc.instructions')}</th><th style={{ width: 170 }}>{t('rc.specs')}</th><th style={{ width: 110 }}>{t('rc.src')}</th><th style={{ width: 90 }}>{t('rc.flags')}</th></tr></thead>

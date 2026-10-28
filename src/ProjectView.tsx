@@ -70,11 +70,12 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   const goNext = (go: any) => { if (!go) return; if (go.part != null) { pick(go.part); setPartOpen(true); } else setPartOpen(false); if (go.step) setStep(go.step); if (go.action === 'files') qr().pickFiles().then((f: string[]) => run(f)); if (go.action === 'export') setTimeout(() => (document.querySelector('[data-testid=btn-export-xlsx-all]') as HTMLElement | null)?.click(), 0); };
   // Cancel clears the RFQ without a question: a toast offers Undo instead (nothing is lost)
   const clearAll = () => { const snap = { parts, rfqs, unknown, lastRun, sel, step }; reset(); notify({ code: 'cleared', undo: () => { setParts(snap.parts); setRfqs(snap.rfqs); setUnknown(snap.unknown); setLastRun(snap.lastRun); setSel(snap.sel); setStep(snap.step); setDirty(false); } }); };
-  return <div className={'qr-proj' + (active ? '' : ' qr-proj-off')} data-testid="project" data-id={id} data-step={step} aria-hidden={!active}>
+  return <div className={'qr-proj' + (active ? '' : ' qr-proj-off')} data-testid="project" data-id={id} data-step={step} data-provisional={!!busy && has} aria-hidden={!active}>
     <div className="qr-wiz">
       <RailContext rfqs={rfqs} parts={parts} files={lastRun?.files || []} />
       <StepHeader step={step} hint={hint} assistant={assistant} next={nextLine} onGo={goNext} />
       <Stepper step={step} setStep={stepTo} hasParts={has} />
+      {!!busy && has && step > 1 && <div className="qr-provisional" data-testid="provisional" role="status">{t('prov.note')}</div>}
       <main className="qr-wiz-main">
         {step === 1 && <StepIntake view={view} parts={parts} files={lastRun?.files || []} onNext={() => stepTo(2)} onPart={(i: number) => openPart(i, 2)} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} recent={recent} onReopen={onReopen} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder(); if (f) run([f]); }} />}
         {step === 2 && has && <StepCheckParts parts={parts} sel={sel} open={partOpen} onOpen={(i: number) => openPart(i, 2)} onBack={() => setPartOpen(false)} onGo={pick} onLeave={() => stepTo(3)} rtl={getLang() === 'he'} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={stepTo} />}

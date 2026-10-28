@@ -3,7 +3,7 @@ import { MRT_BTN, MRT_BTN_PRIMARY, MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Modal } from '../ui/common';
 import CatalogTable from './CatalogTable';
 import CustomersTab from './CustomersTab';
-import { t } from '../i18n';
+import { t, resolveAssistantLang } from '../i18n';
 import { ACCENTS, DENSITIES, ROW_HEIGHTS, themeAttrs } from '../theme/themes';
 import PresetsPanel from './PresetsPanel';
 import { AppVersion } from '../about/AppVersion';
@@ -25,7 +25,7 @@ function FolderInput({ value, onChange, testid }: any) {
     <button className={MRT_ACTION_BTN} title={t('tip.browse')} onClick={async () => { const f = await window.qr.pickFolder(); if (f) onChange(f); }}>{t('st.browse')}</button></div>;
 }
 
-const LIVE = ['uiLanguage', 'assistantLanguage', 'textSize', 'palette', 'accent', 'density', 'rowHeight'];
+const LIVE = ['uiLanguage', 'assistantLanguage', 'assistantLanguageSet', 'textSize', 'palette', 'accent', 'density', 'rowHeight'];
 export default function SettingsDialog({ settings, onClose, onSave, onApplyPreset, onRestartTour, initialTab }: any) {
   const [s, setS] = useState<any>(structuredClone(settings));
   const orig = useRef<any>(structuredClone(settings)); // the saved values: __qrSetSettings mutates the `settings` prop while previewing, so Cancel restores from this copy
@@ -70,10 +70,10 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
           <Field label={t('st.roots')}><textarea className="qr-input" style={{ width: '100%' }} rows={4} value={(s.searchRoots || []).join('\n')} onChange={(e) => set('searchRoots', e.target.value.split('\n').map((x) => x.trim()).filter(Boolean))} /></Field>
         </>}
         {tab === 'assistant' && <>
-          <Field label={t('st.assistLang')}><select className="qr-input" value={s.assistantLanguage} data-testid="assistant-lang" onChange={(e) => live('assistantLanguage', e.target.value)}><option value="he">עברית</option><option value="en">English</option><option value="ru">Русский</option></select><div className="qr-muted" data-testid="assistant-lang-note">{t('st.assistLangNote')}</div></Field>
+          <Field label={t('st.assistLang')}><select className="qr-input" value={s.assistantLanguage || 'auto'} data-testid="assistant-lang" onChange={(e) => { live('assistantLanguageSet', e.target.value !== 'auto'); live('assistantLanguage', e.target.value); }}><option value="auto">{t('st.assistAuto')}</option><option value="he">עברית</option><option value="en">English</option><option value="ru">Русский</option></select><div className="qr-muted" data-testid="assistant-lang-note">{t('st.assistLangNote')}</div></Field>
           <Field label={t('st.tab.assistant')}><label className="qr-row"><input type="checkbox" data-testid="assistant-on" checked={s.assistant !== false} onChange={(e) => set('assistant', e.target.checked)} /> {t('st.assistantOn')}</label></Field>
           <Field label={t('st.restartTour')}><button type="button" className={MRT_ACTION_BTN} data-testid="restart-tour" title={t('tip.restartTour')} onClick={() => onRestartTour?.(s)}>{t('st.restartTour')}</button></Field>
-      <Field label={t('st.watchVideo')}><WatchVideo lang={s.assistantLanguage} testid="settings-watch-video" label={t('video.watch')} tip={t('tip.watchVideo')} noTip={t('dis.noVideo')} /></Field>
+      <Field label={t('st.watchVideo')}><WatchVideo lang={resolveAssistantLang(s)} testid="settings-watch-video" label={t('video.watch')} tip={t('tip.watchVideo')} noTip={t('dis.noVideo')} /></Field>
         </>}
       </div>
     </div>

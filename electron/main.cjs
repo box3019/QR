@@ -97,7 +97,7 @@ ipcMain.handle('qr:exportQuestions', async (_e, parts, lang, target) => {
   return { pdf: out, txt };
 });
 function summaryRows(parts) {
-  return parts.map((p) => ({ Part: p.partNo, Rev: p.rev, Customer: p.customer, Title: p.title, Material: p.material?.normalized || p.material?.raw || '', Status: p.status === 'rejected' ? 'Rejected: ' + p.rejectReason : 'Accepted', Readiness: p.readiness, Blockers: p.problems.filter((x) => x.severity === 'Blocker').length, Questions: p.problems.filter((x) => x.severity === 'Question').length, Tasks: p.tasks.filter((t) => t.status !== 'done').length, Model: p.model ? path.basename(p.model.path) : 'not found', 'Text mode': p.textMode }));
+  return parts.map((p) => ({ Part: p.partNo, Rev: p.rev, Customer: p.customer, Title: p.title, Material: p.material?.normalized || p.material?.raw || '', Status: p.status === 'rejected' ? 'Rejected: ' + p.rejectReason : 'Accepted', Readiness: require('../core/report.cjs').LABELS.en.g[require('../core/report.cjs').plainStatus(p)], Blockers: p.problems.filter((x) => x.severity === 'Blocker').length, Questions: p.problems.filter((x) => x.severity === 'Question').length, Tasks: p.tasks.filter(require('../core/docs/stage.cjs').isOpenNowTask).length, 'For route card': ((p.routeCard && p.routeCard.groups) || []).map((g) => (g.key === 'general' ? 'General' : g.seq + ' ' + (g.title || g.type)) + ': ' + g.items.map((i) => (i.kind === 'spec' ? i.number : i.text)).join(', ')).join(' | '), Model: p.model ? path.basename(p.model.path) : 'not found', 'Text mode': p.textMode }));
 }
 ipcMain.handle('qr:exportSummary', async (_e, parts, kind, target) => {
   const rows = summaryRows(parts);
@@ -132,7 +132,10 @@ ipcMain.handle('qr:exportRequirements', async (_e, parts, target) => {
 });
 // projects (tabs): %APPDATA%\QR\projects\<id>, reopened on restart
 const projects = require('../core/projects.cjs');
-ipcMain.handle('qr:projects:list', () => projects.listProjects(app.getPath('userData')));
+// older projects: stage the document tasks and build the route card (idempotent)
+const { upgradePart } = require('../core/docs/stage.cjs');
+const upg = (d) => { if (d && Array.isArray(d.parts)) d.parts.forEach(upgradePart); return d; };
+ipcMain.handle('qr:projects:list', () => { const r = projects.listProjects(app.getPath('userData')); (r.projects || []).forEach((p) => upg(p.data)); return r; });
 ipcMain.handle('qr:projects:save', (_e, id, data) => projects.saveProject(app.getPath('userData'), id, data));
 ipcMain.handle('qr:projects:index', (_e, idx) => projects.saveIndex(app.getPath('userData'), idx));
 const history = require('../core/history.cjs');
@@ -149,10 +152,10 @@ ipcMain.handle('qr:projects:saveAs', async (_e, id, state, label, target) => {
 ipcMain.handle('qr:projects:pickOpen', async (_e, target) => { if (target) return target; const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: [{ name: 'QR project', extensions: ['qrproj'] }] }); return r.canceled ? '' : r.filePaths[0]; });
 ipcMain.handle('qr:projects:import', async (_e, file) => {
   const base = app.getPath('userData'); const id = 'p' + Date.now().toString(36) + '-' + require('crypto').randomBytes(3).toString('hex');
-  try { const r = await qrproj.importProject(file, path.join(base, 'projects', id, 'files')); projects.saveProject(base, id, r.state); return { id, data: r.state }; }
+  try { const r = await qrproj.importProject(file, path.join(base, 'projects', id, 'files')); upg(r.state); projects.saveProject(base, id, r.state); return { id, data: r.state }; }
   catch (e) { try { fs.rmSync(path.join(base, 'projects', id), { recursive: true, force: true }); } catch {} throw e; }
 });
-ipcMain.handle('qr:projects:load', (_e, id) => history.loadProject(app.getPath('userData'), id));
+ipcMain.handle('qr:projects:load', (_e, id) => upg(history.loadProject(app.getPath('userData'), id)));
 ipcMain.handle('qr:peekMail', (_e, paths) => projects.peekMail(paths, require('../core/email/readers.cjs').readMail, require('../core/email/key.cjs').mailKey));
 ipcMain.handle('qr:peekRfq', (_e, paths) => projects.peekRfq(paths, require('../core/email/readers.cjs').readMail));
 ipcMain.handle('qr:outlookSelection', () => saveOutlookSelection(path.join(app.getPath('temp'), 'qr-outlook', String(Date.now()))));

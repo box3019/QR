@@ -17,6 +17,8 @@ export function setLang(l: string) {
   document.documentElement.lang = current;
   document.documentElement.dir = current === 'he' ? 'rtl' : 'ltr';
 }
+/** Hints and tutorial language of a settings object: 'auto' (default) = the program language. */
+export const resolveAssistantLang = (s: any): string => (s && s.assistantLanguage && s.assistantLanguage !== 'auto' ? s.assistantLanguage : s && s.uiLanguage === 'he' ? 'he' : 'en');
 export function setAssistantLang(l: string) { assistantLang = l === 'he' || l === 'ru' ? l : 'en'; }
 export function t(key: string, vars?: Record<string, any>): string {
   const s = DICTS[current][key] ?? DICTS.en[key] ?? key;

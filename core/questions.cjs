@@ -1,4 +1,5 @@
 'use strict';
+const { isOpenNowTask: isOpenDoc } = require('./docs/stage.cjs');
 // Customer Questions: Hebrew (default, RTL) or English, built from the problems list and the upload tasks.
 const HE = [
   [/^Tapped hole (\S+) on the view does not match insert (\S+) in the table \(([^)]*)\)\.(?: Also the view says "([^"]+)", the table says ([^.]+)\.)?/, (m) =>
@@ -32,7 +33,7 @@ function buildQuestions(parts, lang = 'he') {
       if (lang === 'he') qs.push(p.messageHe ? { severity: p.severity, text: `${p.messageHe} ${p.suggestionHe || ''}`.trim(), translated: true } : { severity: p.severity, text: toHebrew(p) || p.message, translated: !!toHebrew(p) });
       else qs.push({ severity: p.severity, text: `${p.message} ${p.suggestion || ''}`.trim(), translated: true });
     }
-    for (const t of part.tasks.filter((x) => x.type === 'uploadDocument' && x.status !== 'done')) qs.push({ severity: 'Document', text: lang === 'he' ? heUpload(t) : enUpload(t), translated: true });
+    for (const t of part.tasks.filter(isOpenDoc)) qs.push({ severity: 'Document', text: lang === 'he' ? heUpload(t) : enUpload(t), translated: true });
     if (qs.length) out.push({ partNo: part.partNo, rev: part.rev, customer: part.customer, title: part.title, questions: qs });
   }
   return out;

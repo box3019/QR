@@ -228,3 +228,16 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 
 /* Settings: one font family everywhere (the preset's --mrt-font-family), also in portalled dialogs and native controls */
 .qr-settings, .qr-settings button, .qr-settings input, .qr-settings select, .qr-settings textarea, .qr-modal-h { font-family: var(--mrt-font-family, system-ui, sans-serif); }
+
+/* For route card: neutral, collapsed, no status colours; token font sizes only */
+.qr-root .qr-rc { margin-block: 0.5rem; border: 1px solid var(--mrt-border, #d0d5dd); border-radius: var(--qr-radius, 6px); background: transparent; padding: 0.25rem 0.6rem; font-size: var(--qr-fs-sm); color: var(--mrt-text); }
+.qr-root .qr-rc-sum { cursor: pointer; font-size: var(--qr-fs-sm); font-weight: 600; padding-block: 0.2rem; }
+.qr-root .qr-rc-note { margin: 0.2rem 0 0.4rem; font-size: var(--qr-fs-xs); }
+.qr-root .qr-rc-g { margin-block: 0.35rem; }
+.qr-root .qr-rc-h { font-size: var(--qr-fs-xs); font-weight: 600; color: var(--mrt-text-muted, #636366); }
+.qr-root .qr-rc-list { margin: 0.15rem 0 0; padding-inline-start: 1.1rem; font-size: var(--qr-fs-sm); }
+.qr-root .qr-rc-list li { margin-block: 0.1rem; }
+.qr-root .qr-rc-num { font-weight: 600; }
+.qr-root .qr-rc-part { margin-inline-start: 0.5rem; }
+.qr-root .qr-provisional { margin: 0.35rem 1rem; padding: 0.3rem 0.7rem; border: 1px dashed var(--mrt-border, #d0d5dd); border-radius: var(--qr-radius, 6px); font-size: var(--qr-fs-sm); color: var(--mrt-text-muted, #636366); }
+.qr-root .qr-proj[data-provisional='true'] .qr-tile-n, .qr-root .qr-proj[data-provisional='true'] .qr-stat-n { opacity: 0.55; font-style: italic; }

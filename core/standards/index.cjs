@@ -24,7 +24,7 @@ async function attachStandards(part, text, ctx) {
     const label = r.std + (r.dash ? '-' + r.dash : '');
     if (r.status === 'needsDoc' && !tasks.some((t) => t.refNumber === r.std)) {
       const tv = { num: r.std, desc: r.title || '' };
-      tasks.push({ id: 'T' + (tasks.length + 1), type: 'uploadDocument', std: true, refNumber: r.std, paid: r.paid, customer: r.paid ? '' : part.customer, title: `Upload ${r.std}`, key: 'task.upload', vars: tv, blocks: 'standards library', blocksVars: {}, status: 'open' });
+      tasks.push({ id: 'T' + (tasks.length + 1), type: 'uploadDocument', std: true, refNumber: r.std, paid: r.paid, customer: r.paid ? '' : part.customer, title: `Upload ${r.std}`, key: 'task.upload', vars: tv, stage: 'now', blocks: 'standards library', blocksVars: {}, status: 'open' });
     }
     for (const f of r.flags) {
       if (f.type === 'series' || f.type === 'size' || f.type === 'class') addQ('std.thread', { std: label, drawing: f.drawing, required: f.required, what: f.type });

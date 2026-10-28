@@ -1,6 +1,6 @@
 // Step 2 and 3, list view: tiles on top, then ONE row per part (part number, rev, status, one-line reason). Click a row to open that part.
 import React, { useState } from 'react';
-import { t, tReadiness } from '../i18n';
+import { t } from '../i18n';
 import { Chip } from '../ui/common';
 import { PlainStatusBadge } from '../ui/simple';
 import { tileCounts } from '../parts/groups.mjs';
@@ -8,7 +8,6 @@ import { listRows, reasonFor } from '../parts/reason.mjs';
 import { localized as L } from '../i18n/localized';
 import { Tiles } from '../ui/Tiles';
 
-const readinessTone = (r: string) => (/^Ready/.test(r) ? 'ready' : /Blocked/.test(r) ? 'danger' : /n\/a/.test(r) ? 'neutral' : 'attention');
 const clip = (s: string, n = 140) => (s.length > n ? s.slice(0, n - 1) + '\u2026' : s);
 
 export function PartsList({ parts, sel, onOpen, unknown, details }: any) {
@@ -26,7 +25,7 @@ export function PartsList({ parts, sel, onOpen, unknown, details }: any) {
           <span className="qr-prow-st"><PlainStatusBadge part={p} /></span>
           <span className="qr-prow-why" data-testid="part-reason"><bdi>{clip(String(txt || ''))}</bdi></span>
           <span className="qr-chev" aria-hidden="true">{'\u203a'}</span>
-          {details && <span className="qr-prow-sub">{p.rfq && <Chip t="neutral" testid="part-qty">{t('parts.qty')} {p.rfq.qty ?? '?'}</Chip>}<Chip t="neutral">{p.customer}</Chip><Chip t={readinessTone(p.readiness)}>{tReadiness(p.readiness)}</Chip></span>}
+          {details && <span className="qr-prow-sub">{p.rfq && <Chip t="neutral" testid="part-qty">{t('parts.qty')} {p.rfq.qty ?? '?'}</Chip>}<Chip t="neutral">{p.customer}</Chip></span>}
         </button>; })}
       {details && unknown.length > 0 && <div className="qr-prow qr-muted">{t('parts.other', { list: unknown.join(', ') })}</div>}
     </div></div>

@@ -7,6 +7,7 @@ import { buildBlocks, allGood } from '../../parts/blocks.mjs';
 import { cardPages } from '../../parts/breakdown.mjs';
 import { TableDialog } from './TableDialog';
 import { BlockCard } from './BlockCard';
+import { RouteCardSection } from './RouteCardSection';
 
 const api = () => (window as any).qr || {};
 
@@ -35,6 +36,7 @@ export function PartCard({ part, n, sel, setSel, details, onFocus, goStep }: any
       <div className="qr-blocks" data-testid="blocks">
         {blocks.map((b: any) => <BlockCard key={b.id} block={b} part={part} open={!!openIds[b.id]} onToggle={() => toggle(b)} onAction={act} state={stateOf(b)} />)}
       </div>
+      <RouteCardSection part={part} />
       {pages.some((p: any) => p.rows.length) && <button type="button" className={MRT_BTN + ' qr-sec-table'} data-testid="btn-bd-table" title={t('tip.bdTable')} onClick={() => setTable(true)}>{t('bd.table')}</button>}
     </div>
     {table && <TableDialog part={part} onClose={() => setTable(false)} />}

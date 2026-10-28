@@ -4,3 +4,4 @@ export declare function groupParts(parts: any[], statusOf?: (p: any) => string):
 export function tileCounts(parts: any[], statusOf?: (p: any) => string): Record<string, number>;
 export function filterGroups(groups: any[], key: string | null): any[];
 export const DOT: Record<string, string>;
+export function isOpenDoc(task: any): boolean;
