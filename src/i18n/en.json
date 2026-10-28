@@ -223,7 +223,7 @@
   "tip.csv": "Save the table as CSV (Excel)",
   "tip.pdf": "Save the table as PDF",
   "tip.browse": "Choose a folder",
-  "tip.save": "Save settings",
+  "tip.save": "Save this project now (Ctrl+S). QR also saves by itself after every change.",
   "tip.cancel": "Close without saving",
   "tip.add": "Add a new row",
   "tip.dup": "Copy the selected customer",
@@ -576,7 +576,6 @@
   "top.saveAs": "Save as…",
   "top.open": "Open…",
   "top.saved": "Saved {time}",
-  "tip.save": "Save this project now (Ctrl+S). QR also saves by itself after every change.",
   "tip.saveAs": "Save this project as ONE .qrproj file (data and files) in a folder you choose (Ctrl+Shift+S)",
   "tip.open": "Open a .qrproj project file (Ctrl+O). You can also drop it on the window.",
   "tip.saved": "Time of the last save of this project",
@@ -640,9 +639,6 @@
   "about.title": "About",
   "about.version": "{name}: the installed version",
   "st.tab.language": "Language",
-  "st.langExplain": "The language of the menus and screens. The assistant language is set separately in Assistant.",
-  "tip.langCard": "Use {name} for menus and screens",
-  "st.langCurrent": "In use",
-  "st.langSoon": "Russian screens are not available yet. Russian works for the assistant: Settings, Assistant.",
-  "st.langSoonShort": "Not yet"
+  "st.langExplain": "Menus and screens. The assistant language is set in Assistant.",
+  "st.langSoon": "Russian screens are not available yet. Russian works for the assistant: Settings, Assistant."
 }

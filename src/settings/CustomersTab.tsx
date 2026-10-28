@@ -35,7 +35,7 @@ export default function CustomersTab({ rows, onChange }: { rows: any[]; onChange
       {KEYS.map(([k, ph]) => <div key={k} className="qr-field"><label>{t('cu.' + k)}</label><div className="qr-input" data-testid={'cust-' + k}><AliasChips value={(c.detect && c.detect[k]) || []} onChange={(v) => updDetect(k, v)} placeholder={ph} /></div></div>)}
       <div className="qr-field"><label>{t('cu.contact')}</label><input className="qr-input" dir="ltr" value={c.contact || ''} onChange={(e) => upd({ contact: e.target.value })} /></div>
       <div className="qr-field"><label>{t('cu.notes')}</label><textarea className="qr-input" rows={2} value={c.notes || ''} onChange={(e) => upd({ notes: e.target.value })} /></div>
-      <div className="qr-muted" style={{ fontSize: '0.9rem' }}>{t('cu.legend')}</div>
+      <div className="qr-muted">{t('cu.legend')}</div>
     </div>}
   </div>;
 }

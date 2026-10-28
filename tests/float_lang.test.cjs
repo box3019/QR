@@ -38,9 +38,9 @@ test('tour card: draggable by its header, double-click resets, same hook on dial
 test('language selectors exist only in Settings: UI language (he/en) in Interface, assistant language (he/en/ru) in Assistant', () => {
   for (const f of ['src/tutorial/TourView.tsx', 'src/tutorial/Tutorial.tsx', 'src/components/wizard/AssistantHint.tsx', 'src/App.tsx']) assert.ok(!/<select/.test(rd(...f.split('/'))), f + ' has a <select>');
   const st = rd('src', 'settings', 'SettingsDialog.tsx');
-  assert.match(st, /<LanguagePanel/); assert.ok(!/data-testid="ui-lang"/.test(st), 'one program-language selector only'); assert.match(st, /data-testid="assistant-lang"/); assert.match(st, /data-testid="restart-tour"/);
+  assert.match(st, /<LanguagePanel/); assert.ok(!/data-testid="ui-lang"/.test(st), 'the selector lives in LanguagePanel only'); assert.match(st, /data-testid="assistant-lang"/); assert.match(st, /data-testid="restart-tour"/);
   for (const o of ['>עברית<', '>English<', '>Русский<']) assert.ok(st.includes(o), 'Settings language option ' + o);
-  const lp = rd('src', 'settings', 'LanguagePanel.tsx'); assert.ok(/id: 'ru'[^}]*soon: true/.test(lp), 'Russian is shown but not selectable as a program language'); assert.ok(/if \(!l\.soon\) onPick/.test(lp));
+  const lp = rd('src', 'settings', 'LanguagePanel.tsx'); assert.ok(/id: 'ru'[^}]*soon: true/.test(lp), 'Russian is listed but not selectable as a program language'); assert.ok(/disabled=\{!!l\.soon\}/.test(lp));
   assert.match(rd('src', 'App.tsx'), /lang0=\{settings\.assistantLanguage/);
   const i = rd('src', 'i18n', 'index.ts'); assert.match(i, /setAssistantLang/); assert.match(i, /assistantDir/); assert.ok(!/getContentLang/.test(i));
 });

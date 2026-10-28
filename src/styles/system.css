@@ -11,7 +11,7 @@
 
 /* one light tag for every chip / status: neutral fill, thin border, colour only in the dot */
 .qr-root .qr-status, .qr-root .qr-chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; background: #fff; color: var(--mrt-text);
-  border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-r) !important; font-size: 13px; font-weight: 400; line-height: 1.5; white-space: nowrap; }
+  border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-r) !important; font-size: var(--qr-fs-xs); font-weight: 400; line-height: 1.5; white-space: nowrap; }
 .qr-root .qr-chip::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--qr-st-none); flex: 0 0 auto; }
 .qr-root .qr-chip[data-tone='ready']::before { background: var(--qr-st-ok); } .qr-root .qr-chip[data-tone='attention']::before { background: var(--qr-st-warn); }
 .qr-root .qr-chip[data-tone='danger']::before { background: var(--qr-st-bad); } .qr-root .qr-chip[data-tone='info']::before { background: var(--mrt-accent); }

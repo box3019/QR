@@ -13,6 +13,6 @@ test('the version is read from the app, never hardcoded', () => { const v = requ
 test('header and Settings show it quietly, LTR-isolated, muted, no toolbar button', () => { const a = src('src/App.tsx'); assert.ok(/<span className="qr-brand-badge">QR<\/span><AppVersion \/>/.test(a));
   const bar = a.slice(a.indexOf('qr-topbar mrt-workspace-topbar-chrome'), a.indexOf('className="qr-projs"')); assert.ok(!/TopButton[^>]*version/i.test(bar));
   const c = src('src/about/AppVersion.tsx'); assert.ok(/dir="ltr"/.test(c) && /qr-ltr/.test(c) && /title=\{t\('about\.version'/.test(c) && /data-testid="app-version"/.test(c));
-  const css = src('src/styles/wizard.css'); assert.ok(/\.qr-root \.qr-ver \{[^}]*color: var\(--mrt-text-muted\)/.test(css) && /\.qr-root \.qr-ver \{[^}]*font-size: 0\.6875rem/.test(css) && /direction: ltr/.test(css));
+  const css = src('src/styles/wizard.css'); assert.ok(/\.qr-root \.qr-ver \{[^}]*color: var\(--mrt-text-muted\)/.test(css) && /\.qr-root \.qr-ver \{[^}]*font-size: var\(--qr-fs-xs\)/.test(css) && /direction: ltr/.test(css));
   assert.ok(/settings-about/.test(src('src/settings/SettingsDialog.tsx')) && /AppVersion/.test(src('src/settings/SettingsDialog.tsx')));
   for (const l of ['en', 'he']) { const j = JSON.parse(src('src/i18n/' + l + '.json')); assert.ok(j['about.title'] && /\{name\}/.test(j['about.version']), l); } });

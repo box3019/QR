@@ -35,7 +35,7 @@ const TABS = ['general', 'ocr', 'materials', 'processes', 'customers', 'outlook'
   }
   await win.click('[data-testid=stab-general]');
   // live language switch through the real control (no restart)
-  await win.click('[data-testid=stab-language]'); await win.click('[data-testid=lang-he]'); await win.waitForTimeout(500);
+  await win.click('[data-testid=stab-language]'); await win.selectOption('[data-testid=ui-lang]', 'he'); await win.waitForTimeout(500);
   report.liveDir = await win.evaluate(() => document.documentElement.dir);
   for (const t of TABS) { await win.click(`[data-testid=stab-${t}]`); await win.waitForTimeout(400); await win.screenshot({ path: path.join(out, `v013_he_settings_${t}.png`) }); }
   await win.click('[data-testid=settings-save]'); await win.waitForTimeout(600);
