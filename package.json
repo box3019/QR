@@ -53,9 +53,14 @@
       "dist/**",
       "electron/**",
       "core/**",
+      "src/video/manifest.mjs",
       "package.json"
     ],
     "extraResources": [
+      {
+        "from": "assets/tutorial",
+        "to": "tutorial"
+      },
       {
         "from": "ocr",
         "to": "ocr"

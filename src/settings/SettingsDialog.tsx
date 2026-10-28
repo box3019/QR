@@ -8,6 +8,7 @@ import { ACCENTS, DENSITIES, ROW_HEIGHTS, themeAttrs } from '../theme/themes';
 import PresetsPanel from './PresetsPanel';
 import { AppVersion } from '../about/AppVersion';
 import LanguagePanel from './LanguagePanel';
+import WatchVideo from '../video/WatchVideo';
 
 function QuestionSample({ lang }: { lang: string }) {
   const [t, setT] = useState('');
@@ -72,6 +73,7 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
           <Field label={t('st.assistLang')}><select className="qr-input" value={s.assistantLanguage} data-testid="assistant-lang" onChange={(e) => live('assistantLanguage', e.target.value)}><option value="he">עברית</option><option value="en">English</option><option value="ru">Русский</option></select><div className="qr-muted" data-testid="assistant-lang-note">{t('st.assistLangNote')}</div></Field>
           <Field label={t('st.tab.assistant')}><label className="qr-row"><input type="checkbox" data-testid="assistant-on" checked={s.assistant !== false} onChange={(e) => set('assistant', e.target.checked)} /> {t('st.assistantOn')}</label></Field>
           <Field label={t('st.restartTour')}><button type="button" className={MRT_ACTION_BTN} data-testid="restart-tour" title={t('tip.restartTour')} onClick={() => onRestartTour?.(s)}>{t('st.restartTour')}</button></Field>
+      <Field label={t('st.watchVideo')}><WatchVideo lang={s.assistantLanguage} testid="settings-watch-video" label={t('video.watch')} tip={t('tip.watchVideo')} noTip={t('dis.noVideo')} /></Field>
         </>}
       </div>
     </div>

@@ -4,6 +4,7 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { MRT_ACTION_BTN, MRT_ACTION_BTN_PRIMARY } from '../ui/mrtButtons';
 import { TOUR_TEXT, tourFor, tourLang } from './tour.mjs';
 import { useFloat } from '../ui/useFloat';
+import WatchVideo from '../video/WatchVideo';
 
 type R = { x: number; y: number; w: number; h: number } | null;
 const find = (id: string): HTMLElement | null => (Array.from(document.querySelectorAll(`[data-testid="${id}"]`)) as HTMLElement[]).find((e) => e.offsetParent && e.getBoundingClientRect().width > 0) || null;
@@ -41,8 +42,8 @@ export function Tour({ lang0, stage, onClose, first }: { lang0: string; stage?: 
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [lang, steps.length]);
   const vw = window.innerWidth, vh = window.innerHeight, cw = 340;
   const pos: React.CSSProperties = !r ? { left: (vw - cw) / 2, top: vh / 3 } : (() => {
-    const below = r.y + r.h + 12, top = below + 220 < vh ? below : Math.max(12, r.y - 232);
-    const left = Math.max(12, Math.min(vw - cw - 12, r.x + r.w / 2 - cw / 2)); return { left, top: Math.min(top, vh - 232) };
+    const below = r.y + r.h + 12, top = below + 262 < vh ? below : Math.max(12, r.y - 274);
+    const left = Math.max(12, Math.min(vw - cw - 12, r.x + r.w / 2 - cw / 2)); return { left, top: Math.min(top, vh - 274) };
   })();
   return <div className="qr-tour" data-testid={first ? 'first-run' : 'tutorial'} data-step={s.id} data-real={real}>
     {r ? <div className="qr-tour-hole" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} /> : <div className="qr-tour-dim" />}
@@ -51,6 +52,7 @@ export function Tour({ lang0, stage, onClose, first }: { lang0: string; stage?: 
       <p className="qr-tour-p">{p}</p>
       {!real && <Demo kind={s.demo} d={T.demo} />}
       <div className="qr-tour-dots" data-testid="tutorial-step">{steps.map((x, n) => <button type="button" key={x.id} className="qr-tour-dot" data-on={n === i} title={`${T.ui.tipDot} ${n + 1} ${T.ui.of} ${steps.length}`} aria-label={`${n + 1} ${T.ui.of} ${steps.length}`} onClick={() => setI(n)} />)}</div>
+      <div className="qr-tour-video"><WatchVideo lang={lang} testid="tour-watch-video" label={T.ui.watch} tip={T.ui.tipWatch} noTip={T.ui.noVideo} /></div>
       <div className="qr-tour-f">
         <button type="button" className={MRT_ACTION_BTN} title={T.ui.tipSkip} data-testid={first ? 'first-run-ok' : 'tutorial-skip'} onClick={onClose}>{T.ui.skip}</button>
         <span style={{ flex: 1 }} />

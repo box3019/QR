@@ -47,6 +47,8 @@ function createWindow() {
 const slim = (part) => part; // pipeline already strips tokens from parts
 ipcMain.handle('qr:getSettings', () => loadSettings());
 ipcMain.handle('qr:getVersion', () => app.getVersion());
+const tutorialRoot = () => (app.isPackaged ? path.join(process.resourcesPath, 'tutorial') : path.join(__dirname, '..', 'assets', 'tutorial'));
+ipcMain.handle('qr:tutorialVideo', (_e, lang) => require('./tutorial.cjs').loadTutorialVideo(tutorialRoot(), String(lang || '')));
 ipcMain.handle('qr:questionSample', (_e, lang) => sampleQuestion(lang));
 ipcMain.handle('qr:newCustomer', (_e, from, ids) => newCustomer(from, ids));
 ipcMain.handle('qr:catalogPatterns', (_e, entries) => (entries || []).map((x) => entryPattern(x) || ''));

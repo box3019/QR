@@ -4,7 +4,7 @@ const test = require('node:test'); const assert = require('node:assert'); const 
 const root = path.join(__dirname, '..'); const rd = (p) => fs.readFileSync(path.join(root, p), 'utf8').replace(/^\uFEFF/, '');
 const OK = /^(var\(--qr-fs-(xs|sm|md|lg|xl)\)|var\(--qr-btn-fs\)|inherit|1em|100%|0?\.?\d*em)$/;
 // selectors that belong to Settings (the decorative preset mini-screens .qm-* / .qr-mock are aria-hidden pictures and are excluded)
-const SEL = /\.qr-settings|\.qr-pres|\.qr-pcard|\.qr-chip\b|\.qr-chip-x|\.qr-sample|\.qr-modal-h|\.qr-ver\b|\.qr-field|\.qr-input|\.qr-muted/;
+const SEL = /\.qr-settings|\.qr-pres|\.qr-pcard|\.qr-chip\b|\.qr-chip-x|\.qr-sample|\.qr-modal-h|\.qr-ver\b|\.qr-field|\.qr-input|\.qr-muted|\.qr-vid/;
 test('Settings components have no inline font size / family / weight', () => { for (const f of fs.readdirSync(path.join(root, 'src/settings')).filter((x) => x.endsWith('.tsx'))) { const s = rd('src/settings/' + f); assert.ok(!/fontSize|fontFamily|fontWeight|font-size|font-family/.test(s), f + ': inline font styling'); } });
 test('Settings-related CSS rules use only token font sizes and no own font family', () => { const bad = [];
   for (const f of fs.readdirSync(path.join(root, 'src/styles')).filter((x) => x.endsWith('.css') && !/^mrtLiquidGlass/.test(x))) { rd('src/styles/' + f).split('\n').forEach((line, i) => { if (!SEL.test(line) || /\.qm-|\.qr-mock/.test(line)) return;

@@ -19,7 +19,7 @@ export const TOUR = [
 
 export const TOUR_TEXT = {
   he: { dir: 'rtl', name: 'עברית',
-    ui: { tipDrag: 'גררו להזזה, לחיצה כפולה לאיפוס המיקום', back: 'הקודם', next: 'הבא', skip: 'דילוג', done: 'סיום', of: 'מתוך', lang: 'שפת ההדרכה', tipBack: 'לכרטיס הקודם', tipNext: 'לכרטיס הבא', tipSkip: 'סגירת ההדרכה', tipDot: 'מעבר לכרטיס' },
+    ui: { tipDrag: 'גררו להזזה, לחיצה כפולה לאיפוס המיקום', back: 'הקודם', next: 'הבא', skip: 'דילוג', done: 'סיום', of: 'מתוך', lang: 'שפת ההדרכה', tipBack: 'לכרטיס הקודם', tipNext: 'לכרטיס הבא', tipSkip: 'סגירת ההדרכה', tipDot: 'מעבר לכרטיס', watch: '\u05e6\u05e4\u05d4 \u05d1\u05e1\u05e8\u05d8\u05d5\u05df', tipWatch: '\u05e6\u05e4\u05d9\u05d9\u05d4 \u05d1\u05e1\u05e8\u05d8\u05d5\u05df \u05d4\u05d4\u05d3\u05e8\u05db\u05d4', noVideo: '\u05d0\u05d9\u05df \u05e2\u05d3\u05d9\u05d9\u05df \u05e1\u05e8\u05d8\u05d5\u05df \u05d1\u05e9\u05e4\u05d4 \u05d4\u05d6\u05d0\u05ea' },
     demo: { send: 'שליחה ל־QR', drop: 'גררו קבצים לכאן', importing: 'קורא את הקבצים…', ours: 'שלנו', check: 'לבדיקה', notOurs: 'לא שלנו', confirm: 'אישור', ask: 'שאלה', upload: 'העלאה', q: 'שאלות', x: 'גיליון', pdf: 'דוח', tab: 'בקשה' },
     s: {
       outlook: ['מתחילים מהמייל', 'במייל של הלקוח לוחצים על "שליחה ל־QR", או גוררים את הקבצים לכאן.'],
@@ -37,7 +37,7 @@ export const TOUR_TEXT = {
       settings: ['הגדרות', 'כאן בוחרים שפה, גודל טקסט, לקוחות וחומרים.'],
     } },
   ru: { dir: 'ltr', name: 'Русский',
-    ui: { tipDrag: 'Перетащите, чтобы переместить; двойной щелчок - вернуть на место', back: 'Назад', next: 'Далее', skip: 'Пропустить', done: 'Готово', of: 'из', lang: 'Язык обучения', tipBack: 'Предыдущая карточка', tipNext: 'Следующая карточка', tipSkip: 'Закрыть обучение', tipDot: 'Перейти к карточке' },
+    ui: { tipDrag: 'Перетащите, чтобы переместить; двойной щелчок - вернуть на место', back: 'Назад', next: 'Далее', skip: 'Пропустить', done: 'Готово', of: 'из', lang: 'Язык обучения', tipBack: 'Предыдущая карточка', tipNext: 'Следующая карточка', tipSkip: 'Закрыть обучение', tipDot: 'Перейти к карточке', watch: '\u0421\u043c\u043e\u0442\u0440\u0435\u0442\u044c \u0432\u0438\u0434\u0435\u043e', tipWatch: '\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043e\u0431\u0443\u0447\u0430\u044e\u0449\u0435\u0435 \u0432\u0438\u0434\u0435\u043e', noVideo: '\u0412\u0438\u0434\u0435\u043e \u043d\u0430 \u044d\u0442\u043e\u043c \u044f\u0437\u044b\u043a\u0435 \u043f\u043e\u043a\u0430 \u043d\u0435\u0442' },
     demo: { send: 'Отправить в QR', drop: 'Перетащите файлы сюда', importing: 'Читаю файлы…', ours: 'Наше', check: 'Проверить', notOurs: 'Не наше', confirm: 'Подтвердить', ask: 'Вопрос', upload: 'Загрузить', q: 'Вопросы', x: 'Таблица', pdf: 'Отчёт', tab: 'Запрос' },
     s: {
       outlook: ['Начните с письма', 'В письме клиента нажмите «Отправить в QR» или перетащите файлы сюда.'],
@@ -55,7 +55,7 @@ export const TOUR_TEXT = {
       settings: ['Настройки', 'Здесь выбираются язык, размер текста, клиенты и материалы.'],
     } },
   en: { dir: 'ltr', name: 'English',
-    ui: { tipDrag: 'Drag to move, double-click to reset position', back: 'Back', next: 'Next', skip: 'Skip', done: 'Done', of: 'of', lang: 'Tutorial language', tipBack: 'Previous card', tipNext: 'Next card', tipSkip: 'Close the tutorial', tipDot: 'Go to this card' },
+    ui: { tipDrag: 'Drag to move, double-click to reset position', back: 'Back', next: 'Next', skip: 'Skip', done: 'Done', of: 'of', lang: 'Tutorial language', tipBack: 'Previous card', tipNext: 'Next card', tipSkip: 'Close the tutorial', tipDot: 'Go to this card', watch: 'Watch video', tipWatch: 'Watch the tutorial video', noVideo: 'No video in this language yet' },
     demo: { send: 'Send to QR', drop: 'Drop files here', importing: 'Reading the files…', ours: 'Ours', check: 'To check', notOurs: 'Not ours', confirm: 'Confirm', ask: 'Question', upload: 'Upload', q: 'Questions', x: 'Sheet', pdf: 'Report', tab: 'Request' },
     s: {
       outlook: ['Start from the email', "In the customer's email, click \"Send to QR\", or drop the files here."],

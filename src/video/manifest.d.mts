@@ -1,0 +1,10 @@
+export type VideoChapter = { t: number; title: string };
+export type VideoEntry = { file: string; captions: string; duration: number; title?: string; dir?: 'rtl' | 'ltr'; chapters: VideoChapter[] };
+export type VideoManifest = { version: number; videos: Record<string, VideoEntry> };
+export const VIDEO_LANGS: string[];
+export function pickVideo(manifest: unknown, lang: string): VideoEntry | null;
+export function chapterAt(chapters: VideoChapter[], t: number): number;
+export function fmtTime(sec: number): string;
+export function parseVttTime(s: string): number;
+export function parseVtt(text: string): { start: number; end: number; text: string }[];
+export function validateEntry(v: unknown): string[];

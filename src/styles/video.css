@@ -1,0 +1,18 @@
+/* Tutorial video player. Font sizes: design tokens only. */
+.qr-vid-bg { position: fixed; inset: 0; z-index: 9500; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.5); }
+.qr-vid { width: min(960px, 94vw); max-height: 96vh; overflow: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--mrt-surface, #fff); color: var(--mrt-text, #0f172a); border: 1px solid var(--mrt-border, #cbd5e1); box-shadow: 0 18px 50px rgba(15, 23, 42, 0.35); font-family: var(--mrt-font-family, system-ui, sans-serif); font-size: var(--qr-fs-sm); }
+.qr-vid-h { display: flex; align-items: center; gap: 8px; font-size: var(--qr-fs-md); }
+.qr-vid-stage { position: relative; }
+.qr-vid-sub { position: absolute; left: 6%; right: 6%; bottom: 5%; text-align: center; padding: 4px 10px; border-radius: 6px; background: rgba(0, 0, 0, 0.72); color: #fff; font-size: var(--qr-fs-md); line-height: 1.35; pointer-events: none; }
+.qr-vid-el { width: 100%; max-height: 62vh; aspect-ratio: 16 / 10; background: #000; border-radius: 8px; object-fit: contain; cursor: pointer; }
+.qr-vid-bar { display: flex; align-items: center; gap: 8px; }
+.qr-vid-seek { flex: 1; min-width: 0; }
+.qr-vid-time { min-width: 5.5em; text-align: center; font-variant-numeric: tabular-nums; font-size: var(--qr-fs-xs); }
+.qr-vid-chapters { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px; }
+.qr-vid-chapters li { min-width: 0; }
+.qr-vid-chapters button { width: 100%; justify-content: flex-start; text-align: start; gap: 6px; }
+.qr-vid-chapters button[data-active="true"] { background: color-mix(in srgb, var(--mrt-accent, #2563eb) 14%, transparent); border-color: var(--mrt-accent, #2563eb); }
+.qr-vid-ct { font-variant-numeric: tabular-nums; opacity: 0.7; }
+.qr-vid-bar button[aria-pressed="true"] { background: color-mix(in srgb, var(--mrt-accent, #2563eb) 14%, transparent); border-color: var(--mrt-accent, #2563eb); }
+button[data-unavailable="true"] { opacity: 0.45; cursor: not-allowed; }
+.qr-tour-video { display: flex; margin: 6px 0 2px; }
