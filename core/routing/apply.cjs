@@ -64,7 +64,8 @@ function enrichRequirements(requirements, ci) {
   const mine = pg.procs;
   for (const t of chart.treatments) {
     const row = procRow(t);
-    const dup = mine.some((q) => (q.no && q.no === row.no) || (row.stds && q.stds && row.stds.split('; ').every((x) => q.stds.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(x.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^SAE/, '')))));
+    if (row.process === 'Other' && row.subtype === 'Surface treatment') continue; // unclassified chart lines (masking notes, dimension notes) are not treatments
+    const dup = mine.some((q) => (q.no && q.no === row.no) || (row.stds && q.stds && row.stds.split('; ').some((x) => q.stds.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(x.toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^SAE/, '')))));
     if (!dup) mine.push(row);
   }
   mine.sort((a, b) => String(a.no).localeCompare(String(b.no), undefined, { numeric: true }));
