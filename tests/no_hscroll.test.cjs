@@ -4,12 +4,12 @@ const test = require('node:test'); const assert = require('node:assert'); const 
 const ROOT = path.join(__dirname, '..'); const rd = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/^\uFEFF/, '');
 const css = rd('src/styles/wizard.css'), tsx = rd('src/checklist/ChecklistSummary.tsx');
 
-test('summary table: fixed layout, percentage column widths summing to 100, no scroll wrapper', () => {
-  assert.ok(/\.qr-cks-tab\s*\{[^}]*table-layout:\s*fixed/.test(css));
+test('summary table: auto layout sized from the content, one line per item, abbreviation fallback instead of wrapping, no scroll wrapper', () => {
+  assert.ok(/\.qr-cks-tab\s*\{[^}]*table-layout:\s*auto/.test(css));
   assert.ok(!/qr-cks-scroll/.test(css) && !/qr-cks-scroll/.test(tsx));
-  const w = tsx.match(/const W: any = \{([^}]*)\}/)[1]; const sum = [...w.matchAll(/:\s*(\d+)/g)].reduce((a, m) => a + Number(m[1]), 0);
-  assert.strictEqual(sum, 100);
-  for (const k of ['part', 'prec', 'cx', 'material', 'machining', 'precision', 'coating', 'assembly', 'final']) assert.ok(new RegExp('\\b' + k + ':').test(w), k);
+  assert.ok(/\.qr-cks-tab th, \.qr-cks-tab td\s*\{[^}]*white-space:\s*nowrap/.test(css), 'cells nowrap');
+  assert.ok(/\.qr-cks-t\s*\{[^}]*display:\s*block;\s*white-space:\s*nowrap/.test(css), 'each item on its own line, never wraps inside');
+  assert.ok(/ck\.sa\./.test(tsx) && /materialShort/.test(tsx), 'abbreviation dictionary + short material');
   assert.ok(!/min-width:\s*\d+px/.test(css.slice(css.indexOf('.qr-cks-card'), css.indexOf('/* No horizontal'))), 'no fixed min widths in the summary table block');
 });
 test('summary table: Precision and Complexity come right after the part; table font is a token; card sits on a surface', () => {

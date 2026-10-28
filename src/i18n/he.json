@@ -672,7 +672,7 @@
   "ck.col.part": "חלק",
   "ck.g.material": "חומר גלם",
   "ck.g.machining": "עיבוד",
-  "ck.g.precision": "בדיקה ודיוק",
+  "ck.g.precision": "בדיקות",
   "ck.g.coating": "ציפוי",
   "ck.g.assembly": "הרכבה",
   "ck.g.final": "סיום",
@@ -795,5 +795,18 @@
   "ck.s.br127": "BR127",
   "ck.s.assembly": "הרכבה",
   "ck.s.inspect100": "בדיקה 100%",
-  "ck.s.cleanroom": "חדר נקי"
+  "ck.s.cleanroom": "חדר נקי",
+  "ck.sa.heat": "ט. תרמי",
+  "ck.sa.engrave": "חריטה",
+  "ck.sa.laser": "לייזר",
+  "ck.sa.engfill": "מילוי",
+  "ck.sa.threads": "הברגות",
+  "ck.sa.gauges": "מדים",
+  "ck.sa.tight": "הדוקים",
+  "ck.sa.coating": "ציפוי",
+  "ck.sa.paint": "צבע",
+  "ck.sa.br127": "BR127",
+  "ck.sa.assembly": "הרכבה",
+  "ck.sa.inspect100": "100%",
+  "ck.sa.cleanroom": "נקי"
 }

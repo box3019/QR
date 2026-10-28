@@ -672,7 +672,7 @@
   "ck.col.part": "Part",
   "ck.g.material": "Material",
   "ck.g.machining": "Machining",
-  "ck.g.precision": "Inspection & precision",
+  "ck.g.precision": "Inspection",
   "ck.g.coating": "Coating",
   "ck.g.assembly": "Assembly",
   "ck.g.final": "Final",
@@ -795,5 +795,18 @@
   "ck.s.br127": "BR127",
   "ck.s.assembly": "Assembly",
   "ck.s.inspect100": "100% insp.",
-  "ck.s.cleanroom": "Clean room"
+  "ck.s.cleanroom": "Clean room",
+  "ck.sa.heat": "HT",
+  "ck.sa.engrave": "Engr.",
+  "ck.sa.laser": "Laser",
+  "ck.sa.engfill": "Fill",
+  "ck.sa.threads": "Spec. thr.",
+  "ck.sa.gauges": "Gauges",
+  "ck.sa.tight": "Tight",
+  "ck.sa.coating": "Coat.",
+  "ck.sa.paint": "Paint",
+  "ck.sa.br127": "BR127",
+  "ck.sa.assembly": "Asm.",
+  "ck.sa.inspect100": "100%",
+  "ck.sa.cleanroom": "Clean"
 }

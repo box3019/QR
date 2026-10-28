@@ -82,7 +82,7 @@ function scan(lines) {
 }
 
 // ---- raw material: catalogue result first, else plastics named anywhere (DELRIN / PTFE are ours) ----
-const PLASTIC = [[/\bDELRIN\b|\bPOM(?:-[CH])?\b|\bACETAL\b|\bPOLYOXYMETHYLENE\b/, 'plastic-pom', 'Delrin (POM / acetal)'], [/\bPTFE\b|\bTEFLON\b|\bPOLYTETRAFLUOROETHYLENE\b/, 'plastic-ptfe', 'Teflon (PTFE)']];
+const PLASTIC = [[/\bDELRIN\b|\bPOM(?:-[CH])?\b|\bACETAL\b|\bPOLYOXYMETHYLENE\b/, 'plastic-pom', 'Delrin (POM)'], [/\bPTFE\b|\bTEFLON\b|\bPOLYTETRAFLUOROETHYLENE\b/, 'plastic-ptfe', 'Teflon (PTFE)']];
 function materialRow(part, lines) {
   const m = part.material;
   const ours = part.status ? part.status !== 'rejected' : null;

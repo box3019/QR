@@ -257,11 +257,12 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-ck-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline dotted; cursor: pointer; text-align: start; }
 .qr-root .qr-cks-card { margin: 0; padding: 8px 8px 10px; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r); box-shadow: var(--qr-card-shadow); width: 100%; box-sizing: border-box; min-width: 0; }
 .qr-cks > summary { font-size: var(--qr-fs-md); font-weight: 600; cursor: pointer; padding: 4px 0 8px; }
-.qr-cks-tab { table-layout: fixed; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); color: var(--mrt-text); }
-.qr-cks-tab th, .qr-cks-tab td { padding: 3px 3px; border: 1px solid var(--qr-line, rgba(128,128,128,.35)); text-align: start; vertical-align: top; overflow-wrap: anywhere; word-break: normal; hyphens: manual; }
+.qr-cks-tab { table-layout: auto; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); color: var(--mrt-text); }
+.qr-cks-tab th, .qr-cks-tab td { padding: 3px 3px; border: 1px solid var(--qr-line, rgba(128,128,128,.35)); text-align: start; vertical-align: top; white-space: nowrap; overflow-wrap: normal; word-break: keep-all; hyphens: none; }
 .qr-cks-tab th { font-weight: 600; background: var(--mrt-surface-muted, transparent); white-space: normal; vertical-align: bottom; overflow-wrap: normal; }
-.qr-cks-p .qr-ck-link, .qr-cks-p bdi { white-space: normal; overflow-wrap: anywhere; } .qr-cks-p { text-align: start; }
-.qr-cks-t { display: inline-block; max-width: 100%; margin-inline-end: 6px; white-space: normal; font-weight: 600; } .qr-cks-t[data-s="notfound"] { font-weight: 500; }
+.qr-cks-p .qr-ck-link, .qr-cks-p bdi { white-space: nowrap; } .qr-cks-p { text-align: start; }
+.qr-cks-tab[data-lvl="2"] .qr-cks-p { max-width: 16ch; } .qr-root .qr-cks-tab[data-lvl="2"] .qr-cks-p .qr-ck-link { display: block !important; overflow: hidden; text-overflow: ellipsis; }
+.qr-cks-t { display: block; white-space: nowrap; font-weight: 600; } .qr-cks-t[data-s="notfound"] { font-weight: 500; }
 .qr-cks-i { font-weight: 500; }
 
 /* No horizontal scrollbars anywhere: tables fit their container and wrap text (tests/no_hscroll.test.cjs, scripts/check-layout.cjs). */
@@ -269,7 +270,12 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-table, .qr-root .qr-hist-t, .qr-root .qr-wsum-table, .qr-root .qr-catalog { width: 100%; table-layout: fixed; }
 .qr-root .qr-table td, .qr-root .qr-table th, .qr-root .qr-hist-t td, .qr-root .qr-hist-t th, .qr-root .qr-wsum-table td, .qr-root .qr-wsum-table th, .qr-root .qr-catalog td, .qr-root .qr-catalog th { overflow-wrap: anywhere; word-break: normal; min-width: 0; }
 .qr-root .qr-hist-body, .qr-root .qr-modal-b, .qr-root .qr-settings-body, .qr-root .qr-summary-step, .qr-root .qr-wiz > .qr-wiz-main { overflow-x: hidden !important; }
-.qr-root .qr-ck-link, .qr-root .qr-cks-p .qr-ck-link { white-space: normal; max-width: 100%; overflow-wrap: anywhere; text-align: start; }
+.qr-root .qr-ck-link, .qr-root .qr-cks-p .qr-ck-link { white-space: nowrap; max-width: 100%; text-align: start; }
 .qr-root .qr-ck-link > *, .qr-root .qr-ck-items li, .qr-root .qr-ck-items li * { white-space: normal; overflow-wrap: anywhere; min-width: 0; }
 .qr-root .qr-ck-items li { max-width: 100%; }
 .qr-root .qr-ck-link { padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; min-width: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; line-height: inherit; display: inline; }
+
+/* One line per item: headers, labels, chips, tags, badges, stat tiles and buttons never wrap inside themselves; a new line only between separate items
+   (tests/no_wrap.test.cjs, scripts/check-layout.cjs). Long descriptive text may still wrap between words. */
+.qr-root .qr-cks-p .qr-ck-link > * { white-space: nowrap; }
+.qr-root th, .qr-root button, .qr-root summary, .qr-root .qr-stat-l, .qr-root .qr-stat-n, .qr-root .qr-chip, .qr-root .qr-pcard-tag, .qr-root .qr-pcard-badge, .qr-root .qr-brand-badge, .qr-root .qr-lbl, .qr-root .qr-warnbar button { white-space: nowrap; }
