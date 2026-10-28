@@ -1,7 +1,9 @@
 'use strict';
 // catalog: the shop's capability catalog (materials + processes). Plain data in JSON; matching regexes are
 // generated here from each entry's aliases and are never hand-written anywhere else.
-const MATERIALS = require('./materials.json');
+const { GROUP_ROWS, parseMaterial } = require('./families.cjs');
+// explicit alloy rows first (they win), then the family rows (Settings > Materials: one row per family, any alloy of it is ours)
+const MATERIALS = [...require('./materials.json'), ...GROUP_ROWS];
 const PROCESSES = require('./processes.json');
 const VOCABULARY = require('./vocabulary.json');
 
@@ -58,14 +60,27 @@ function matchMaterial(raw, materials) {
   const u = String(raw || '').toUpperCase().replace(/_/g, ' ');
   const desc = describeMaterial(u);
   // several entries can hit (ASTM B209/B221 cover many alloys): the one whose grade is on the drawing wins
-  const hits = materials.filter((m) => { const re = reOf(m); return re && re.test(u); });
+  const hits = materials.filter((m) => { if (m.rule) return false; const re = reOf(m); return re && re.test(u); });
   const entry = desc.family === 'Aluminium' && desc.grade ? hits.find((m) => m.grade === desc.grade) || null : hits[0] || null;
   const temper = temperOf(u, entry ? entry.grade : desc.grade) || desc.temper;
   const found = entry ? `${entry.nameEn}${temper ? '-' + temper : ''}`.replace(/ \(.*\)-/, '-') : desc.text;
-  if (!entry) return { entry: null, allowed: false, temper, found, reason: `${found} is not in the materials list` };
+  if (!entry) {
+    // family whitelist: any alloy of an enabled family row is ours (all tempers, all designations)
+    const parsed = parseMaterial(raw);
+    const rule = parsed && materials.find((m) => m.rule && m.group === parsed.group);
+    if (parsed && rule) {
+      const f = parsed.name;
+      if (rule.enabled === false) return { entry: rule, allowed: false, temper: parsed.temper || temper, found: f, parsed, reason: `${f} is disabled in the materials list` };
+      return { entry: rule, allowed: true, temper: parsed.temper || temper, found: f, parsed, reason: null };
+    }
+    // extra aliases typed on a family row classify the text into that family
+    const alias = materials.find((m) => m.rule && (m.aliases || []).some((a) => { const p = aliasPattern(a); return p && new RegExp(p, 'i').test(u); }));
+    if (alias) return alias.enabled === false ? { entry: alias, allowed: false, temper, found, reason: `${found} is disabled in the materials list` } : { entry: alias, allowed: true, temper, found, reason: null };
+    return { entry: null, allowed: false, temper, found, reason: `${found} is not in the materials list` };
+  }
   if (entry.enabled === false) return { entry, allowed: false, temper, found, reason: `${found} is disabled in the materials list` };
-  if (temper && entry.tempers && entry.tempers.length && !entry.tempers.includes(temper)) return { entry, allowed: false, temper, found, reason: `${found}: temper ${temper} is not in the list (${entry.tempers.join(', ')})` };
-  return { entry, allowed: true, temper, found, reason: null };
+  if (temper && entry.strictTempers && entry.tempers && entry.tempers.length && !entry.tempers.includes(temper)) return { entry, allowed: false, temper, found, reason: `${found}: temper ${temper} is not in the list (${entry.tempers.join(', ')})` };
+  return { entry, allowed: true, temper, found, parsed: parseMaterial(raw), reason: null };
 }
 
 const NEG_RE = /\b(DO NOT|DON'T|NO|NOT|WITHOUT|EXCEPT)\s+(?:\w+\s+){0,2}$/;

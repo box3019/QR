@@ -1,9 +1,9 @@
-'use strict';
+﻿'use strict';
 // i18n/terms: Hebrew for the short terms core puts inside messages (materials, processes, locations, step types, reference descriptions).
 const MATERIALS = require('../catalog/materials.json');
 const PROCESSES = require('../catalog/processes.json');
 
-const FAMILY = [[/Aluminium|Aluminum/g, 'אלומיניום'], [/Stainless steel/gi, 'פלדת אל-חלד'], [/Copper alloy/gi, 'סגסוגת נחושת'], [/Brass/gi, 'פליז'], [/Bronze/gi, 'ברונזה'], [/Titanium/gi, 'טיטניום'], [/Steel/gi, 'פלדה'], [/Plastics?/gi, 'פלסטיק'], [/Not in list/gi, 'לא ברשימה']];
+const FAMILY = [[/Aluminium \(cast\)/g, 'אלומיניום יצוק'], [/Alloy steel/gi, 'פלדה מסוגסגת'], [/Carbon steel/gi, 'פלדת פחמן'], [/Tool steel/gi, 'פלדת כלים'], [/Copper(?! alloy)/g, 'נחושת'], [/Aluminium|Aluminum/g, 'אלומיניום'], [/Stainless steel/gi, 'פלדת אל-חלד'], [/Copper alloy/gi, 'סגסוגת נחושת'], [/Brass/gi, 'פליז'], [/Bronze/gi, 'ברונזה'], [/Titanium/gi, 'טיטניום'], [/Steel/gi, 'פלדה'], [/Plastics?/gi, 'פלסטיק'], [/Not in list/gi, 'לא ברשימה']];
 /** Material name: catalog Hebrew name when known, family words translated; unknown raw text is quoted as drawing text. */
 function mat(s) {
   s = String(s || '');

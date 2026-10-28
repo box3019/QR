@@ -1,6 +1,6 @@
 'use strict';
 // Standards library entry point: detect callouts on a part, resolve them, link documents, add upload tasks and customer questions.
-const { detectCallouts } = require('./detect.cjs');
+const { detectCallouts, specCallouts } = require('./detect.cjs');
 const { resolveCallout, walk } = require('./resolve.cjs');
 const { openStore } = require('./store.cjs');
 const KIT = { fitting: 'std.kit.fitting', insert: 'std.kit.insert', oring: 'std.kit.oring' };
@@ -9,7 +9,7 @@ async function attachStandards(part, text, ctx) {
   const store = ctx.store || openStore(ctx.base);
   const customerFiles = [...(ctx.jobFiles || []), ...(ctx.customerDirs || []).flatMap((d) => walk(d))];
   const owner = `part:${part.partNo || ''}|${part.rev || ''}`;
-  const calls = detectCallouts(text); const out = [];
+  const calls = [...detectCallouts(text), ...specCallouts(part.chart)]; const out = [];
   for (const c of calls) {
     const r = await resolveCallout(c, { store, customer: part.customer || '', customerFiles, online: ctx.online || null });
     r.id = 'S' + (out.length + 1);

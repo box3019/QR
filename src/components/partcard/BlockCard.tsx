@@ -36,6 +36,12 @@ function StdDetails({ d, file, onOpen }: any) {
     {file && <button type="button" className={MRT_BTN} data-testid="btn-std-open" title={t('tip.stdOpen')} onClick={onOpen}>{t('std.open')}</button>}
   </div>;
 }
+function MaterialDetails({ d }: any) {
+  return <div className="qr-blk-det" data-testid="blk-details">
+    {d.raw ? <dl className="qr-bd-row" data-testid="bd-row-raw"><dt>{t('bd.f.src')}</dt><dd data-field="raw"><bdi>{d.raw}</bdi></dd></dl> : null}
+    {d.rows.length ? <Fields sec={d.sec} rows={d.rows} details /> : null}
+  </div>;
+}
 function ProblemDetails({ list }: any) {
   return <div className="qr-blk-det" data-testid="blk-details">{list.map((p: any) => <div key={p.id} className="qr-flag-line" data-sev={p.severity}><bdi>{localized(p, 'message')}</bdi></div>)}</div>;
 }
@@ -60,7 +66,8 @@ export function BlockCard({ block: b, open, onToggle, onAction, state, part }: B
   const status = done ? 'ok' : b.status;
   const act = done ? null : b.action;
   const title = b.kind === 'standard' ? <Code>{b.title}</Code> : <>{t(b.titleKey)}{b.page ? ` ${t('pp.page')} ${b.page}` : ''}</>;
-  const val = b.kind === 'field' && b.status === 'ok' && b.value ? <bdi>{String(b.value)}</bdi> : null;
+  const val = b.kind === 'material' ? <bdi data-testid="mat-line">{localized(part && part.material, 'line') || b.value}{b.ours === true ? ` — ${t('blk.mat.ours')}` : b.ours === false ? ` — ${t('blk.mat.notOurs')}` : ''}</bdi>
+    : b.kind === 'field' && b.status === 'ok' && b.value ? <bdi>{String(b.value)}</bdi> : null;
   const confirmedField = b.kind === 'field' && b.action && b.action.kind === 'confirm' && state && state.ok;
   return <section className="qr-block" data-testid="block" data-block={b.id} data-kind={b.kind} data-status={status} data-open={open}>
     <div className="qr-block-h">
@@ -74,6 +81,7 @@ export function BlockCard({ block: b, open, onToggle, onAction, state, part }: B
       {b.details && <button type="button" className="qr-block-chev" data-testid="block-chev" aria-expanded={open} title={t('tip.blkDetails')} onClick={onToggle}>{open ? '▾' : '▸'}</button>}
     </div>
     {open && b.details && (b.details.type === 'fields' ? <div className="qr-blk-det" data-testid="blk-details"><Fields sec={b.details.sec} rows={b.details.rows} details /></div>
+      : b.details.type === 'material' ? <MaterialDetails d={b.details} />
       : b.details.type === 'standard' ? <StdDetails d={b.details} file={(b.std && b.std.doc && b.std.doc.file) || (state && state.file)} onOpen={() => (window as any).qr?.stdOpen?.((b.std && b.std.doc && b.std.doc.file) || state.file)} />
       : <ProblemDetails list={b.details.list} />)}
   </section>;

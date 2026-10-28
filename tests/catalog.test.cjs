@@ -5,8 +5,9 @@ const c = require('../core/catalog/index.cjs');
 const { materials, processes } = c.defaultCatalog();
 
 test('catalog defaults: Alex list, EN+HE names, aliases', () => {
-  assert.deepStrictEqual(materials.map((m) => m.id), ['al-6061', 'al-7075', 'al-7050', 'al-2024', 'delrin', 'teflon']);
-  for (const e of [...materials, ...processes]) { assert.ok(e.nameEn && e.nameHe && e.aliases.length, e.id); assert.ok(c.entryPattern(e)); }
+  assert.deepStrictEqual(materials.filter((m) => !m.rule).map((m) => m.id), ['al-6061', 'al-7075', 'al-7050', 'al-2024', 'delrin', 'teflon']);
+  assert.ok(materials.filter((m) => m.rule).length >= 8, 'family rows');
+  for (const e of [...materials, ...processes]) { assert.ok(e.nameEn && e.nameHe, e.id); if (!e.rule) { assert.ok(e.aliases.length, e.id); assert.ok(c.entryPattern(e)); } }
   assert.ok(processes.some((p) => p.id === 'primer-br127') && processes.some((p) => p.id === 'clean-room'));
 });
 test('aliasPattern: flexible separators, no glued digits', () => {
@@ -22,9 +23,15 @@ test('matchMaterial: grades, tempers, specs, not-in-list naming', () => {
   assert.ok(m('AL 7075-T6 ASTM B211').allowed);
   assert.strictEqual(m('AL 7075-T6 ASTM B211').entry.id, 'al-7075');
   assert.ok(m('DELRIN 150').allowed && m('PTFE').allowed && m('POM-C').allowed);
-  assert.strictEqual(m('ALUMINUM 5052-H32 PER ASTM B209').reason, 'Aluminium 5052-H32 is not in the materials list');
-  assert.match(m('6061-T5').reason, /temper T5 is not in the list/);
-  assert.match(m('STAINLESS STEEL 303').reason, /Stainless steel 303/);
+  // family whitelist: other alloys / tempers / steels are ours now (editable in Settings > Materials)
+  assert.ok(m('ALUMINUM 5052-H32 PER ASTM B209').allowed); assert.strictEqual(m('ALUMINUM 5052-H32 PER ASTM B209').found, 'Aluminium 5052-H32');
+  assert.ok(m('6061-T5').allowed);
+  assert.ok(m('STAINLESS STEEL 303').allowed);
+  assert.match(m('TITANIUM TI-6AL-4V').reason, /not in the materials list/);
+  const noAl = materials.map((x) => (x.group === 'aluminium-wrought' ? { ...x, enabled: false } : x));
+  assert.match(c.matchMaterial('ALUMINUM 5052-H32', noAl).reason, /5052-H32 is disabled/);
+  const strict = materials.map((x) => (x.id === 'al-6061' ? { ...x, strictTempers: true } : x));
+  assert.match(c.matchMaterial('6061-T5', strict).reason, /temper T5 is not in the list/);
   const off = materials.map((x) => (x.id === 'teflon' ? { ...x, enabled: false } : x));
   assert.match(c.matchMaterial('TEFLON', off).reason, /disabled/);
 });

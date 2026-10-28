@@ -42,12 +42,13 @@ const M = {
   'task.verify': { en: (v) => `Verify OCR value "${v.text}" (conf ${v.conf}%) on page ${v.page}`, he: (v) => `לאמת ערך מזוהה "${v.text}" (ודאות ${v.conf}%) בעמוד ${v.page}` },
   'route.material': { en: (v) => `${v.norm} — ${v.raw}${v.cat ? ' (cat. ' + v.cat + ')' : ''}`, he: (v) => `${T.mat(v.norm)} — ${q(v.raw)}${v.cat ? ' (קטלוגי ' + v.cat + ')' : ''}` },
   'route.insert': { en: (v) => `${v.pn} cat. ${v.cat} — ${v.type} ${v.inner} × ${v.qty} ${v.uom}${v.alts.length ? ` (+${v.alts.length} Alt: ${v.alts.join(', ')})` : ''}`, he: (v) => `${v.pn} קטלוגי ${v.cat} — ${T.ins(v.type)} ${v.inner} × ${v.qty} ${T.uom(v.uom)}${v.alts.length ? ` (+${v.alts.length} חלופות: ${v.alts.join(', ')})` : ''}` },
+  'chart.after': { en: (v) => `Machining continues after surface treatment (routing ${v.rc}${v.sheet ? ', sheet ' + v.sheet : ''}). Plan a stage after the coating; the finished dimensions are measured after treatment.`, he: (v) => `המשך עיבוד אחרי טיפול פני שטח (שורה ${iso(v.rc)}${v.sheet ? ', גיליון ' + v.sheet : ''}). לתכנן שלב אחרי הציפוי; המידות הסופיות נמדדות אחרי הטיפול.`, sEn: () => 'Add a machining stage after the coating to the route.', sHe: () => 'להוסיף למסלול שלב עיבוד אחרי הציפוי.' },
   'std.unjf': { en: (v) => `${v.callout}: drawing says ${v.drawing}, ${v.std} dash ${v.dash} requires ${v.required}.`, he: (v) => `${q(v.callout)}: בשרטוט ${v.drawing}, ואילו ${v.std} מידה ${v.dash} דורש ${v.required}.`, sEn: (v) => `Ask the customer: ${v.required} (per ${v.std}) or ${v.drawing}?`, sHe: (v) => `לשאול את הלקוח: ${v.required} (לפי ${v.std}) או ${v.drawing}?` },
 };
 /** Code tokens (standard ids, threads, dimensions) are isolated LTR so Hebrew text cannot reorder them. */
 const iso = (x) => '\u2066' + x + '\u2069';
 const THL = { size: { en: 'size', he: 'גודל' }, series: { en: 'series', he: 'סדרה' }, class: { en: 'class', he: 'מחלקה' } };
-const CATEGORY = { Material: 'חומר', Process: 'תהליך', 'Threads vs inserts': 'הברגות מול אינסרטים', 'Parts list': 'רשימת חלקים', 'Missing specification': 'מפרט חסר', 'Contradictory callouts': 'סימונים סותרים', 'Nonsensical dimension': 'מידה לא הגיונית', 'Missing datum': 'דאטום חסר', 'OCR warning': 'אזהרת זיהוי טקסט', Standard: 'תקן', Standards: 'תקנים', Requirements: 'דרישות' };
+const CATEGORY = { 'Routing chart': 'דף מעקב ייצור', Material: 'חומר', Process: 'תהליך', 'Threads vs inserts': 'הברגות מול אינסרטים', 'Parts list': 'רשימת חלקים', 'Missing specification': 'מפרט חסר', 'Contradictory callouts': 'סימונים סותרים', 'Nonsensical dimension': 'מידה לא הגיונית', 'Missing datum': 'דאטום חסר', 'OCR warning': 'אזהרת זיהוי טקסט', Standard: 'תקן', Standards: 'תקנים', Requirements: 'דרישות' };
 
 function render(key, vars, lang) {
   const m = M[key]; if (!m) return null;

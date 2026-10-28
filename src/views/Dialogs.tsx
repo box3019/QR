@@ -32,7 +32,7 @@ export function SummaryDialog({ parts, onClose }: any) {
     <button className={MRT_BTN} title={t('tip.csv')} onClick={async () => { const r = await qr().exportSummary(parts, 'csv'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.csv')}</button>
     <button className={MRT_BTN_PRIMARY} title={t('tip.pdf')} onClick={async () => { const r = await qr().exportSummary(parts, 'pdf'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.pdf')}</button></>}>
     <table className="qr-table"><thead><tr><th>{t('rc.part')}</th><th>{t('rc.rev')}</th><th>{t('rc.customer')}</th><th>{t('rc.material')}</th><th>{t('rc.status')}</th><th>{t('sum.readiness')}</th><th>{t('sum.blockers')}</th><th>{t('sum.questions')}</th><th>{t('sum.tasks')}</th><th>{t('sum.model')}</th></tr></thead>
-      <tbody>{parts.map((p: Part) => <tr key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{L(p.material, 'normalized')}</td><td><PlainStatusBadge part={p} /></td><td>{tReadiness(p.readiness)}</td>
+      <tbody>{parts.map((p: Part) => <tr key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{L(p.material, 'line') || L(p.material, 'normalized')}</td><td><PlainStatusBadge part={p} /></td><td>{tReadiness(p.readiness)}</td>
         <td>{p.problems.filter((x: any) => x.severity === 'Blocker').length}</td><td>{p.problems.filter((x: any) => x.severity === 'Question').length}</td><td>{p.tasks.filter((x: any) => x.status !== 'done').length}</td><td>{p.model ? t('sum.found') : '—'}</td></tr>)}</tbody></table>
   </Modal>;
 }

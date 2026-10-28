@@ -7,6 +7,7 @@ const N = {
   'Powder coat': 'צבע אבקה', Primer: 'פריימר', 'Top coat / paint': 'צבע עליון', 'Primer + Top coat / paint': 'פריימר וצבע עליון',
   Tape: 'סרט', Plug: 'פקק', 'Cap / boot': 'כיסוי', 'Lacquer / stop-off': 'לכה חוסמת', Wax: 'שעווה', 'Masking (method not stated)': 'מיסוך (השיטה לא צוינה)',
   Threads: 'הברגות', Holes: 'חורים', Bores: 'קדחים', 'Internal surfaces': 'משטחים פנימיים', 'Contact surfaces': 'משטחי מגע', 'Grounding / electrical': 'הארקה / מגע חשמלי', 'Sealing surfaces': 'משטחי אטימה', Datum: 'דאטום', 'Area per drawing': 'אזור לפי השרטוט',
+  'Silver plating': 'ציפוי כסף', 'Gold plating': 'ציפוי זהב', 'Chrome plating': 'ציפוי כרום', 'Zinc plating': 'ציפוי אבץ', 'Tin plating': 'ציפוי בדיל', 'Glass bead blast': 'התזת מיקרו-כדורי זכוכית', Blasting: 'התזה', Passivation: 'פסיבציה',
   'Conversion coating': 'ציפוי המרה', Plating: 'ציפוי מתכתי',
 };
 /** "A; B (page-level)" -> Hebrew, each part translated when known. */

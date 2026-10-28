@@ -15,6 +15,15 @@ const DEFS = [
   { id: 'NASM33537', kind: 'insert-key', paid: true, aliases: ['NASM 33537'], kit: 'insert', title: 'Insert, screw thread, key-locked (Keensert)' },
   { id: 'MS51830', kind: 'insert-key', paid: false, aliases: ['MS 51830'], kit: 'insert', title: 'Insert, screw thread, locked-in, key-locked (Keensert)' },
   { id: 'NASM21209', kind: 'insert-coil', paid: true, aliases: ['NASM 21209'], kit: 'insert', title: 'Insert, screw thread, helical coil, self-locking (Helicoil)' },
+  // process / customer specs named in a routing chart (kind 'spec'): no table, only the document to be stored once
+  { id: 'AMS-C-26074', kind: 'spec', aliases: ['SAE-AMS-C-26074', 'AMSC26074', 'MIL-C-26074'], title: 'Coatings, electroless nickel, requirements for' },
+  { id: 'ASTM B700', kind: 'spec', aliases: ['ASTM B 700', 'B700'], title: 'Electrodeposited coatings of silver for engineering use' },
+  { id: 'MIL-A-8625', kind: 'spec', paid: false, aliases: ['MIL-A-8625F', 'MIL-DTL-8625', 'MIL-DTL-8625F'], title: 'Anodic coatings for aluminum and aluminum alloys' },
+  { id: 'AMS2700', kind: 'spec', aliases: ['AMS 2700', 'AMS-QQ-P-35'], title: 'Passivation of corrosion resistant steels' },
+  { id: 'AMS2404', kind: 'spec', aliases: ['AMS 2404'], title: 'Plating, electroless nickel' },
+  { id: 'ASTM B733', kind: 'spec', aliases: ['ASTM B 733'], title: 'Autocatalytic (electroless) nickel-phosphorus coatings on metal' },
+  { id: 'MIL-DTL-5541', kind: 'spec', paid: false, aliases: ['MIL-C-5541', 'MIL-DTL-5541F'], title: 'Chemical conversion coatings on aluminum and aluminum alloys' },
+  { id: 'GS-4P05002', kind: 'spec', paid: false, aliases: ['GS-4P0S002'], title: 'Packing for shipment (customer standard)' },
   { id: 'MS21209', kind: 'insert-coil', paid: false, aliases: ['MS 21209'], kit: 'insert', title: 'Insert, screw thread, helical coil (Helicoil)' },
 ];
 const byId = new Map(DEFS.map((d) => [d.id, d]));
@@ -22,5 +31,5 @@ const norm = (s) => String(s || '').toUpperCase().replace(/[\s-]+/g, '').replace
 function defOf(id) { const n = norm(id); return DEFS.find((d) => norm(d.id) === n || (d.aliases || []).some((a) => norm(a) === n)) || null; }
 /** Table def used for rows (MS33649 uses the AS5202 rows). */
 const tableDef = (d) => (d && d.sameAs ? byId.get(d.sameAs) : d);
-const isPaid = (id) => { const d = defOf(id); if (d) return d.paid; return /^(SAE|AS\d|AMS|NAS(M)?\d|ARP|ISO|DIN|ASME|ASTM)/i.test(norm(id)); };
+const isPaid = (id) => { const d = defOf(id); if (d && d.paid !== undefined) return d.paid; return /^(SAE|AS\d|AMS|NAS(M)?\d|ARP|ISO|DIN|ASME|ASTM)/i.test(norm(id)); };
 module.exports = { DEFS, defOf, tableDef, isPaid, norm, dataDir: path.join(__dirname, 'data') };

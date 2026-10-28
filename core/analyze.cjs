@@ -6,6 +6,9 @@ const { findReferences } = require('./refs.cjs');
 const { checkCapability } = require('./checks/capability.cjs');
 const { routeFrom, materialFrom, problemsFrom } = require('./requirements/adapt.cjs');
 const { defaultCatalog } = require('./catalog/index.cjs');
+const { parseMaterial, oneLine } = require('./catalog/families.cjs');
+const { chartToRoute } = require('./routing/chart.cjs');
+const { findChart, materialFromChart, enrichRequirements, chartExtras } = require('./routing/apply.cjs');
 const { detectProfile } = require('./customers/index.cjs');
 
 const { normalizeMaterialTokens, isMaterialValue, materialFromTitleBlock } = require('./materials.cjs');
@@ -232,9 +235,12 @@ function zoneMarkers(pages, noteIds) {
 }
 
 // ---------- main analysis ----------
-function analyzePart({ drawing, partsList, models, settings, library, requirements = [] }) {
+function analyzePart({ drawing, partsList, models, settings, library, requirements: requirements0 = [] }) {
   const pages = drawing.pages;
   const text = pages.map((p) => p.raw).join('\n');
+  // routing chart (own module): material, treatments, specs, route. The friend's rows stay untouched; the chart only adds to them.
+  const requirements = requirements0;
+  const chartInfo = findChart({ pages, requirements: requirements0, text });
   const profile = detectProfile({ text: text + ' ' + (partsList ? partsList.pages.map((p) => p.raw).join('\n') : ''), fileName: drawing.name, emails: drawing.emails || [] }, settings.customers);
   const customer = profile.base; // base profile picks the parsers below
   const id = detectPartNo(text, customer, drawing.name);
@@ -263,9 +269,13 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   // friend's extraction (core/requirements) is the source of truth for steps and material when it found the requirements
   const fRoute = requirements.some((p) => p.rows.length) ? routeFrom(requirements, stepType) : [];
   if (fRoute.length) { route = fRoute; routeSource = fRoute[0].source === 'Routing chart' ? 'PRODUCTION ROUTING CHART' : partsList ? 'Drawing NOTES + PARTS LIST' : 'Drawing NOTES'; }
+  // the chart replaces a route only when none was read from a routing chart already (text layer / port): its OCR is a fallback, not a better reader
+  if (chartInfo && chartInfo.source !== 'requirements' && !(routeSource === 'PRODUCTION ROUTING CHART' && route.length)) { route = chartToRoute(chartInfo.chart); routeSource = 'PRODUCTION ROUTING CHART'; }
 
   // material: parts list -> routing 20 -> title block -> notes
   let material = materialFrom(requirements);
+  const chartMat = chartInfo && materialFromChart(chartInfo.chart);
+  if (chartMat && (parseMaterial(chartMat.raw) || isMaterialValue(chartMat.raw)) && !material) material = { ...chartMat, friend: material && material.friend };
   const matLine = bom.find((b) => isMaterialValue(b.desc) && !/INSERT/.test(b.desc));
   if (matLine && !material) material = { raw: matLine.desc, source: 'Parts list seq ' + matLine.seq, catalogNo: matLine.catalogNo, conf: 1 };
   if (!material && customer === 'RAFAEL') { const s = route.find((r) => r.seq === '20'); const it = s && s.items.find((i) => isMaterialValue(i.text)); if (it) material = { raw: it.text, source: 'Routing chart ' + it.seq, catalogNo: (it.text.match(/\b(\d{9})\b/) || [])[1], conf: 1 }; }
@@ -276,9 +286,15 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   const capLines = [...notes.map((n) => ({ text: n.text, where: 'note ' + n.n })), ...route.flatMap((r) => r.items.map((i) => ({ text: i.text, where: (routeSource.startsWith('PRODUCTION') ? 'routing ' : 'step ') + (i.seq || r.seq) }))), ...bom.map((b) => ({ text: b.desc, where: 'parts list seq ' + b.seq }))];
   const cap = checkCapability({ material, lines: capLines, catalog: settings.catalog || defaultCatalog() });
   let { status, rejectReason, rejectKey } = cap;
-  if (material) Object.assign(material, { normalized: cap.materialMatch.found, family: cap.materialMatch.entry ? cap.materialMatch.entry.family : 'Not in list', catalogId: cap.materialMatch.entry && cap.materialMatch.entry.id });
+  if (material) {
+    const parsed = cap.materialMatch.parsed || parseMaterial(material.raw);
+    Object.assign(material, { normalized: cap.materialMatch.found, family: cap.materialMatch.entry ? cap.materialMatch.entry.family : 'Not in list', catalogId: cap.materialMatch.entry && cap.materialMatch.entry.id, parsed: parsed || null, stock: material.stock || (parsed && parsed.stock) || null });
+    material.line = parsed ? oneLine({ ...parsed, stock: material.stock || parsed.stock }) : material.normalized;
+  }
   else addK('Question', 'Material', 'mat.none', {});
   for (const p of cap.problems) problems.push({ id: 'P' + (problems.length + 1), ...p, evidence: [], status: 'open' });
+  const chartX = chartExtras(chartInfo, text);
+  if (chartX && chartX.machiningAfter) addK('Info', 'Routing chart', 'chart.after', { rc: chartX.machiningAfter.rc, sheet: chartX.machiningAfter.sheet }, [{ source: 'routing ' + chartX.machiningAfter.no, text: String(chartX.machiningAfter.text || '').slice(0, 120) }]);
   // threads vs inserts
   const vt = viewThreads(text);
   const inserts = bom.map((b) => ({ b, ins: insertFromBom(b) })).filter((x) => x.ins);
@@ -392,7 +408,7 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   const openTasks = tasks.filter((t) => t.type === 'uploadDocument').length;
   const readiness = status === 'rejected' ? 'n/a' : status === 'pending' ? 'Blocked: no material' : openTasks ? `Blocked by ${openTasks} task${openTasks > 1 ? 's' : ''}` : problems.some((p) => p.severity === 'Blocker') ? 'Incomplete' : 'Ready';
   for (const x of problemsFrom(requirements)) problems.push({ id: 'P' + (problems.length + 1), ...x });
-  return { requirements, customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, rejectKey, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
+  return { requirements: enrichRequirements(requirements0, chartInfo), chart: chartX, customer: profile.name, customerId: profile.id, profile: customer, profileWhy: profile.why, questionsLanguage: profile.questionsLanguage, ...id, material, status, rejectReason, rejectKey, bom, bomSource, notes, route, routeSource, refs, tasks, problems, threads: vt, threadMatches, zones, textMode, readiness };
 }
 
 module.exports = { detectPartNo, isMaterialCode, revFromFileName, parseEltaPartsListPages, analyzePart, normalizeMaterialTokens, isMaterialValue, parseNotes, viewThreads, normThread, detectCustomer };

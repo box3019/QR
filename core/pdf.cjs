@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 // PDF text + vector extraction, quality check and OCR fallback (offline Tesseract).
 const fs = require('fs');
 const path = require('path');
@@ -29,7 +29,7 @@ function quality(tokens, pathOps, area) {
   if (chars < 20) reasons.push('no_text');
   if (garbageRatio > 0.15 || (words.length > 30 && eng / words.length < 0.25)) reasons.push('garbage');
   // Many vector ops vs few dimension numbers per page area => dimension values are likely outlined.
-  const numsPerMm2 = nums / (area / 1e6); // per m²
+  const numsPerMm2 = nums / (area / 1e6); // per mÂ²
   if (pathOps > 2000 && (glyphRatio < 0.5 || numsPerMm2 < 400)) reasons.push('low_ratio');
   let mode = 'text';
   if (reasons.includes('no_text') || reasons.includes('garbage')) mode = 'ocr';
@@ -129,7 +129,7 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
       for (let dx = -k; dx <= k; dx++) for (let dy = -k; dy <= k; dy++) if (dx || dy) ctx.drawImage(src, dx, dy);
       ctx.globalCompositeOperation = 'source-over';
     }
-    // pass 1: horizontal text; pass 2: tile rotated 90° clockwise for vertical dimension text
+    // pass 1: horizontal text; pass 2: tile rotated 90Â° clockwise for vertical dimension text
     const rc = createCanvas(h, w);
     const rctx = rc.getContext('2d');
     rctx.translate(h, 0); rctx.rotate(Math.PI / 2); rctx.drawImage(canvas, 0, 0);
@@ -177,4 +177,6 @@ async function renderPreview(file, pageNo, maxPx = 2400) {
   return { png: buf, scale, width: v1.width, height: v1.height, pages: doc.numPages };
 }
 
-module.exports = { extractPdf, ocrPage, renderPreview };
+module.exports = { extractPdf, ocrPage, renderPreview, openPdf };
+
+

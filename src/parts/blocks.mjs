@@ -21,11 +21,22 @@ export function standardBlocks(part) {
   });
 }
 
+/** The ONE material block: a single line (family grade-temper, form size) + whether it is ours; the raw text and the friend's rows sit in the details. null when the part has no material. */
+export function materialBlock(part) {
+  const m = part.material;
+  if (!m || !(m.line || m.normalized || m.raw)) return null;
+  const st = part.status; const ours = st === 'accepted' ? true : st === 'rejected' ? false : null;
+  const pg = cardPages(part).find((p) => p.material);
+  return { id: 'f:material', kind: 'material', status: ours === true ? 'ok' : ours === false ? 'bad' : 'warn', titleKey: 'bd.s.material', ours, value: m.line || m.normalized, line: null, action: ours === null ? { kind: 'ask' } : null,
+    details: { type: 'material', raw: m.raw || '', source: m.source || '', sec: SECTIONS.find((s) => s.key === 'material'), rows: pg ? [pg.material] : [] } };
+}
+
 /** Requirement fields (material, heat treat, coatings, paint, other, masking, sequence) -> blocks. Empty ones are merged into one grey block. */
 export function fieldBlocks(part) {
   const out = []; const none = [];
-  const pages = cardPages(part);
+  const pages = cardPages(part); const mat = materialBlock(part);
   for (const pg of pages) for (const sec of SECTIONS) {
+    if (sec.key === 'material' && mat) { if (!none.includes('material')) none.push('material'); continue; }
     const rows = sectionRows(sec, pg);
     if (!rows.length) { if (!none.includes(sec.key)) none.push(sec.key); continue; }
     const fl = sectionFlags(sec, pg); let value = sectionLine(sec.key, pg, part);
@@ -39,8 +50,9 @@ export function fieldBlocks(part) {
   }
   // material missing is a question, not "not on drawing"
   const mi = none.indexOf('material');
+  if (mat) { if (mi >= 0) none.splice(mi, 1); out.unshift(mat); } else
   if (pages.length && mi >= 0) { none.splice(mi, 1); out.unshift({ id: 'f:material', kind: 'field', status: 'warn', titleKey: 'bd.s.material', line: { key: 'blk.noMaterial' }, action: { kind: 'ask' }, details: null }); }
-  if (!pages.length) out.unshift({ id: 'f:material', kind: 'field', status: 'warn', titleKey: 'bd.s.material', line: { key: 'blk.noMaterial' }, action: { kind: 'ask' }, details: null });
+  if (!pages.length && !mat) out.unshift({ id: 'f:material', kind: 'field', status: 'warn', titleKey: 'bd.s.material', line: { key: 'blk.noMaterial' }, action: { kind: 'ask' }, details: null });
   if (none.length) out.push({ id: 'f:none', kind: 'none', status: 'none', titleKey: 'blk.none', line: { key: 'blk.noneList', vars: { list: none.filter((k) => k !== 'other').map((k) => 'bd.s.' + k) } }, action: null, details: null });
   return out;
 }

@@ -10,6 +10,8 @@ const PUBLIC = [
   [/^AMS[- ]?QQ-A-2(25|50)/, 'Aluminium alloy bar/plate (former QQ-A spec)'],
   [/^ASTM B221/, 'Aluminium alloy extruded bars, rods, wire, profiles and tubes'],
   [/^ASTM B209/, 'Aluminium and aluminium-alloy sheet and plate'],
+  [/^(?:SAE-)?AMS-C-26074/, 'Coatings, electroless nickel, requirements for'],
+  [/^ASTM B700/, 'Electrodeposited coatings of silver for engineering use'],
   [/^ASTM B733/, 'Autocatalytic (electroless) nickel-phosphorus coatings on metal'],
   [/^MIL-PRF-22750/, 'Coating, epoxy, high-solids'],
   [/^FED-STD-595/, 'Colours used in government procurement'],
@@ -26,6 +28,7 @@ const INTERNAL = [
   ['ELTA', /^5902N800-001/, 'Identification marking specification'],
   ['RAFAEL', /^PS-111\.21/, 'Hard anodizing process specification'],
   ['RAFAEL', /^PS-111\.29/, 'Corrosion inhibitor for inserts'],
+  ['RAFAEL', /^GS-4P\d{5}/, 'RAFAEL packing for shipment standard'],
   ['RAFAEL', /^RAFDOCS-/, 'RAFAEL document (RAFDOCS)'],
   ['RAFAEL', /^GEN_/, 'RAFAEL catalog general requirement'],
   ['RAFAEL', /^18\.00\.10/, 'RAFAEL drawing interpretation procedure'],
@@ -37,7 +40,9 @@ const PATTERNS = [
   /\bMIL-(?:DTL|PRF|STD|A|C|F|S)-\d+[A-Z]?(?:\/\d+)?\b/g,
   /\bA-A-\d{4,}\b/g,
   /\b(?:SAE-)?AMS[- ]?(?:QQ-A-\d+\/\d+|\d{4}[A-Z]?)\b/g,
-  /\bASTM [A-Z]\d{2,4}\b/g,
+  /\bASTM [A-Z] ?\d{2,4}\b/g,
+  /\bSAE-AMS-C-\d{4,6}[A-Z]?\b/g,
+  /\bGS-4P\d{5}\b/g,
   /\bFED-STD-\d+\b/g,
   /\bNASM ?\d{4,}\b/g,
   /\bMS\d{6}\b/g,
@@ -70,7 +75,7 @@ function findReferences(text, customer) {
       re.lastIndex = 0;
       let m;
       while ((m = re.exec(line))) {
-        let num = m[0].replace(/^PROCEDURE /, '').replace(/\s+/g, ' ');
+        let num = m[0].replace(/^PROCEDURE /, '').replace(/\s+/g, ' ').replace(/^(ASTM [A-Z]) (\d)/, '$1$2');
         if (/^MS\d{6}$/.test(num) && /INSERT/.test(text) === false) continue;
         const key = num.replace(/^SAE-/, '');
         if (out.has(key)) continue;

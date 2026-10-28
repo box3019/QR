@@ -26,4 +26,8 @@ function detectCallouts(text) {
   const portThreads = new Set(out.filter((c) => c.kind === 'port' && c.thread).map((c) => c.line + '|' + c.thread.raw));
   return out.filter((c) => !(c.kind === 'thread' && (portThreads.has(c.line + '|' + c.thread.raw) || portThreads.has((c.line - 1) + '|' + c.thread.raw))));
 }
-module.exports = { detectCallouts };
+/** Specs named in the routing chart (part.chart.specs) -> callouts of kind 'spec'. Only the chart is read: a spec in a free-text note is not a callout. */
+function specCallouts(chart) {
+  return ((chart && chart.specs) || []).map((s, i) => ({ kind: 'spec', std: s.id, dash: '', raw: [s.raw, s.year && !/-\d{2,4}\s*$/.test(String(s.raw)) && '-' + s.year, s.type && 'Type ' + s.type, s.class && 'Class ' + s.class, s.grade && 'Grade ' + s.grade].filter(Boolean).join(' ').replace(/ -(\d)/, '-$1') + ' (' + (s.where || []).join(', ') + ')', line: 1000 + i, rev: s.year || '' }));
+}
+module.exports = { detectCallouts, specCallouts };

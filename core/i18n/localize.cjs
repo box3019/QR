@@ -2,11 +2,12 @@
 // i18n/localize: adds Hebrew display fields (*He) to an analyzed part, from message keys and term tables. Mutates and returns the part.
 const { render, text, category } = require('./messages.cjs');
 const T = require('./terms.cjs');
+const { oneLine } = require('../catalog/families.cjs');
 
 function localizePart(part) {
   if (!part) return part;
   if (part.rejectKey) part.rejectReasonHe = render(part.rejectKey.key, part.rejectKey.vars, 'he').message;
-  if (part.material) { part.material.normalizedHe = part.material.normalized ? T.mat(part.material.normalized) : ''; part.material.sourceHe = T.loc(part.material.source); }
+  if (part.material) { part.material.normalizedHe = part.material.normalized ? T.mat(part.material.normalized) : ''; part.material.sourceHe = T.loc(part.material.source); if (part.material.parsed) part.material.lineHe = oneLine({ ...part.material.parsed, stock: part.material.stock || part.material.parsed.stock }, 'he', T.mat(part.material.parsed.name)); }
   if (part.routeSource) part.routeSourceHe = T.loc(part.routeSource);
   for (const p of part.problems || []) {
     p.categoryHe = category(p.category, 'he');

@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 const { problem } = require('./i18n/messages.cjs');
 // Ingest -> extract -> (OCR fallback) -> classify -> match drawing/parts list/model -> analyze.
 const fs = require('fs');
@@ -61,6 +61,7 @@ function locate(pages, pr) {
   return null;
 }
 
+const { ocrChart, mergeChartTokens, rawWithChart } = require('./ocr/chart.cjs');
 async function runPipeline(paths, settings, emit = () => {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-'));
   const errors = [];
@@ -91,8 +92,14 @@ async function runPipeline(paths, settings, emit = () => {}) {
         const t0 = Date.now();
         p.ocr = await ocrPage(d.path, p.n, p.tokens, { dpi: settings.ocrDpi || 400, langPath: settings.langPath, cachePath: settings.ocrCachePath, onProgress: (x) => emit({ type: 'progress', file: d.name, page: p.n, value: x }) });
         p.ocr.seconds = Math.round((Date.now() - t0) / 1000);
-        p.tokens = p.tokens.concat(p.ocr.words);
-        if (p.ocr.words.length) p.raw += '\n' + p.ocr.words.filter((w) => w.conf >= 0.6).map((w) => w.text).join(' ');
+        const raw0 = p.raw, ocrWords = p.ocr.words;
+        p.tokens = p.tokens.concat(ocrWords);
+        if (ocrWords.length) p.raw += '\n' + ocrWords.filter((w) => w.conf >= 0.6).map((w) => w.text).join(' ');
+        // a ruled PRODUCTION ROUTING CHART on a page without a text layer is read cell by cell (tiled OCR cuts it into fragments)
+        try {
+          const ch = await ocrChart(d.path, p.n, p.tokens, { langPath: settings.langPath, cachePath: settings.ocrCachePath });
+          if (ch) { p.chart = { rows: ch.rows, text: ch.text, box: ch.box, dpi: ch.dpi }; p.tokens = mergeChartTokens(p.tokens, ch); p.raw = rawWithChart(raw0, ocrWords, ch); emit({ type: 'status', text: `Routing chart on ${d.name} page ${p.n}: ${ch.rows.filter((r) => r.no).length} rows read` }); }
+        } catch (e) { emit({ type: 'status', text: `Routing chart OCR failed on ${d.name} page ${p.n}: ${(e && e.message) || e}` }); }
       } catch (e) { p.ocrError = String((e && e.message) || e); emit({ type: 'status', text: `OCR failed on ${d.name} page ${p.n}: ${p.ocrError}` }); }
     }
     const pl = partsLists.find((l) => { const forPn = (l.name.match(/\bfor\s+([A-Z0-9-]{5,})/i) || [])[1]; if (forPn) return d.name.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(forPn.toUpperCase().replace(/[^A-Z0-9]/g, '')) || key.toUpperCase().includes('ASSEMBLY') && key.includes(forPn.toUpperCase()) && d.name.toUpperCase().includes(forPn.toUpperCase()); const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
@@ -118,3 +125,4 @@ async function runPipeline(paths, settings, emit = () => {}) {
   return { parts, unknown, other, errors, rfqs: rfqOut, files: files.map((f) => path.basename(f)) };
 }
 module.exports = { runPipeline };
+

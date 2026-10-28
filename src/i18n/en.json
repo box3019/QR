@@ -558,5 +558,7 @@
   "wz.secShow": "Report on screen",
   "wz.showText": "Open the table of all parts with the result of every check.",
   "wz.xDesc": "Table of all parts with their questions, one row per part.",
-  "wz.busyCard": "Working"
+  "wz.busyCard": "Working",
+  "blk.mat.ours": "ours",
+  "blk.mat.notOurs": "not ours"
 }
