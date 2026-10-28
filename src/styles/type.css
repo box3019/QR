@@ -10,7 +10,7 @@
 .qr-root .qr-reject { color: #991b1b; margin-block-start: 0.3rem; }
 .qr-root .qr-status, .qr-root .qr-chip { font-weight: 600; }
 .qr-root .qr-panel-h { font-weight: 600; font-size: 1rem; padding: 0.55rem 0.8rem; }
-.qr-root .qr-sec { font-weight: 600; font-size: 0.875rem; text-transform: none; letter-spacing: 0; color: var(--mrt-text, #0f172a); padding: 0.55rem 0.8rem; }
+.qr-root .qr-sec { font-weight: 600; font-size: 0.875rem; text-transform: none; letter-spacing: 0; color: var(--mrt-text, #1c1c1e); padding: 0.55rem 0.8rem; }
 .qr-root .qr-tab { font-weight: 400; } .qr-root .qr-tab[data-active='true'] { font-weight: 600; }
 .qr-root .qr-route-card .head b { font-weight: 400; }
 .qr-root .qr-row { row-gap: 0.35rem; }

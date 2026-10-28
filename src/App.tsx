@@ -3,7 +3,7 @@ import { Ico } from './components/Ico';
 import React, { useEffect, useState } from 'react';
 import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
-import { t, setLang, setTextSize, getLang } from './i18n';
+import { t, setLang, setTextSize, getLang, getContentLang } from './i18n';
 import { FirstRun } from './ui/simple';
 import { Tour } from './tutorial/TourView';
 import { toolbarFor } from './wizard/steps.mjs';
@@ -44,7 +44,7 @@ export default function App() {
   const tabs = P.list.map((p) => ({ id: p.id, label: '', customer: '', status: 'empty', ...(P.metas[p.id] || {}) }));
 
   return (
-    <div className="qr-root" data-mrt-palette="industrial-steel" data-mrt-theme="light" data-step={m.step || 1} {...drop}>
+    <div className="qr-root" data-mrt-palette="light" data-mrt-theme="light" data-step={m.step || 1} {...drop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
         <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
         <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
@@ -59,9 +59,9 @@ export default function App() {
           details={details} setDetails={setDetails} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
       </div>
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} />}
-      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={getLang()} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
+      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={getContentLang()} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}
-      {dialog === 'tutorial' && <Tour lang0={getLang()} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
+      {dialog === 'tutorial' && <Tour lang0={getContentLang()} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
     </div>
   );
 }

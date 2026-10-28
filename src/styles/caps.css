@@ -1,6 +1,6 @@
 ﻿/* Size caps: these controls stay at MRT-like px sizes and never grow with the text-size setting. */
-.mrt-wizard-step { font-size: 14px !important; min-height: 32px !important; height: 32px !important; max-height: 32px !important; padding-block: 0 !important; line-height: 1.2 !important; }
-.qr-ai-avatar { font-size: 14px !important; width: 40px !important; height: 40px !important; min-height: 40px !important; max-height: 40px !important; }
-.qr-ai-avatar svg, .qr-ai-avatar img { width: 24px !important; height: 24px !important; }
+.mrt-wizard-step { font-size: 14px !important; min-height: 40px !important; height: 40px !important; max-height: 40px !important; padding-block: 0 !important; line-height: 1.2 !important; }
+.qr-ai-avatar { font-size: 14px !important; width: 32px !important; height: 32px !important; min-height: 32px !important; max-height: 32px !important; }
+.qr-ai-avatar svg, .qr-ai-avatar img { width: 28px !important; height: 28px !important; }
 .qr-pgroup-h { font-size: 14px !important; min-height: 32px !important; max-height: 32px !important; padding-block: 0 !important; }
 .qr-tab { font-size: 14px !important; min-height: 32px !important; max-height: 32px !important; padding-block: 0 !important; }

@@ -1,0 +1,45 @@
+/* QR surfaces, stepper, header, footer: measured from the real MRT wizard (docs/design-tokens.md, "MRT measurements").
+   Loaded after system.css. White / very light neutral surfaces with 1px separators, dark text. No grey-on-grey. */
+.qr-root { background: var(--mrt-surface); color: var(--mrt-text); }
+
+/* rail: context table + stepper on #fafafb, main on white, header and footer on #f5f5f7 */
+.qr-root .qr-rail-context { background: var(--qr-rail-bg); padding: 0.65rem 0.7rem; }
+.qr-root .qr-wsum { background: var(--mrt-surface); border: 1px solid var(--mrt-ui-border-strong); border-radius: var(--qr-radius); }
+.qr-root .qr-wsum-table th, .qr-root .qr-wsum-table td { border-bottom: 1px solid var(--mrt-ui-border); }
+.qr-root .qr-wsum-table th { background: var(--mrt-surface-muted); color: var(--mrt-text-muted); border-inline-end: 1px solid var(--mrt-ui-border); font-size: 0.75rem; }
+.qr-root .qr-wsum-table td { background: var(--mrt-surface); color: var(--mrt-text); font-size: 0.875rem; font-weight: 600; }
+.qr-root .qr-rail .mrt-wizard-steps { background: var(--qr-rail-bg); padding: 0.75rem 0.75rem 0.75rem 1rem; gap: 0.15rem; border-inline-end: 1px solid var(--mrt-chrome-border); }
+.qr-root .qr-wiz > .qr-wiz-main { background: var(--mrt-surface); }
+.qr-root .qr-wiz { border-top: 0; }
+
+/* header: very light, thin bottom border, dark title */
+.qr-root .qr-wiz > .qr-wiz-head { background: var(--mrt-header-bg); border-bottom: 1px solid var(--mrt-chrome-border); color: var(--mrt-text); }
+.qr-root .qr-wiz-title { color: var(--mrt-text); font-size: 1rem; font-weight: 700; }
+.qr-root .qr-ai-bubble { background: #ffffff; color: var(--mrt-text); border: 1px solid rgba(60, 60, 67, 0.38); font-size: 0.8125rem; font-weight: 600; box-shadow: none; }
+.qr-root .qr-ai-hint[data-on='false'] .qr-ai-bubble { color: var(--mrt-text-muted); }
+.qr-root .qr-step-help { display: inline-grid; place-items: center; flex: 0 0 auto; width: 22px; height: 22px; min-height: 22px !important; max-height: 22px; padding: 0 !important; margin-inline-start: 0; border-radius: var(--qr-radius); border: 1px solid var(--mrt-btn-neutral-border); background: var(--mrt-btn-neutral-fill); color: var(--mrt-text); cursor: pointer; line-height: 0; }
+.qr-root .qr-step-help svg { width: 16px; height: 16px; }
+.qr-root .qr-step-help:hover { background: var(--mrt-btn-neutral-fill-hover); border-color: var(--mrt-text-muted); }
+.qr-root .qr-step-help:focus-visible { outline: 2px solid var(--mrt-focus); outline-offset: 1px; }
+
+/* footer: light strip, compact buttons, legible disabled state */
+.qr-root .qr-wiz-footer { background: var(--mrt-header-bg); border-top: 1px solid var(--mrt-chrome-border); padding: 0.625rem 1rem; }
+
+/* stepper: 22px markers, 40px rows, a connector that stops short of the circles (never through them) */
+.qr-root .qr-rail .mrt-wizard-step { min-height: 40px !important; height: 40px !important; max-height: 40px !important; align-items: center; gap: 0.625rem; padding: 0 0.6rem !important; border-radius: var(--qr-radius); }
+.qr-root .qr-rail .mrt-wizard-step-item { position: relative; }
+.qr-root .qr-rail .mrt-wizard-step-text { justify-content: center; }
+.qr-root .qr-rail .mrt-wizard-step-marker { width: 22px; height: 22px; min-width: 22px; min-height: 22px; font-size: 11px; font-weight: 700; line-height: 1; border-radius: 50% /* circle */; border: 1px solid var(--mrt-border-strong); background: var(--mrt-surface); color: var(--mrt-text-muted); }
+.qr-root .qr-rail .mrt-wizard-step-item + .mrt-wizard-step-item .mrt-wizard-step-marker::before { height: 14px; bottom: calc(100% + 2px); width: 2px; background: var(--mrt-border-strong); }
+.qr-root .qr-rail .mrt-wizard-step-label { font-size: 1rem; font-weight: 600; line-height: 1.25; color: var(--mrt-text); }
+.qr-root .qr-rail .mrt-wizard-step[data-state='todo'] .mrt-wizard-step-label, .qr-root .qr-rail .mrt-wizard-step[data-state='locked'] .mrt-wizard-step-label { color: var(--mrt-text-muted); }
+.qr-root .qr-rail .mrt-wizard-step[data-state='current'] { background: var(--mrt-surface-muted); border-radius: 0; border-inline-start: 3px solid var(--mrt-accent); }
+.qr-root .qr-rail .mrt-wizard-step[data-state='current'] .mrt-wizard-step-label { font-weight: 700; color: var(--mrt-text); }
+.qr-root .qr-rail .mrt-wizard-step[data-state='current'] .mrt-wizard-step-marker { background: var(--mrt-surface); color: var(--mrt-text); border: 2px solid var(--mrt-accent); }
+.qr-root .qr-rail .mrt-wizard-step[data-state='done'] .mrt-wizard-step-marker, .qr-root .qr-rail .mrt-wizard-step[data-settled='yes'] .mrt-wizard-step-marker { background: var(--mrt-surface); color: var(--qr-ok-text); border-color: var(--mrt-success); }
+.qr-root .qr-rail .mrt-wizard-step-item + .mrt-wizard-step-item .mrt-wizard-step[data-state='done'] .mrt-wizard-step-marker::before, .qr-root .qr-rail .mrt-wizard-step-item + .mrt-wizard-step-item .mrt-wizard-step[data-state='current'] .mrt-wizard-step-marker::before { background: var(--mrt-success); }
+
+/* status text colours (AA on white and on #f5f5f7); dots keep the MRT hues */
+.qr-root .qr-import-st[data-status='done'] { color: var(--qr-ok-text); } .qr-root .qr-import-st[data-status='check'] { color: var(--qr-warn-text); }
+.qr-root .qr-import-st { color: var(--mrt-text-muted); }
+.qr-root .qr-face { width: 28px; height: 28px; }

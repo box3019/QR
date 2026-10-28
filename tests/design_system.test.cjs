@@ -4,9 +4,10 @@ const test = require('node:test'); const assert = require('node:assert'); const 
 const R = (...p) => fs.readFileSync(path.join(__dirname, '..', ...p), 'utf8');
 const pal = R('src/styles/qrPalette.css'), doc = R('docs/design-tokens.md'), sys = R('src/styles/system.css');
 
-test('palette = MRT Priority ERP values, all documented in docs/design-tokens.md', () => {
-  for (const hex of ['#b8bcc4', '#f4f5f7', '#eceef2', '#dfe3ea', '#0a1628', '#334155', '#2f855a', '#ca8a04', '#c53030']) { assert.ok(pal.includes(hex), hex); assert.ok(doc.includes(hex), 'doc ' + hex); }
-  assert.doesNotMatch(pal, /#b8c0cc|#1e293b/, 'old Industrial Steel values are gone');
+test('palette = values measured from the real MRT wizard, documented in docs/design-tokens.md', () => {
+  for (const hex of ['#ebebed', '#ffffff', '#f5f5f7', '#fafafb', '#1c1c1e', '#636366', '#48484a', '#047857', '#92400e', '#b91c1c']) { assert.ok(pal.includes(hex), hex); assert.ok(doc.includes(hex), 'doc ' + hex); }
+  assert.doesNotMatch(pal, /#b8c0cc|#1e293b|#b8bcc4|#dfe3ea|#0a1628/, 'old grey-blue values are gone');
+  assert.match(doc, /earlier "Priority ERP" palette was wrong/);
 });
 test('status colours are the only colours: system.css uses tokens, no raw tinted fills', () => {
   const hex = sys.match(/#[0-9a-fA-F]{3,6}\b/g) || []; assert.ok(hex.every((h) => /^#fff(fff)?$/i.test(h)), 'only white allowed raw: ' + hex);

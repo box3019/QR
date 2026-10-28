@@ -13,20 +13,23 @@
   --qr-btn-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   --qr-btn-transition: 0.15s;
   /* secondary (default) */
-  --qr-btn-bg: #f8fafc;
-  --qr-btn-fg: #0f172a;
-  --qr-btn-border: #cbd5e1;
-  --qr-btn-bg-hover: #eef2f6;
-  --qr-btn-border-hover: #94a3b8;
+  --qr-btn-bg: #ffffff;
+  --qr-btn-fg: #1c1c1e;
+  --qr-btn-border: rgba(60, 60, 67, 0.55);
+  --qr-btn-bg-hover: #f2f2f7;
+  --qr-btn-border-hover: rgba(60, 60, 67, 0.75);
   /* primary: same light button, neutral slate text + border (no dark fill, no blue) */
   --qr-btn-primary-bg: #ffffff;
-  --qr-btn-primary-fg: #0a1628;
-  --qr-btn-primary-border: #334155;
-  --qr-btn-primary-bg-hover: #e2e8f0;
-  --qr-btn-primary-border-hover: #0a1628;
+  --qr-btn-primary-fg: #1c1c1e;
+  --qr-btn-primary-border: #48484a;
+  --qr-btn-primary-bg-hover: #f2f2f7;
+  --qr-btn-primary-border-hover: #1c1c1e;
   /* states */
-  --qr-btn-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1e293b;
-  --qr-btn-disabled-opacity: 0.48;
+  --qr-btn-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1c1c1e;
+  --qr-btn-disabled-opacity: 1;
+  --qr-btn-disabled-bg: #f5f5f7;
+  --qr-btn-disabled-fg: #6b6b70;
+  --qr-btn-disabled-border: rgba(60, 60, 67, 0.18);
   --qr-radius: var(--qr-btn-radius);
 }
 .qr-btn, .qr-root .mrt-btn {
@@ -62,7 +65,7 @@
   background: var(--qr-btn-primary-bg-hover) !important; border-color: var(--qr-btn-primary-border-hover) !important;
 }
 .qr-btn:focus-visible, .qr-root .mrt-btn:not(.mrt-action-btn--dialog-secondary):focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--qr-btn-focus-ring) !important; }
-.qr-btn:disabled, .qr-root .mrt-btn:disabled { opacity: var(--qr-btn-disabled-opacity) !important; cursor: default !important; }
+.qr-btn:disabled, .qr-root .mrt-btn:disabled { opacity: var(--qr-btn-disabled-opacity) !important; cursor: default !important; background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important; border-color: var(--qr-btn-disabled-border) !important; }
 /* Same shape for badges, chips and status labels (colored fills allowed). */
 .qr-chip, .qr-badge, .qr-status, .qr-brand-badge {
   border-radius: var(--qr-btn-radius) !important; border-width: var(--qr-btn-border-w); border-style: solid;

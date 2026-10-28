@@ -6,6 +6,6 @@ const P: Record<string, string> = {
   help: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.5',
 };
 export const ICONS = Object.keys(P);
-export function Ico({ name }: { name: string }) {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" data-icon={name}><path d={P[name]} /></svg>;
+export function Ico({ name, size = 18 }: { name: string; size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" data-icon={name}><path d={P[name]} /></svg>;
 }

@@ -1,51 +1,63 @@
-/* QR palette: MRT "Priority ERP" preset (mrtBuiltinPaletteTokens.ts), re-implemented as static values.
-   Neutral gray structure; color is reserved for status (see docs/design-tokens.md). */
-[data-mrt-palette]{
-  --mrt-bg: #b8bcc4;
-  --mrt-workspace-canvas: #b8bcc4;
-  --mrt-surface: #f4f5f7;
-  --mrt-surface-glass: rgba(244, 245, 247, 0.98);
-  --mrt-surface-muted: #eceef2;
-  --mrt-header-bg: #dfe3ea;
+/* QR palette: values MEASURED from the real MRT "Create CMM Program" wizard (MRT 9.0.52 running on the PC, 2026-10-28):
+   computed --mrt-* tokens on the .mrt-wizard-shell scope. White / very light neutral surfaces, 1px translucent borders,
+   dark text. Colour is reserved for status (docs/design-tokens.md). This replaces the earlier "Priority ERP" guess,
+   which was the grey workspace canvas of the MRT main window, not the wizard. */
+.qr-root[data-mrt-palette][data-mrt-theme]{
+  --mrt-bg: #ebebed;
+  --mrt-workspace-canvas: #ebebed;
+  --mrt-surface: #ffffff;
+  --mrt-surface-glass: #ffffff;
+  --mrt-surface-muted: #f5f5f7;
+  --mrt-surface-hover: #f2f2f7;
+  --mrt-header-bg: #f5f5f7;
   --mrt-chrome-surface: #f5f5f7;
-  --mrt-chrome-fill: rgba(255, 255, 255, 0.96);
-  --mrt-chrome-border: rgba(15, 23, 42, 0.22);
-  --mrt-rail-fill: rgba(255, 255, 255, 0.92);
-  --mrt-rail-edge: rgba(15, 23, 42, 0.2);
-  --mrt-ui-border: rgba(15, 23, 42, 0.18);
-  --mrt-ui-border-strong: rgba(15, 23, 42, 0.28);
-  --mrt-border: rgba(15, 23, 42, 0.18);
-  --mrt-border-strong: rgba(15, 23, 42, 0.28);
-  --mrt-grid-border: #334155;
-  --mrt-grid-border-strong: #0f172a;
+  --mrt-chrome-fill: #ffffff;
+  --mrt-chrome-border: rgba(60, 60, 67, 0.18);
+  --mrt-rail-fill: #f5f5f7;
+  --mrt-rail-edge: rgba(60, 60, 67, 0.16);
+  --mrt-ui-border: rgba(60, 60, 67, 0.14);
+  --mrt-ui-border-strong: rgba(60, 60, 67, 0.22);
+  --mrt-border: rgba(60, 60, 67, 0.14);
+  --mrt-border-strong: rgba(60, 60, 67, 0.22);
+  --mrt-grid-border: #636366;
+  --mrt-grid-border-strong: #3a3a3c;
   --mrt-info-value-bg: #ffffff;
-  --mrt-image-pad-bg: rgba(255, 255, 255, 0.98);
-  --mrt-text: #0a1628;
-  --mrt-text-muted: #334155;
-  --mrt-accent: #334155;
-  --mrt-accent-soft: rgba(51, 65, 85, 0.14);
-  --mrt-focus: #334155;
-  --mrt-btn-neutral-fill: #f0f4fa;
-  --mrt-btn-neutral-border: rgba(15, 23, 42, 0.22);
-  --mrt-btn-neutral-fill-hover: #e2e8f0;
-  --mrt-btn-secondary-fg: #0a1628;
+  --mrt-image-pad-bg: #ffffff;
+  --mrt-text: #1c1c1e;
+  --mrt-text-muted: #636366;
+  --mrt-accent: #48484a;
+  --mrt-accent-soft: rgba(72, 72, 74, 0.14);
+  --mrt-focus: #48484a;
+  --mrt-btn-neutral-fill: #ffffff;
+  --mrt-btn-neutral-border: rgba(60, 60, 67, 0.2);
+  --mrt-btn-neutral-fill-hover: #f2f2f7;
+  --mrt-btn-secondary-fg: #1c1c1e;
   --mrt-dialog-surface: #ffffff;
   --mrt-dialog-header: #f5f5f7;
-  --mrt-dialog-border: rgba(15, 23, 42, 0.16);
-  --mrt-scrim: rgba(15, 23, 42, 0.42);
-  --mrt-shadow: 0 4px 18px rgba(15, 23, 42, 0.12);
-  /* Status palette (the only colors): MRT Priority ERP */
-  --mrt-success: #2f855a;
+  --mrt-dialog-border: rgba(0, 0, 0, 0.08);
+  --mrt-scrim: rgba(28, 28, 30, 0.38);
+  --mrt-shadow: 0 4px 18px rgba(28, 28, 30, 0.1);
+  /* Status palette (the only colours). Dots/borders use the MRT hues; TEXT uses the darker *-text twin (WCAG AA on white and #f5f5f7). */
+  --mrt-success: #059669;
   --mrt-warning: #ca8a04;
-  --mrt-danger: #c53030;
-  /* Light primary button (Alex's rule: no dark fills): white fill, accent text and border */
+  --mrt-danger: #dc2626;
+  --qr-ok-text: #047857;
+  --qr-warn-text: #92400e;
+  --qr-bad-text: #b91c1c;
+  /* Light primary button (Alex's rule: no dark fills): white fill, dark text and border */
   --mrt-btn-primary-bg: #ffffff;
-  --mrt-btn-primary-fg: #0a1628;
-  --mrt-btn-primary-border: #334155;
-  --mrt-btn-primary-bg-hover: #e2e8f0;
+  --mrt-btn-primary-fg: #1c1c1e;
+  --mrt-btn-primary-border: #48484a;
+  --mrt-btn-primary-bg-hover: #f2f2f7;
+  /* Disabled controls stay legible: flat light fill, readable muted text (no opacity fade) */
+  --qr-disabled-bg: #f5f5f7;
+  --qr-disabled-fg: #6b6b70;
+  --qr-disabled-border: rgba(60, 60, 67, 0.18);
+  /* Wizard rail (MRT: mix of surface-muted 55% and surface) */
+  --qr-rail-bg: #fafafb;
   /* QR status tokens */
-  --qr-st-ok: var(--mrt-success);
-  --qr-st-warn: var(--mrt-warning);
+  --qr-st-ok: #059669;
+  --qr-st-warn: #b45309;
   --qr-st-bad: var(--mrt-danger);
-  --qr-st-none: #8a94a3;
+  --qr-st-none: #8e8e93;
 }

@@ -1,6 +1,6 @@
 /* Parts list status groups: structure only; look is in system.css (identical headers, status only as a dot). */
 .qr-pgroup-h { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.25rem; padding: 0.35rem 0.6rem; font: inherit; text-align: start; cursor: pointer; }
-.qr-pgroup-h:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--mrt-accent, #334155); }
+.qr-pgroup-h:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--mrt-accent, #3a3a3c); }
 .qr-pgroup-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .qr-pgroup-n { text-align: center; font-variant-numeric: tabular-nums; }
 .qr-pgroup-caret { width: 1em; text-align: center; }
