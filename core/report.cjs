@@ -15,13 +15,13 @@ function plainStatus(part) {
   return 'ready';
 }
 const L = {
-  en: { rcard: 'For route card', rcSpec: 'customer spec', rcGen: 'General / at delivery', title: 'RFQ review report', rfq: 'RFQ', customer: 'Customer', date: 'Date', parts: 'Parts', summary: 'Summary by group', group: 'Group', count: 'Count',
+  en: { rcard: 'For route card', rcSpec: 'customer specification', rcGen: 'General / at delivery', title: 'RFQ review report', rfq: 'RFQ', customer: 'Customer', date: 'Date', parts: 'Parts', summary: 'Summary by group', group: 'Group', count: 'Count',
     g: { ready: 'Fits us', needsDoc: 'Needs document', needsAnswer: 'Needs customer answer', notOurs: 'Not our material / process' },
-    part: 'Part', rev: 'Rev', material: 'Material', heat: 'Heat treat', coat: 'Coatings', paint: 'Paint', mask: 'Masking', seq: 'Operation sequence', flags: 'Flags',
+    part: 'Part', rev: 'Revision', material: 'Material', heat: 'Heat treatment', coat: 'Coatings', paint: 'Paint', mask: 'Masking', seq: 'Operation sequence', flags: 'Flags',
     stds: 'Standards', stStatus: { resolved: 'found in library', needsConfirm: 'check and confirm', needsDoc: 'needs document' }, none: '—', questions: 'Customer questions', docs: 'Documents to upload', noQ: 'No open questions.', noDocs: 'No documents needed.', page: 'Page', sev: { Blocker: 'Blocker', Question: 'Question', Document: 'Document', Warning: 'Warning' } },
   he: { rcard: 'לכרטיס מסלול', rcSpec: 'מפרט לקוח', rcGen: 'כללי / במסירה', title: 'דוח בדיקת בקשה להצעת מחיר', rfq: 'בקשה', customer: 'לקוח', date: 'תאריך', parts: 'חלקים', summary: 'סיכום לפי קבוצה', group: 'קבוצה', count: 'כמות',
     g: { ready: 'מתאים לנו', needsDoc: 'חסר מסמך', needsAnswer: 'ממתין לתשובת לקוח', notOurs: 'לא החומר / התהליך שלנו' },
-    part: 'מק"ט', rev: 'מהדורה', material: 'חומר', heat: 'טיפול תרמי', coat: 'ציפויים', paint: 'צבע', mask: 'מיסוך', seq: 'סדר פעולות', flags: 'סימונים',
+    part: 'מספר חלק', rev: 'מהדורה', material: 'חומר', heat: 'טיפול תרמי', coat: 'ציפויים', paint: 'צבע', mask: 'מיסוך', seq: 'סדר פעולות', flags: 'סימונים',
     stds: 'תקנים', stStatus: { resolved: 'נמצא בספרייה', needsConfirm: 'לבדוק ולאשר', needsDoc: 'חסר מסמך' }, none: '—', questions: 'שאלות ללקוח', docs: 'מסמכים להעלאה', noQ: 'אין שאלות פתוחות.', noDocs: 'אין צורך במסמכים.', page: 'עמוד', sev: { Blocker: 'חוסם', Question: 'שאלה', Document: 'מסמך', Warning: 'אזהרה' } },
 };
 const TONE = { ready: ['#dcfce7', '#166534', '#86efac'], needsDoc: ['#fef3c7', '#92400e', '#fcd34d'], needsAnswer: ['#e0f2fe', '#075985', '#7dd3fc'], notOurs: ['#fee2e2', '#991b1b', '#fca5a5'] };

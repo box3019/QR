@@ -22,14 +22,14 @@ function proc(s) {
 const LOC = [
   [/^note (\S+)$/i, 'הערה $1'], [/^Note (\S+) \(title block: SEE NOTES\)$/, 'הערה $1 (אזור הכותרת: SEE NOTES)'],
   [/^Routing chart$/, 'טבלת מסלול'], [/^Routing chart (\S+)$/, 'טבלת מסלול $1'], [/^routing (\S+)$/, 'מסלול $1'],
-  [/^step (\S+)$/i, 'שלב $1'], [/^parts list seq (\S+)$/i, 'רשימת חלקים, שורה $1'], [/^Parts list (.+)$/, 'רשימת חלקים $1'],
+  [/^step (\S+)$/i, 'שלב $1'], [/^parts list (?:seq|line) (\S+)$/i, 'רשימת חלקים, שורה $1'], [/^Parts list (.+)$/, 'רשימת חלקים $1'],
   [/^Drawing item table$/, 'טבלת פריטים בשרטוט'], [/^title block$/i, 'אזור הכותרת'], [/^view$/, 'מבט'],
   [/^PRODUCTION ROUTING CHART$/, 'טבלת מסלול ייצור'], [/^Drawing NOTES \+ PARTS LIST$/, 'הערות השרטוט + רשימת חלקים'], [/^Drawing NOTES$/, 'הערות השרטוט'],
 ];
 function loc(s) { s = String(s || ''); for (const [re, he] of LOC) if (re.test(s)) return s.replace(re, he); return s; }
 const INS = { 'heavy-duty': 'כבד', 'key-locked': 'נעילת מפתח', 'helical coil': 'סליל', insert: 'אינסרט', locking: 'נועל', 'non-locking': 'לא נועל', '': '' };
 const ins = (s) => (s in INS ? INS[s] : s);
-const UOM = { EA: "יח'", PCS: "יח'", PC: "יח'" };
+const UOM = { EA: 'יחידות', PCS: 'יחידות', PC: 'יחידות' };
 const uom = (s) => UOM[String(s || '').toUpperCase()] || s;
 const STEP = { general: 'כללי', material: 'חומר', machining: 'עיבוד', marking: 'סימון', surface: 'טיפול פני שטח', inserts: 'אינסרטים', inspection: 'בקרה', approval: 'אישור סופי', packing: 'אריזה', other: 'אחר', heat: 'טיפול טרמי', heattreat: 'טיפול טרמי', paint: 'צביעה', assembly: 'הרכבה', welding: 'ריתוך', cleaning: 'ניקוי', deburr: 'הסרת גרדים', process: 'תהליך' };
 const step = (s) => STEP[s] || (s ? STEP.other : '');
@@ -42,7 +42,7 @@ const DESC = {
   'Aluminium alloy 6061-T6 sheet and plate': 'סגסוגת אלומיניום 6061-T6, פח ולוח',
   'Aluminium alloy 6061-T6 bars, rods, wire': 'סגסוגת אלומיניום 6061-T6, מוטות וחוט',
   'Aluminium alloy 6061 extruded bar, rod, shapes': 'סגסוגת אלומיניום 6061, מוטות ופרופילים משוכים',
-  'Aluminium alloy bar/plate (former QQ-A spec)': 'סגסוגת אלומיניום, מוט / לוח (מפרט QQ-A לשעבר)',
+  'Aluminium alloy bar/plate (former QQ-A specification)': 'סגסוגת אלומיניום, מוט / לוח (מפרט QQ-A לשעבר)',
   'Aluminium alloy extruded bars, rods, wire, profiles and tubes': 'סגסוגת אלומיניום משוכה: מוטות, חוט, פרופילים וצינורות',
   'Aluminium and aluminium-alloy sheet and plate': 'אלומיניום וסגסוגותיו, פח ולוח',
   'Autocatalytic (electroless) nickel-phosphorus coatings on metal': 'ציפוי ניקל-זרחן כימי (ללא זרם) על מתכת',

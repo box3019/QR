@@ -6,7 +6,7 @@ const AS5202 = require('./data/as5202.json');
 const DEFS = [
   { id: 'AS5202', kind: 'port', paid: true, aliases: ['AS-5202', 'AS 5202'], equivalent: ['MS33649'], table: AS5202, kit: 'fitting',
     title: 'Port, internal straight thread, boss / fluid connection', fittings: 'AS4875',
-    notes: { en: ['Equivalent to MS33649.', 'The port is for AS4875 fittings.', 'B is the full-thread depth for a blind tap.', 'G may be reduced by .040 for a raised surface.', 'N is perpendicularity to the threads at G min.'],
+    notes: { en: ['Equivalent to MS33649.', 'The port is for AS4875 fittings.', 'B is the full-thread depth for a blind tap.', 'G may be reduced by .040 for a raised surface.', 'N is perpendicularity to the threads at G minimum.'],
       he: ['שווה ערך ל־MS33649.', 'הפתח מיועד למחברים לפי AS4875.', 'B הוא עומק ההברגה המלאה בהברגה עיוורת.', 'מותר להקטין את G ב־.040 למשטח מוגבה.', 'N הוא ניצבות להברגה ב־G מינימלי.'] } },
   { id: 'MS33649', kind: 'port', paid: false, aliases: ['MS 33649'], sameAs: 'AS5202', kit: 'fitting', title: 'Boss, fluid connection, internal straight thread' },
   { id: 'AS568', kind: 'oring', paid: true, aliases: ['AS568A', 'AS568B', 'AS568C', 'AS568D', 'AS-568'], kit: 'oring', title: 'Aerospace size standard for O-rings' },

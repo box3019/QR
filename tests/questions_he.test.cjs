@@ -10,7 +10,7 @@ test('Hebrew export: RTL, translated, internal process problems excluded', () =>
   const h = questionsHtml([part], 'he');
   assert.match(h, /dir="rtl"/); assert.match(h, /שאלות ללקוח/); assert.match(h, /אינו בין החומרים/); assert.match(h, /כמות האינסרטים/);
   assert.doesNotMatch(h, /DLC/);
-  assert.match(questionsText([part], 'he'), /^מק"ט X1/);
+  assert.match(questionsText([part], 'he'), /^מספר חלק X1/);
   assert.match(questionsHtml([part], 'en'), /dir="ltr"/);
   assert.match(sampleQuestion('he'), /[\u0590-\u05FF]/); assert.match(sampleQuestion('en'), /^Insert quantity/);
 });

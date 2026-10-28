@@ -7,7 +7,7 @@ const PUBLIC = [
   [/^AMS[- ]?4027/, 'Aluminium alloy 6061-T6 sheet and plate'],
   [/^AMS[- ]?4117/, 'Aluminium alloy 6061-T6 bars, rods, wire'],
   [/^AMS[- ]?QQ-A-200\/8/, 'Aluminium alloy 6061 extruded bar, rod, shapes'],
-  [/^AMS[- ]?QQ-A-2(25|50)/, 'Aluminium alloy bar/plate (former QQ-A spec)'],
+  [/^AMS[- ]?QQ-A-2(25|50)/, 'Aluminium alloy bar/plate (former QQ-A specification)'],
   [/^ASTM B221/, 'Aluminium alloy extruded bars, rods, wire, profiles and tubes'],
   [/^ASTM B209/, 'Aluminium and aluminium-alloy sheet and plate'],
   [/^(?:SAE-)?AMS-C-26074/, 'Coatings, electroless nickel, requirements for'],

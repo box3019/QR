@@ -63,7 +63,7 @@ export const TOUR_TEXT = {
       import: ['Reading the files', 'QR reads all the files by itself. When done, it moves to the next step on its own.'],
       groups: ['Part groups', 'Parts are sorted by color: ours, to check, and not ours. Click a part to open it.'],
       drawing: ['The drawing', 'Drag to move and scroll to zoom. You can see every detail.'],
-      card: ['The part card', 'It shows the material, heat treat, coatings, paint and masking. They are listed in work order.'],
+      card: ['The part card', 'It shows the material, heat treatment, coatings, paint and masking. They are listed in work order.'],
       flags: ['What to do with a part', 'Red marks need attention. Confirm, ask the customer, or upload a missing document.'],
       docs: ['Documents and questions', 'See which documents are missing and which questions go to the customer.'],
       summary: ['Summary', 'Export the questions, the sheet and the report from here.'],

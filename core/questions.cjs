@@ -8,10 +8,10 @@ const HE = [
   [/^Insert quantity (\d+) in the table, (\d+) holes on the view\./, (m) => `כמות האינסרטים בטבלה ${m[1]}, אך במבט ${m[2]} חורים. נא לאשר את הכמות.`],
   [/^No thread callout (\S+) on the views for insert (\S+) \(([^)]*)\)\./, (m) => `לא נמצאה במבטים הברגה ${m[1]} עבור אינסרט ${m[2]} (${m[3]}). נא להבהיר.`],
   [/^Thread (\S+) for an insert on the view has no matching insert in the parts list\./, (m) => `להברגה ${m[1]} עם אינסרט במבט אין אינסרט מתאים ברשימת החלקים. איזה אינסרט להתקין?`],
-  [/^Alternative (\S+) \(cat\. (\d+)\) under seq (\S+) is described as (\S+), but the primary insert (\S+) is (\S+)\./, (m) => `החלופה ${m[1]} (מק"ט ${m[2]}) בשורה ${m[3]} ברשימת החלקים מתוארת כ-${m[4]}, אך האינסרט הראשי ${m[5]} הוא ${m[6]}. נא לאשר את החלופה.`],
+  [/^Alternative (\S+) \((?:catalog number|cat\.) (\d+)\) (?:on parts list line|under seq) (\S+) is described as (\S+), but the primary insert (\S+) is (\S+)\./, (m) => `החלופה ${m[1]} (מספר קטלוגי ${m[2]}) בשורה ${m[3]} ברשימת החלקים מתוארת כ-${m[4]}, אך האינסרט הראשי ${m[5]} הוא ${m[6]}. נא לאשר את החלופה.`],
   [/^Note (\S+) "PAINT \.\.\. USING:" gives no paint specification or colour(?: \(only ([^)]*)\))?/, (m) => `הערה ${m[1]}: צביעה "USING:" ללא מפרט צבע וגוון${m[2] ? ` (מופיע רק ${m[2].replace(/find no\./g, 'פריט מס\'').replace(/of the separate part list/, 'ברשימת החלקים הנפרדת')})` : ''}. נא לשלוח מפרט צבע וגוון או את רשימת החלקים הנפרדת.`],
   [/^Note (\S+) \(black anodize\) is not assigned to any surface on the views(?:, while note (\S+) \(chemical conversion\) is marked on (\d+) surfaces)?\./, (m) => `הערה ${m[1]} (אנודייז שחור) אינה מסומנת על אף משטח במבטים${m[2] ? `, בעוד הערה ${m[2]} (ציפוי המרה כימי) מסומנת על ${m[3]} משטחים` : ''}. אילו משטחים מקבלים אנודייז?`],
-  [/^Range (.+): min is larger than max\./, (m) => `בטווח ${m[1]} הערך המינימלי גדול מהמקסימלי. נא לתקן.`],
+  [/^Range (.+): (?:minimum is larger than maximum|min is larger than max)\./, (m) => `בטווח ${m[1]} הערך המינימלי גדול מהמקסימלי. נא לתקן.`],
   [/^Datum (\S) is referenced in a tolerance frame but no datum feature \S+ was found\./, (m) => `דטום ${m[1]} מופיע במסגרת טולרנס אך אינו מוגדר בשרטוט. נא להגדיר.`],
   [/^(?:Material not found|No material found)/, () => 'לא נמצא חומר בשרטוט. נא לציין את מפרט החומר.'],
   [/^(.+?) is not in the materials list — "([^"]*)"/, (m) => `החומר ${m[1]} ("${m[2]}") אינו בין החומרים שאנו עובדים איתם. האם ניתן להחליף לחומר אחר?`],
@@ -43,8 +43,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 function questionsHtml(parts, lang = 'he', meta = {}) {
   const groups = buildQuestions(parts, lang);
   const he = lang === 'he';
-  const L = he ? { title: 'שאלות ללקוח', part: 'מק"ט', rev: 'מהדורה', n: '#', q: 'שאלה', sev: 'סוג', date: 'תאריך', none: 'אין שאלות פתוחות.', sevMap: { Blocker: 'חוסם', Question: 'שאלה', Document: 'מסמך' } }
-    : { title: 'Customer questions', part: 'Part', rev: 'Rev', n: '#', q: 'Question', sev: 'Type', date: 'Date', none: 'No open questions.', sevMap: { Blocker: 'Blocker', Question: 'Question', Document: 'Document' } };
+  const L = he ? { title: 'שאלות ללקוח', part: 'מספר חלק', rev: 'מהדורה', n: '#', q: 'שאלה', sev: 'סוג', date: 'תאריך', none: 'אין שאלות פתוחות.', sevMap: { Blocker: 'חוסם', Question: 'שאלה', Document: 'מסמך' } }
+    : { title: 'Customer questions', part: 'Part', rev: 'Revision', n: '#', q: 'Question', sev: 'Type', date: 'Date', none: 'No open questions.', sevMap: { Blocker: 'Blocker', Question: 'Question', Document: 'Document' } };
   const date = new Date().toLocaleDateString('en-GB');
   let body = '';
   for (const g of groups) {
@@ -62,7 +62,7 @@ function questionsHtml(parts, lang = 'he', meta = {}) {
   </style></head><body><h1>${L.title}</h1><div class="meta">${L.date}: ${date}${meta.customer ? ' · ' + esc(meta.customer) : ''}</div>${body}</body></html>`;
 }
 function questionsText(parts, lang = 'he') {
-  return buildQuestions(parts, lang).map((g) => `${lang === 'he' ? 'מק"ט' : 'Part'} ${g.partNo} rev ${g.rev || '-'}\n` + g.questions.map((q, i) => `${i + 1}. ${q.text}`).join('\n')).join('\n\n');
+  return buildQuestions(parts, lang).map((g) => `${lang === 'he' ? 'מספר חלק' : 'Part'} ${g.partNo} ${lang === 'he' ? 'מהדורה' : 'revision'} ${g.rev || '-'}\n` + g.questions.map((q, i) => `${i + 1}. ${q.text}`).join('\n')).join('\n\n');
 }
 /** One sample question in the chosen export language (Settings preview). */
 const SAMPLE = { message: 'Insert quantity 10 in the table, 8 holes on the view.', suggestion: 'Confirm the quantity.' };

@@ -4,10 +4,10 @@ const test = require('node:test'); const assert = require('node:assert'); const 
 const { HEAD } = require('../core/requirements/sheets.cjs');
 const load = () => import(pathToFileURL(path.join(__dirname, '..', 'src', 'parts', 'breakdown.mjs')).href);
 const COL = {
-  Material: { Family: 'family', Alloy: 'alloy', Temper: 'temper', Form: 'form', Standards: 'stds', 'Raw dimensions': 'dims', 'Cat no': 'catno', Qty: 'qty', Unit: 'unit', 'Source text': 'src' },
-  Processes: { 'No.': 'no', Process: 'process', Subtype: 'subtype', Layer: 'layer', Detail: 'detail', 'Standards / specs': 'stds', 'Type / Class': 'typecls', Thickness: 'thick', Coats: 'coats', Color: 'color', Hardness: 'hard', Temperature: 'temp', 'Case depth': 'case', Flags: 'flags', 'Source text': 'src' },
-  Masking: { 'No.': 'no', Method: 'method', 'Areas masked': 'areas', 'Before process': 'before', Standards: 'stds', Flags: 'flags', 'Source text': 'src' },
-  'Process summary': { 'Heat treat': 'heatTreat', Masking: 'masking', 'Coatings (in order)': 'coatings', Paint: 'paint', Flow: 'flow', Flagged: 'flagged' },
+  Material: { Family: 'family', Alloy: 'alloy', Temper: 'temper', Form: 'form', Standards: 'stds', 'Raw dimensions': 'dims', 'Catalog number': 'catno', Quantity: 'qty', Unit: 'unit', 'Source text': 'src' },
+  Processes: { Number: 'no', Process: 'process', Subtype: 'subtype', Layer: 'layer', Detail: 'detail', 'Standards / specifications': 'stds', 'Type / Class': 'typecls', Thickness: 'thick', Coats: 'coats', Color: 'color', Hardness: 'hard', Temperature: 'temp', 'Case depth': 'case', Flags: 'flags', 'Source text': 'src' },
+  Masking: { Number: 'no', Method: 'method', 'Areas masked': 'areas', 'Before process': 'before', Standards: 'stds', Flags: 'flags', 'Source text': 'src' },
+  'Process summary': { 'Heat treatment': 'heatTreat', Masking: 'masking', 'Coatings (in order)': 'coatings', Paint: 'paint', Flow: 'flow', Flagged: 'flagged' },
 };
 const KIND = { Material: 'material', Processes: 'proc', Masking: 'mask', 'Process summary': 'summary' };
 test('every sheet column maps to a field the sheets builder writes', () => {

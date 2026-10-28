@@ -43,7 +43,7 @@ function detectProfile({ text = '', fileName = '', emails = [] }, customers) {
     for (const dom of d.emailDomains || []) { const x = String(dom).toLowerCase().replace(/^@/, ''); if (x && domains.some((h) => h === x || h.endsWith('.' + x))) { score += WEIGHT.emailDomains; why.push('e-mail ' + x); break; } }
     for (const f of d.filenamePatterns || []) if (f && new RegExp('^' + simplePattern(f.toUpperCase()) + '$').test(F)) { score += WEIGHT.filenamePatterns; why.push('file ' + f); break; }
     for (const k of d.keywords || []) if (k && new RegExp(keywordPattern(k), 'i').test(T)) { score += WEIGHT.keywords; why.push('keyword ' + k); break; }
-    for (const p of d.partNoPatterns || []) if (p && new RegExp('(?<![A-Z0-9])' + simplePattern(p.toUpperCase()) + '(?![A-Z0-9])').test(T)) { score += WEIGHT.partNoPatterns; why.push('part no. ' + p); break; }
+    for (const p of d.partNoPatterns || []) if (p && new RegExp('(?<![A-Z0-9])' + simplePattern(p.toUpperCase()) + '(?![A-Z0-9])').test(T)) { score += WEIGHT.partNoPatterns; why.push('part number ' + p); break; }
     if (score && (!best || score > best.score)) best = { c, score, why };
   }
   const c = best ? best.c : list.find((x) => x.id === 'GENERIC') || BUILTINS[BUILTINS.length - 1];

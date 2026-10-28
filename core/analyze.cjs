@@ -279,13 +279,13 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   const chartMat = chartInfo && materialFromChart(chartInfo.chart);
   if (chartMat && (parseMaterial(chartMat.raw) || isMaterialValue(chartMat.raw)) && !material) material = { ...chartMat, friend: material && material.friend };
   const matLine = bom.find((b) => isMaterialValue(b.desc) && !/INSERT/.test(b.desc));
-  if (matLine && !material) material = { raw: matLine.desc, source: 'Parts list seq ' + matLine.seq, catalogNo: matLine.catalogNo, conf: 1 };
+  if (matLine && !material) material = { raw: matLine.desc, source: 'Parts list line ' + matLine.seq, catalogNo: matLine.catalogNo, conf: 1 };
   if (!material && customer === 'RAFAEL') { const s = route.find((r) => r.seq === '20'); const it = s && s.items.find((i) => isMaterialValue(i.text)); if (it) material = { raw: it.text, source: 'Routing chart ' + it.seq, catalogNo: (it.text.match(/\b(\d{9})\b/) || [])[1], conf: 1 }; }
   let tbSeeNotes = false;
   if (!material) for (const p of pages) { const m = materialFromTitleBlock(p); if (m && m.raw) { material = m; break; } if (m && m.seeNotes) tbSeeNotes = true; }
   if (!material) { const n = notes.find((x) => /^MATERIAL\s*:/.test(x.text) && isMaterialValue(x.text)); if (n) material = { raw: n.text.replace(/^MATERIAL\s*:\s*/, ''), source: 'Note ' + n.n + (tbSeeNotes ? ' (title block: SEE NOTES)' : ''), conf: 1 }; }
   // capability: material + processes vs the enabled catalog (core/checks/capability.cjs)
-  const capLines = [...notes.map((n) => ({ text: n.text, where: 'note ' + n.n })), ...route.flatMap((r) => r.items.map((i) => ({ text: i.text, where: (routeSource.startsWith('PRODUCTION') ? 'routing ' : 'step ') + (i.seq || r.seq) }))), ...bom.map((b) => ({ text: b.desc, where: 'parts list seq ' + b.seq }))];
+  const capLines = [...notes.map((n) => ({ text: n.text, where: 'note ' + n.n })), ...route.flatMap((r) => r.items.map((i) => ({ text: i.text, where: (routeSource.startsWith('PRODUCTION') ? 'routing ' : 'step ') + (i.seq || r.seq) }))), ...bom.map((b) => ({ text: b.desc, where: 'parts list line ' + b.seq }))];
   const cap = checkCapability({ material, lines: capLines, catalog: settings.catalog || defaultCatalog() });
   let { status, rejectReason, rejectKey } = cap;
   if (material) {
