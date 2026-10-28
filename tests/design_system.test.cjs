@@ -25,8 +25,8 @@ test('list: identical group headers (name + count + dot), rows = PN + rev + one 
   assert.doesNotMatch(p, /qr-reject|parts\.noMaterial|rejectReason/); assert.match(p, /<PlainStatusBadge part=\{p\} \/>/);
   assert.match(sys, /\.qr-part\[data-active='true'\] \{[^}]*border-color: var\(--mrt-accent\)/); assert.doesNotMatch(R('src/styles/qr.css'), /\.qr-part\[data-active/);
 });
-test('tiles on Check parts and Documents & questions (both use PartsPanel), tiles are not buttons', () => {
-  assert.match(R('src/views/Parts.tsx'), /<Tiles /); assert.match(R('src/components/wizard/StepCheckParts.tsx'), /PartsPanel/); assert.match(R('src/components/wizard/StepDocsQuestions.tsx'), /PartsPanel/);
+test('tiles on Check parts and Documents & questions (both use PartsList), tiles are not buttons', () => {
+  assert.match(R('src/views/Parts.tsx'), /<Tiles /); assert.match(R('src/components/wizard/StepCheckParts.tsx'), /PartsList/); assert.match(R('src/components/wizard/StepDocsQuestions.tsx'), /PartsList/);
   const t = R('src/ui/Tiles.tsx'); assert.doesNotMatch(t, /<button/); assert.match(sys, /\.qr-tile \{[^}]*background: var\(--mrt-surface\)/);
   assert.match(R('src/views/Parts.tsx'), /tile\.allGood/);
 });

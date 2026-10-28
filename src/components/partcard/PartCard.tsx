@@ -30,20 +30,12 @@ export function PartCard({ part, n, sel, setSel, details, onFocus, goStep }: any
   const stateOf = (b: any) => (b.kind === 'field' && b.sec ? { ok: !!card.ok[fkey(b)] } : local[b.id]);
   const good = allGood(blocks.map((b: any) => (local[b.id] ? { ...b, status: 'ok' } : b)));
   return <div className="qr-panel" data-testid="breakdown-panel">
-    <div className="qr-card-h">
-      <span className="qr-pn qr-ltr" data-testid="card-pn">{part.partNo}</span>{part.rev ? <span className="qr-muted"> {t('bd.rev')} {part.rev}</span> : null}
-      <span className="qr-muted qr-card-of" data-testid="card-of">{t('bd.of', { i: sel + 1, n })}</span>
-    </div>
     <div className="qr-scroll qr-card" data-testid="processes-panel">
       {good && <div className="qr-allgood" data-testid="all-good"><i className="qr-dot" data-s="ok" aria-hidden="true" />{t('blk.allGood')}</div>}
       <div className="qr-blocks" data-testid="blocks">
         {blocks.map((b: any) => <BlockCard key={b.id} block={b} part={part} open={!!openIds[b.id]} onToggle={() => toggle(b)} onAction={act} state={stateOf(b)} />)}
       </div>
       {pages.some((p: any) => p.rows.length) && <button type="button" className={MRT_BTN + ' qr-sec-table'} data-testid="btn-bd-table" title={t('tip.bdTable')} onClick={() => setTable(true)}>{t('bd.table')}</button>}
-    </div>
-    <div className="qr-card-nav">
-      <button type="button" className={MRT_BTN} data-testid="btn-prev-part" disabled={sel === 0} title={sel === 0 ? t('dis.firstPart') : t('tip.prevPart')} onClick={() => setSel(sel - 1)}>{t('bd.prev')}</button>
-      <button type="button" className={MRT_BTN_PRIMARY} data-testid="btn-next-part" title={last ? t('tip.toDocs') : t('tip.nextPart')} onClick={() => (last ? goStep(3) : setSel(sel + 1))}>{last ? t('bd.toDocs') : t('bd.nextPart')}</button>
     </div>
     {table && <TableDialog part={part} onClose={() => setTable(false)} />}
   </div>;

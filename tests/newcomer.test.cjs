@@ -25,6 +25,6 @@ test('the next-step line is in the step header and is clickable', () => { const 
   assert.ok(/<NextStep/.test(h)); assert.ok(/data-testid="next-step"/.test(n) && /onClick=\{\(\) => onGo\(next\.go\)\}/.test(n) && /title=\{t\('tip\.nextLine'\)\}/.test(n)); assert.ok(/nextAction\(step, parts/.test(src('src/ProjectView.tsx'))); });
 test('one primary action per screen', () => { const s = src('src/components/wizard/StepSummary.tsx'); const prim = (s.match(/MRT_BTN_PRIMARY\}/g) || []).length;
   assert.strictEqual(prim, 1); // only the conditional Excel one assert.ok(/nq > 0 \? MRT_BTN_PRIMARY : MRT_BTN/.test(s) && /nq > 0 \? MRT_BTN : MRT_BTN_PRIMARY/.test(s) && !/className=\{MRT_BTN_PRIMARY\} data-testid="btn-export-pdf"/.test(s));
-  assert.ok(/step === 3 \? MRT_BTN_PRIMARY/.test(src('src/components/wizard/WizardFooter.tsx'))); });
+  assert.ok(/!partOpen \? MRT_BTN_PRIMARY/.test(src('src/components/wizard/WizardFooter.tsx'))); });
 test('Cancel clears with Undo instead of a question; nothing is deleted', () => { const v = src('src/ProjectView.tsx');
   assert.ok(/onCancel=\{clearAll\}/.test(v) && /undo: \(\) =>/.test(v) && !/confirm\(t\('wz\.cancelAsk'\)\)/.test(v)); assert.ok(/notice-action/.test(src('src/ui/Notice.tsx')) && /undoBox/.test(src('src/App.tsx'))); });

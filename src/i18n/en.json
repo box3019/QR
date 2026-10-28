@@ -609,5 +609,22 @@
   "dis.presetSame": "This look is already applied. Choose another one to enable Apply.",
   "notice.cleared": "RFQ cleared. Nothing is deleted: it stays in History.",
   "notice.undo": "Undo",
-  "dis.firstPart": "This is the first part: there is no previous one."
+  "dis.firstPart": "This is the first part: there is no previous one.",
+  "pv.back": "Back to list",
+  "pv.tipBack": "Close this part and go back to the list of parts (Esc)",
+  "pv.prev": "Previous",
+  "pv.tipPrev": "Previous part in the list (Left arrow)",
+  "pv.next": "Next part",
+  "pv.tipNext": "Go to the next part that needs an action (Right arrow)",
+  "pv.toDocs": "To documents",
+  "pv.tipToDocs": "No more parts need a check: continue to Documents & questions",
+  "pv.toSummary": "To summary",
+  "pv.tipToSummary": "No more parts need an action: continue to the summary",
+  "pv.of": "Part {i} of {n}",
+  "pl.open": "Open part {pn}",
+  "rsn.ready": "Ready, nothing to do",
+  "rsn.needsDoc": "Needs document {std}",
+  "rsn.needsDocN": "Needs {n} documents, first {std}",
+  "rsn.pending": "Waiting for your check",
+  "rsn.notOurs": "Not our material or process"
 }

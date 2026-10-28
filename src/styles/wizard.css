@@ -191,3 +191,21 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-next-line:hover { background: var(--mrt-btn-neutral-fill, rgba(127,127,127,0.12)); }
 .qr-next-line > span:first-of-type { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qr-notice-undo { margin-top: 0.4rem; }
+
+/* One-focus Check parts: list view (full width) or part view (drawing beside the part's blocks). No third column. */
+.qr-root .qr-body.qr-onefocus { display: flex !important; flex-direction: column; gap: var(--qr-gap, 0.75rem); min-height: 0; }
+.qr-plist { display: flex; flex-direction: column; gap: 0.75rem; flex: 1; min-height: 0; }
+.qr-plist-box { flex: 1; min-height: 0; }
+.qr-prow { display: grid; grid-template-columns: minmax(7rem, 14rem) 3.5rem 9.5rem minmax(0, 1fr) 1rem; align-items: center; gap: 0.75rem; width: 100%; padding: 0.55rem 0.9rem; text-align: start; background: transparent; border: 0; border-bottom: 1px solid var(--mrt-border, rgba(127, 127, 127, 0.25)); font: inherit; color: inherit; cursor: pointer; border-radius: 0; }
+.qr-prow:hover, .qr-prow:focus-visible { background: rgba(127, 127, 127, 0.12); outline: none; }
+.qr-prow[data-active='true'] { box-shadow: inset 3px 0 0 var(--mrt-accent, #5b8def); }
+.qr-prow-pn { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qr-prow-why { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.qr-prow-sub { grid-column: 1 / -1; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.qr-pnav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.qr-pnav-title { font-weight: 600; }
+.qr-chev-back { margin-inline-start: 0; margin-inline-end: 0.35rem; }
+.qr-pview-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(340px, 2fr); gap: 0.75rem; }
+.qr-pview-cols.qr-pview-one { grid-template-columns: minmax(0, 1fr); }
+.qr-pview-cols > * { min-height: 0; min-width: 0; }
+@media (max-width: 1000px) { .qr-pview-cols { grid-template-columns: minmax(0, 1fr); } .qr-prow { grid-template-columns: minmax(6rem, 10rem) 3rem 8.5rem minmax(0, 1fr) 1rem; } }.qr-pview-one > * { width: 100%; max-width: 1100px; margin-inline: auto; }
