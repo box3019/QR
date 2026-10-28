@@ -12,7 +12,7 @@ let bad = 0; const ok = (c, m) => { console.log(c ? 'ok   ' : 'FAIL ', m); if (!
   await size(); await win.waitForTimeout(900);
   if (await win.$('[data-testid=first-run]')) { ok(!(await win.$('[data-testid=first-run] select')), 'first-run tour has no select'); await win.click('[data-testid=first-run-ok]'); }
   const p = (n) => path.join(out, `v017_${n}.png`);
-  const setL = async (l) => { await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x, textSize: 'normal' }), l); await win.waitForTimeout(400); };
+  const setL = async (l) => { await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x === 'ru' ? 'en' : x, assistantLanguage: x, textSize: 'normal' }), l); await win.waitForTimeout(400); };
   const rect = (sel) => win.evaluate((s) => { const r = document.querySelector(s).getBoundingClientRect(); return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }; }, sel);
   // 1. header HE / EN
   await size();
@@ -36,12 +36,10 @@ let bad = 0; const ok = (c, m) => { console.log(c ? 'ok   ' : 'FAIL ', m); if (!
     }
     ok(nsel > 3, `${l}: audited ${nsel} selects across ${tabs.length} Settings tabs`);
     await (await win.$$('.qr-settings-tab'))[0].click();
-    // ru option + note
-    await win.selectOption('[data-testid=ui-lang]', 'ru'); await win.waitForTimeout(300);
-    ok(!!(await win.$('[data-testid=ru-note]')), `${l}: Russian chosen -> the small note is shown (Settings only)`);
-    if (l === 'en') await win.screenshot({ path: p('settings_ru_note') });
-    await win.selectOption('[data-testid=ui-lang]', l); await win.waitForTimeout(200);
-    ok(!(await win.$('[data-testid=ru-note]')), `${l}: note hidden again for ${l}`);
+    // v0.1.5 (7:16): the UI language is en/he only; Russian lives in the Assistant language
+    ok((await win.$$eval('[data-testid=ui-lang] option', (o) => o.map((x) => x.value))).join() === 'en,he', `${l}: UI language offers only en/he`);
+    await win.click('[data-testid=stab-assistant]'); await win.waitForTimeout(200);
+    ok((await win.$$eval('[data-testid=assistant-lang] option', (o) => o.map((x) => x.value))).includes('ru'), `${l}: the Assistant language offers Russian`);
     await win.keyboard.press('Escape'); const x = await win.$('[data-testid=settings-dialog]'); if (x) await win.click('[data-testid=settings-dialog] >> text=/Cancel|ביטול/').catch(() => {});
     await win.waitForTimeout(300);
   }

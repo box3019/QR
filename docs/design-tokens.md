@@ -93,6 +93,34 @@ QR caps (px, never grow with the text-size setting): wizard step 14px/40px row w
 - "All good" is a calm positive message, not an empty list.
 - Details only on click (chevron on every block).
 
+## Themes and Settings > Interface (v0.1.5, 28.10)
+QR reimplements the choices of MRT's Settings > Appearance with its own code (no shared code); the language and the assistant are separate sections.
+
+| QR option | Values | MRT counterpart |
+|---|---|---|
+| Theme | Aris Liquid Glass (default light), Dark Graphite, Industrial Steel, Warm Neutral, Soft Salad, Soft Beige, Soft Olive Gray, High Contrast | MRT colour palettes (8 of its 12; iCloud Windows, CleanMyMac, Priority ERP and Custom are not reimplemented) |
+| Accent | Slate (default), Blue, Teal, Amber | MRT accent colour. In MRT the accent does not change the preset palettes; in QR it really recolours focus, current step, selection and progress |
+| Text size | Normal, Large, Extra large, Huge | MRT text size |
+| Density | Comfortable, Normal, Compact | MRT density |
+| Table row height | Compact, Normal, Relaxed | MRT table row height |
+| UI language | English, Hebrew (RTL) | n/a |
+
+How the themes map to MRT (measured on the PC with the dev build cmm-pr3 v9.0.52):
+- **Light = MRT light.** Default Aris tokens come from the Create-CMM wizard: canvas `#ebebed`, white cards, text `#1c1c1e`, muted `#48484a`-class greys, light buttons.
+- **Dark = MRT Dark Graphite.** Canvas `#252b36`, cards `#3d4654`, bars `#343d4a`, side column `#2d3440`, text `#ffffff`, muted `#e2e8f0`, accent `#b8c4d4`. MRT keeps its Create-CMM wizard light even in Dark Graphite (only the main window goes dark), so the dark values come from the MRT main window; QR darkens the whole app with the same layers. Buttons stay light-on-dark translucent fills (no dark fills).
+- The other six light themes only retint the canvas, as MRT does (the cards, bars and text stay the same); High Contrast uses black text and strong borders.
+- Where a canvas tint is darker than the default, the muted text and OK-green are darkened so the 4.5:1 rule holds on the canvas too.
+
+Selectors: tokens live in `src/styles/qrPalette.css` (light base), `src/styles/themes.css` (tints, dark, accents) with specificity >= (0,3,0), loaded after `mrtLiquidGlass.css`. The root carries `data-mrt-palette`/`data-mrt-theme` (light bypasses MRT's own presets), `data-qr-palette`, `data-qr-accent`, `data-qr-density`, `data-qr-rows`. The Settings previews use the same tokens on `.qr-pal-prev` / `.qr-acc-sw`.
+
+## Surface layering and layout (v0.1.5)
+Layers, from the back: **canvas** (`--mrt-bg`, tinted: `#ebebed` light, `#252b36` dark) < **bars** (top bar, step header, footer: `--mrt-chrome-surface` / `--mrt-header-bg`, 1px border + light shadow) < **side column** (`--qr-rail-bg`, its own tone and 1px edge) < **cards** (`--mrt-surface`, 1px `--mrt-border-strong`, radius 10px, `--qr-card-shadow`). Nothing is flat white: a white card always sits on a tinted canvas.
+- Content is a centred container with `max-width: 1360px` (`--qr-max`); Check parts and Documents use the full width for their panes. No half-empty screen at 1920 or 1280.
+- Step 4 Summary: stat tiles across the top (parts, our four groups, questions), then a 2-column card grid: customer questions / Excel / report on screen / PDF report. Each card has a header band, a text and ONE small button at the card's end (right in LTR, left in RTL). One column below 900px.
+- The "reading drawing 1 of 3" progress toast is a card: header with a status dot and percentage, text, progress bar.
+- Spacing comes from density: `--qr-space` 16/12/8px and `--qr-card-pad` 18/14/10px.
+- `tests/contrast.test.cjs` resolves every theme x accent (32 token sets) and checks text >= 4.5:1 on canvas, cards, bars and side column, buttons incl. hover/disabled >= 4.5:1, status dots and borders >= 3:1, and that cards are visibly different from the canvas (no flat white, no grey-on-grey).
+
 ## Where it lives
 - Palette: `src/styles/qrPalette.css`. Components: `src/styles/system.css` (imported last).
 - Blocks: `src/parts/blocks.mjs` (logic), `src/components/partcard/BlockCard.tsx` (UI).
@@ -104,3 +132,28 @@ QR caps (px, never grow with the text-size setting): wizard step 14px/40px row w
 - The Priority ERP and CleanMyMac takeaways above are inspiration from the preset and general knowledge of those products; no public screenshots were browsed or copied.
 - Buttons, including the "primary" one, are light neutral (white fill, `#48484a` border, `#1c1c1e` text). No blue, no dark fills; colour appears only in the 8px status dot.
 - Deviation (deliberate, 10:29 PM rule "colour only for status"): the primary button no longer uses MRT's blue text/border measured in cmm-pr3; it is the neutral pair above. Everything else (radius 6px, height 32px, 14px text, 1px border) is MRT's measured value.
+
+## The 11 built-in visual presets (Settings > Interface)
+
+QR reimplements MRT's "Built-in visual presets" screen with its own code and the token values read from MRT's preset token maps (MRT 9.0.52).
+Each preset is a full visual direction: typography (`--mrt-font-family`), corner radius (`--mrt-radius`, `--qr-card-r`), table density (`--qr-cell-px`, `--qr-row-py`),
+accent usage (the primary button is a light tint of the preset accent, weighted like MRT; never a dark fill), chrome density, surfaces (canvas < bars < rail < cards), and status colours.
+
+| Preset | Canvas | Surface | Text | MRT accent | Character |
+| --- | --- | --- | --- | --- | --- |
+| Aris Liquid Glass / iOS 27 | #ebebed | #ffffff | #1c1c1e | #48484a | SF Pro, radius 10 |
+| iCloud Windows | #ebebed | #ffffff | #1c1c1e | #48484a | Segoe UI, airy cells (11/6) |
+| CleanMyMac | #eadfeb | #ffffff | #111827 | #9a86b5 | lilac canvas, salad-green ready |
+| Priority ERP | #b8bcc4 | #f4f5f7 | #0a1628 | #334155 | enterprise grey, practical tables |
+| Industrial Steel (default) | #b8c0cc | #ffffff | #020617 | #1e293b | steel grid, dark separators |
+| Dark Graphite | #252b36 | #3d4654 | #ffffff | #b8c4d4 | true dark |
+| Warm Neutral | #e5dcc8 | #fffdf8 | #1c1917 | #57534e | paper-warm |
+| Soft Salad / Light Green | #e2ebe4 | #ffffff | #1c1f1e | #526958 | green-grey |
+| Soft Beige / Sand | #ece5d8 | #ffffff | #2a2520 | #6f6252 | sand |
+| Soft Olive Gray | #e4e6df | #ffffff | #252622 | #5a5f50 | olive-grey |
+| High Contrast | #eef2f6 | #ffffff | #000000 | #000000 | solid borders |
+
+The default is Industrial Steel (MRT's default). Old stored `aris-glass` values stay valid. Text uses a darker twin of the accent where the MRT accent is below 4.5:1
+(`--mrt-accent`; the MRT value is kept in `--qr-accent-mrt` and used for fills and the mini mock). The mid-tone canvases (Industrial Steel, Priority ERP) use darker status-text twins.
+The screen has an intro and a chip row, a card grid with a mini QR UI mock per preset (top bar, input, table, status bars), a SELECTED badge,
+click-to-preview and an Apply button that persists the choice. Tiles are not buttons: the cards are radio tiles, Apply and the chips are compact buttons with tooltips.

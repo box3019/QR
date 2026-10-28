@@ -17,11 +17,13 @@ test('drag helpers: clamp keeps the card inside the window, sanitize drops junk'
   assert.deepStrictEqual(sanitizePos({ x: 10.4, y: 20.6 }), { x: 10, y: 21 });
   assert.deepStrictEqual(sanitizeFloatPos({ a: { x: 1, y: 2 }, b: { x: NaN, y: 1 }, c: 5 }), { a: { x: 1, y: 2 } });
 });
-test('settings: floatPos is remembered and sanitized, uiLanguage accepts en/he/ru only', () => {
+test('settings: floatPos is remembered and sanitized, uiLanguage is en/he, assistantLanguage is he/en/ru and independent', () => {
   assert.deepStrictEqual(normalizeSettings({}).floatPos, {});
   assert.deepStrictEqual(normalizeSettings({ floatPos: { tour: { x: 5.2, y: 7 }, bad: { x: 'z' } } }).floatPos, { tour: { x: 5, y: 7 } });
-  for (const l of ['en', 'he', 'ru']) assert.strictEqual(normalizeSettings({ uiLanguage: l }).uiLanguage, l);
+  for (const l of ['en', 'he']) assert.strictEqual(normalizeSettings({ uiLanguage: l }).uiLanguage, l);
   assert.strictEqual(normalizeSettings({ uiLanguage: 'fr' }).uiLanguage, 'en');
+  for (const l of ['he', 'en', 'ru']) assert.strictEqual(normalizeSettings({ uiLanguage: 'he', assistantLanguage: l }).assistantLanguage, l, 'assistant language is independent of the UI language');
+  assert.strictEqual(normalizeSettings({ uiLanguage: 'he', assistantLanguage: 'fr' }).assistantLanguage, 'he', 'unknown assistant language falls back to the UI language');
   const main = rd('electron', 'main.cjs'); assert.match(main, /qr:setFloatPos/);
   assert.match(main, /floatPos: cur\.floatPos/, 'setSettings must not overwrite remembered positions');
   assert.match(rd('electron', 'preload.cjs'), /setFloatPos/);
@@ -33,20 +35,20 @@ test('tour card: draggable by its header, double-click resets, same hook on dial
   assert.match(rd('src', 'ui', 'common.tsx'), /useFloat\(/); assert.match(rd('src', 'components', 'history', 'HistoryDialog.tsx'), /useFloat\(/);
   assert.match(rd('src', 'styles', 'tour.css'), /\[data-drag-head\]\s*\{[^}]*cursor:\s*grab/);
 });
-test('the language selector exists only in Settings', () => {
+test('language selectors exist only in Settings: UI language (he/en) in Interface, assistant language (he/en/ru) in Assistant', () => {
   for (const f of ['src/tutorial/TourView.tsx', 'src/tutorial/Tutorial.tsx', 'src/components/wizard/AssistantHint.tsx', 'src/App.tsx']) assert.ok(!/<select/.test(rd(...f.split('/'))), f + ' has a <select>');
   const st = rd('src', 'settings', 'SettingsDialog.tsx');
-  assert.match(st, /data-testid="ui-lang"/);
+  assert.match(st, /data-testid="ui-lang"/); assert.match(st, /data-testid="assistant-lang"/); assert.match(st, /data-testid="restart-tour"/);
   for (const o of ['>עברית<', '>English<', '>Русский<']) assert.ok(st.includes(o), 'Settings language option ' + o);
-  assert.match(st, /data-testid="ru-note"/); assert.match(st, /uiLanguage === 'ru'/);
-  assert.match(rd('src', 'App.tsx'), /lang0=\{getContentLang\(\)\}/);
-  const i = rd('src', 'i18n', 'index.ts'); assert.match(i, /getContentLang/); assert.match(i, /l === 'he' \|\| l === 'ru'/);
+  const ui = st.slice(st.indexOf('data-testid="ui-lang"'), st.indexOf('data-testid="ui-lang"') + 260); assert.ok(!ui.includes('Русский'), 'the UI language has no Russian');
+  assert.match(rd('src', 'App.tsx'), /lang0=\{settings\.assistantLanguage/);
+  const i = rd('src', 'i18n', 'index.ts'); assert.match(i, /setAssistantLang/); assert.match(i, /assistantDir/); assert.ok(!/getContentLang/.test(i));
 });
-test('ru hints exist for the assistant and the note is in en/he only', () => {
+test('ru hints exist for the assistant; every ru key exists in en', () => {
   const ru = JSON.parse(rd('src', 'i18n', 'ru.json')); const en = JSON.parse(rd('src', 'i18n', 'en.json'));
   assert.ok(Object.keys(ru).length > 5);
   for (const k of Object.keys(ru)) assert.ok(k in en, 'ru key not in en: ' + k);
-  assert.ok(en['st.ruNote'] && JSON.parse(rd('src', 'i18n', 'he.json'))['st.ruNote']);
+  assert.ok(!('st.ruNote' in en));
 });
 test('select arrow: padding-inline-end reserved, arrow at inline-end in LTR and RTL', () => {
   const css = rd('src', 'styles', 'fit.css');

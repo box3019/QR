@@ -3,7 +3,8 @@ import { Ico } from './components/Ico';
 import React, { useEffect, useState } from 'react';
 import { MRT_ACTION_BTN_TOPBAR } from './ui/mrtButtons';
 import SettingsDialog from './settings/SettingsDialog';
-import { t, setLang, setTextSize, getLang, getContentLang } from './i18n';
+import { t, setLang, setAssistantLang, setTextSize, getLang } from './i18n';
+import { themeAttrs } from './theme/themes';
 import { FirstRun } from './ui/simple';
 import { Tour } from './tutorial/TourView';
 import { toolbarFor } from './wizard/steps.mjs';
@@ -32,7 +33,7 @@ export default function App() {
   useEffect(() => { qr().listHistory?.().then(setHist).catch(() => {}); }, []);
   const [details, setDetails] = useState(false);
   useEffect(() => { qr().getSettings().then(setSettings); }, []);
-  if (settings) { setLang(settings.uiLanguage); setTextSize(settings.textSize); }
+  if (settings) { setLang(settings.uiLanguage); setAssistantLang(settings.assistantLanguage); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
   const P = useProjects();
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => P.importOutlook(files)) : undefined, []); // Outlook 'Send to QR': new tab, or the tab of the same RFQ
@@ -44,7 +45,7 @@ export default function App() {
   const tabs = P.list.map((p) => ({ id: p.id, label: '', customer: '', status: 'empty', ...(P.metas[p.id] || {}) }));
 
   return (
-    <div className="qr-root" data-mrt-palette="light" data-mrt-theme="light" data-step={m.step || 1} {...drop}>
+    <div className="qr-root" {...themeAttrs(settings)} data-step={m.step || 1} {...drop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
         <div className="qr-brand"><span className="qr-brand-badge">QR</span></div>
         <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
@@ -58,10 +59,10 @@ export default function App() {
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
           details={details} setDetails={setDetails} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
       </div>
-      {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} />}
-      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={getContentLang()} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
+      {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} />}
+      {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={settings.assistantLanguage} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}
-      {dialog === 'tutorial' && <Tour lang0={getContentLang()} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
+      {dialog === 'tutorial' && <Tour lang0={settings?.assistantLanguage || 'en'} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
     </div>
   );
 }

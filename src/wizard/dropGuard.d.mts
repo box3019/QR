@@ -3,3 +3,5 @@ export function dropPlan(hasJob: boolean, curRfqs: any[], newRfqs: any[]): 'new'
 export function zoomStep(z: number, deltaY: number): number;
 export function fitZoom(viewW: number, sheetW: number): number;
 export function panTo(start: { left: number; top: number }, dx: number, dy: number): { left: number; top: number };
+export function fitSheet(viewW: number, viewH: number, imgW: number, imgH: number, pad?: number, base?: number): number;
+export function centerScroll(viewW: number, viewH: number, contentW: number, contentH: number): { left: number; top: number };

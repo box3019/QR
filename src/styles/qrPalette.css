@@ -2,7 +2,7 @@
    computed --mrt-* tokens on the .mrt-wizard-shell scope. White / very light neutral surfaces, 1px translucent borders,
    dark text. Colour is reserved for status (docs/design-tokens.md). This replaces the earlier "Priority ERP" guess,
    which was the grey workspace canvas of the MRT main window, not the wizard. */
-.qr-root[data-mrt-palette][data-mrt-theme]{
+:is(.qr-root, .qr-pal-prev, .qr-acc-sw)[data-mrt-palette][data-mrt-theme]{
   --mrt-bg: #ebebed;
   --mrt-workspace-canvas: #ebebed;
   --mrt-surface: #ffffff;
@@ -60,4 +60,9 @@
   --qr-st-warn: #b45309;
   --qr-st-bad: var(--mrt-danger);
   --qr-st-none: #8e8e93;
+  /* layering (docs/design-tokens.md, "Surface layering"): canvas < bars < rail < cards */
+  --qr-card-shadow: 0 1px 2px rgba(28, 28, 30, 0.06), 0 3px 10px rgba(28, 28, 30, 0.07);
+  --qr-bar-shadow: 0 1px 3px rgba(28, 28, 30, 0.08);
+  --qr-input-border: #8e8e93;
+  color-scheme: light;
 }

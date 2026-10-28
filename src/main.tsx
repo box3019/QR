@@ -17,3 +17,5 @@ import './styles/tour.css';
 import './styles/caps.css';
 import './styles/system.css';
 import './styles/surface.css';
+import './styles/themes.css';
+import './styles/layers.css';

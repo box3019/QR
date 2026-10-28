@@ -12,7 +12,7 @@
 .qr-box-text { margin: 0 0 0.75rem; }
 .qr-box .qr-prob { border: 1px solid var(--mrt-border, #e5e5ea); border-radius: var(--qr-btn-radius, 8px); margin-block-end: 0.5rem; }
 .qr-more { display: flex; justify-content: flex-start; }
-.qr-summary-step { flex: 1; min-height: 0; overflow: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; max-width: 52rem; width: 100%; box-sizing: border-box; }
+.qr-summary-step { flex: 1; min-height: 0; overflow: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; width: 100%; box-sizing: border-box; }
 .qr-drop-hint { font-size: 1.05rem; margin-block-end: 1.1rem; }
 .qr-bd-row { display: grid; grid-template-columns: minmax(7rem, max-content) minmax(0, 1fr); gap: 0.3rem 0.9rem; margin: 0; padding: 0.5rem 0; }
 .qr-bd-row + .qr-bd-row { border-top: 1px solid var(--mrt-border, #e5e5ea); }

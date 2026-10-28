@@ -6,25 +6,27 @@ import ru from './ru.json';
 export type Lang = 'en' | 'he';
 const DICTS: Record<Lang, Record<string, string>> = { en, he };
 let current: Lang = 'en';
-let content = 'en'; // the Settings language: he | en | ru. The UI itself falls back to English for ru (only tour and hints are Russian).
+let assistantLang = 'en'; // tutorial + step hints language: he | en | ru, set independently of the program language (Settings > Assistant)
 
 export const getLang = () => current;
-/** The single language chosen in Settings (he | en | ru): used by the tour and the assistant hints. */
-export const getContentLang = () => content;
+/** Tutorial / assistant language (he | en | ru). Independent of the program language. */
+export const getAssistantLang = () => assistantLang;
+export const assistantDir = (l: string = assistantLang) => (l === 'he' ? 'rtl' : 'ltr');
 export function setLang(l: string) {
-  content = l === 'he' || l === 'ru' ? l : 'en';
   current = l === 'he' ? 'he' : 'en';
   document.documentElement.lang = current;
   document.documentElement.dir = current === 'he' ? 'rtl' : 'ltr';
 }
+export function setAssistantLang(l: string) { assistantLang = l === 'he' || l === 'ru' ? l : 'en'; }
 export function t(key: string, vars?: Record<string, any>): string {
   const s = DICTS[current][key] ?? DICTS.en[key] ?? key;
   return vars ? s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? '') + '') : s;
 }
-/** Assistant hint text in the Settings language (Russian when chosen, otherwise the UI language). */
+/** Assistant hint text in the assistant language (he / en from the UI dictionaries, ru from ru.json with English fallback). */
 export function tHint(key: string, vars?: Record<string, any>): string {
-  const r = content === 'ru' ? (ru as Record<string, string>)[key] : undefined;
-  return r ? (vars ? r.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? '') + '') : r) : t(key, vars);
+  const sub = (x: string) => (vars ? x.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? '') + '') : x);
+  const d = assistantLang === 'ru' ? (ru as Record<string, string>) : DICTS[assistantLang as Lang];
+  return sub(d[key] ?? DICTS.en[key] ?? key);
 }
 /** Readiness text produced by core → localized label. */
 export function tReadiness(r: string) {

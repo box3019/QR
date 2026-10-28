@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Chip } from '../ui/common';
 import { t, tReadiness, getLang } from '../i18n';
-import { zoomStep, fitZoom, panTo } from '../wizard/dropGuard.mjs';
+import { zoomStep, fitSheet, centerScroll, panTo } from '../wizard/dropGuard.mjs';
 
 const qr = () => (window as any).qr;
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
@@ -18,9 +18,17 @@ export function DrawingView({ part, focus, details }: any) {
   useEffect(() => { let live = true; setImg(null); qr().preview(part.drawing.path, page, 2600).then((r: any) => live && setImg(r)); return () => { live = false; }; }, [part.drawing.path, page]);
   const pg = part.drawing.pages.find((p: any) => p.n === page) || part.drawing.pages[0];
   const [zoom, setZoom] = useState(1);
+  const [auto, setAuto] = useState(true); // true = the whole sheet is fitted and centred (default); a manual zoom turns it off
   const W = Math.round(1500 * zoom); // displayed width
+  const imgRef = useRef<any>(null); imgRef.current = img; const autoRef = useRef(true); autoRef.current = auto;
+  const refit = () => { const el = ref.current; const im = imgRef.current; if (!el || !im) return; setZoom(fitSheet(el.clientWidth, el.clientHeight, im.width, im.height)); };
+  const recenter = () => { const el = ref.current; if (!el) return; const c = centerScroll(el.clientWidth, el.clientHeight, el.scrollWidth, el.scrollHeight); el.scrollLeft = c.left; el.scrollTop = c.top; };
+  // a new part / sheet / image: fit the whole sheet again
+  useEffect(() => { setAuto(true); autoRef.current = true; if (img) refit(); }, [img, part.drawing.path, page]);
+  // the pane changes size (window resize, panel toggle, details): keep the fit (or the centre when zoomed by hand)
+  useEffect(() => { const el = ref.current; if (!el || typeof ResizeObserver === 'undefined') return; const ro = new ResizeObserver(() => { if (autoRef.current) refit(); else recenter(); }); ro.observe(el); return () => ro.disconnect(); }, [img]);
   // wheel (and Ctrl+wheel) = zoom; passive:false so the page does not scroll instead
-  useEffect(() => { const el = ref.current; if (!el) return; const h = (e: WheelEvent) => { e.preventDefault(); setZoom((z) => zoomStep(z, e.deltaY)); }; el.addEventListener('wheel', h, { passive: false }); return () => el.removeEventListener('wheel', h); }, [img]);
+  useEffect(() => { const el = ref.current; if (!el) return; const h = (e: WheelEvent) => { e.preventDefault(); setAuto(false); setZoom((z) => zoomStep(z, e.deltaY)); }; el.addEventListener('wheel', h, { passive: false }); return () => el.removeEventListener('wheel', h); }, [img]);
   // pan: left-drag moves the scroll position only
   const drag = useRef(null as null | { x: number; y: number; left: number; top: number });
   const onDown = (e: React.MouseEvent) => { if (e.button !== 0 || !ref.current) return; e.preventDefault(); drag.current = { x: e.clientX, y: e.clientY, left: ref.current.scrollLeft, top: ref.current.scrollTop }; };
@@ -31,14 +39,14 @@ export function DrawingView({ part, focus, details }: any) {
   useEffect(() => { if (img && focus && ref.current) { const el = ref.current.querySelector('[data-kind="focus"]') as HTMLElement; el?.scrollIntoView({ block: 'center', inline: 'center' }); } }, [img, focus]);
   const marks = part.problems.filter((p: any) => p.loc && p.loc.page === page);
   const ocrWords = ocrOn && pg?.ocr ? pg.ocr.words : [];
-  return <div>
-    <div className="qr-row" style={{ padding: '6px 10px', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, background: '#fff', zIndex: 2 }}>
+  return <div className="qr-draw" dir="ltr">
+    <div className="qr-row" dir={getLang() === 'he' ? 'rtl' : 'ltr'} style={{ padding: '6px 10px', borderBottom: '1px solid var(--mrt-border-strong)', position: 'sticky', top: 0, background: 'var(--mrt-surface)', zIndex: 2 }}>
       <b className="qr-ltr">{part.drawing.name}</b>
       {part.drawing.pages.map((p: any) => <button key={p.n} className={MRT_ACTION_BTN} data-active={p.n === page} title={t('tip.sheet')} onClick={() => setPage(p.n)} style={p.n === page ? { fontWeight: 700 } : {}}>{t('dw.sheet', { n: p.n })}</button>)}
       {details && <span className="qr-muted">{t('dw.text', { mode: pg?.quality?.mode })}{pg?.quality?.reasons?.length ? ` (${pg.quality.reasons.join(', ')})` : ''}{pg?.ocr ? ' · ' + t('dw.ocrInfo', { dpi: pg.ocr.dpi, words: pg.ocr.words.length, sec: pg.ocr.seconds }) : ''}{pg?.ocrError ? ' · ' + t('dw.ocrError', { text: pg.ocrError }) : ''}</span>}
       {details && <label className="qr-row" style={{ marginInlineStart: 'auto' }}><input type="checkbox" checked={showOcr} onChange={(e) => setShowOcr(e.target.checked)} /> {t('dw.ocrWords')}</label>}
     </div>
-    <div ref={ref} style={{ overflow: 'auto', cursor: drag.current ? 'grabbing' : 'grab' }} dir="ltr" data-testid="drawing-viewport" onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onDragStart={(e) => e.preventDefault()} onDoubleClick={() => ref.current && setZoom(fitZoom(ref.current.clientWidth, 1500))}>
+    <div ref={ref} className="qr-draw-vp" style={{ cursor: drag.current ? 'grabbing' : 'grab' }} dir="ltr" data-testid="drawing-viewport" onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onDragStart={(e) => e.preventDefault()} onDoubleClick={() => { setAuto(true); autoRef.current = true; refit(); }}>
       {!img ? <div className="qr-muted" style={{ padding: 20 }}>{t('dw.rendering')}</div> :
         <div className="qr-sheet" style={{ width: W }} data-testid="drawing-sheet">
           <img src={img.png} style={{ width: W }} draggable={false} />
