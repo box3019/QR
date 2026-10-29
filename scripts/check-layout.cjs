@@ -48,6 +48,34 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const hs = []; document.querySelectorAll('body *').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return; if (e.closest('.qr-proj-off')) return; if ((cs.overflowX === 'auto' || cs.overflowX === 'scroll') && e.scrollWidth > e.clientWidth + 1) { const rr = e.getBoundingClientRect(); const wide = [...e.querySelectorAll('*')].filter((d) => (d.getBoundingClientRect().right > rr.right + 1 || d.getBoundingClientRect().left < rr.left - 1) && d.getBoundingClientRect().width > 0).slice(0, 4).map((d) => { const ch = []; for (let x = d.parentElement; x && x !== e; x = x.parentElement) ch.push(x.tagName + '.' + (x.className || '').toString().slice(0, 18) + (getComputedStyle(x).whiteSpace === 'nowrap' ? '(nowrap)' : '') + ' w' + Math.round(x.getBoundingClientRect().width)); return ch.slice(0, 4).join('<') + ' >> ' + (d.textContent || '').slice(0, 24) + ' :: ' + d.tagName + '.' + (d.className || '').toString().slice(0, 30) + ' w' + Math.round(d.getBoundingClientRect().width) + (d.tagName === 'TABLE' ? ' layout=' + getComputedStyle(d).tableLayout : ''); }); hs.push((e.className || e.tagName).toString().slice(0, 40) + ' ' + e.scrollWidth + '>' + e.clientWidth + ' [' + wide.join(' | ') + ']'); } });
   if (document.documentElement.scrollWidth > innerWidth + 1) hs.push('document ' + document.documentElement.scrollWidth + '>' + innerWidth);
   res.hscroll = hs; hs.forEach((x) => res.issues.push('h-scroll: ' + x));
+  // Check header height (should be <=56px)
+  const header = document.querySelector('.qr-wiz-head');
+  if (header) {
+    const hRect = header.getBoundingClientRect();
+    res.headerHeight = Math.round(hRect.height);
+    if (hRect.height > 56) res.issues.push('header too tall: ' + Math.round(hRect.height) + 'px > 56px');
+  }
+  // Check for large empty vertical regions in the top area (>24px unused band between header and content)
+  const topbar = document.querySelector('.qr-topbar');
+  const mainContent = document.querySelector('.qr-wiz-main');
+  if (topbar && mainContent) {
+    const topbarRect = topbar.getBoundingClientRect();
+    const mainRect = mainContent.getBoundingClientRect();
+    const firstChild = mainContent.querySelector(':scope > *:not(.qr-wiz-head)');
+    if (firstChild) {
+      const firstRect = firstChild.getBoundingClientRect();
+      const gapToContent = firstRect.top - mainRect.top;
+      res.topGap = Math.round(gapToContent);
+      if (gapToContent > 24) res.issues.push('large gap above content: ' + Math.round(gapToContent) + 'px > 24px');
+    }
+    // Check rail-context height matches header
+    const railContext = document.querySelector('.qr-rail-context');
+    if (railContext && header) {
+      const rcRect = railContext.getBoundingClientRect();
+      res.railContextHeight = Math.round(rcRect.height);
+      if (rcRect.height > 56) res.issues.push('rail context too tall: ' + Math.round(rcRect.height) + 'px > 56px');
+    }
+  }
   return res;
 };
 (async () => {
