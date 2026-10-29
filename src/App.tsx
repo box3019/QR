@@ -66,6 +66,7 @@ export default function App() {
         {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
         <FileMenu why={saveWhy(m.nParts || 0, m.status === 'busy')} status={saveStatus(m)} at={m.savedAt ? hhmm(m.savedAt) : ''} onSave={() => P.save()} onSaveAs={() => P.saveAs()} onOpen={() => P.openProject()} />
+        <TopButton icon={<Ico name="print" />} label={t('top.print')} tip={t('tip.print')} testid="btn-print" disabled={!(m.nParts > 0)} onClick={() => qr().print?.()} />
         <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
         <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
         <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => { setTourStage(0); setDialog('tutorial'); }} />

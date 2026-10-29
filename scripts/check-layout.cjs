@@ -6,7 +6,8 @@ const { _electron } = require('playwright'); const path = require('path'); const
 const [exe, out, appDir] = process.argv.slice(2); fs.mkdirSync(out, { recursive: true }); const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const { DOCS } = require('./syn-docs.cjs');
 const PALETTES = ['aris-glass', 'icloud-windows', 'cleanmymac', 'priority-erp', 'industrial-steel', 'graphite', 'warm-neutral', 'soft-salad', 'soft-beige', 'soft-olive-gray', 'high-contrast'];
-const SIZES = [[1280, 800], [1920, 1080]];
+const SIZES = [[1366, 768], [1920, 1080], [2560, 1440], [3840, 2160]];
+const DPI_SCALES = [1, 1.25, 1.5, 2];
 // runs in the page
 const MEASURE = () => {
   const rgba = (c) => { const m = String(c).match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
@@ -48,13 +49,28 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const hs = []; document.querySelectorAll('body *').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return; if (e.closest('.qr-proj-off')) return; if ((cs.overflowX === 'auto' || cs.overflowX === 'scroll') && e.scrollWidth > e.clientWidth + 1) { const rr = e.getBoundingClientRect(); const wide = [...e.querySelectorAll('*')].filter((d) => (d.getBoundingClientRect().right > rr.right + 1 || d.getBoundingClientRect().left < rr.left - 1) && d.getBoundingClientRect().width > 0).slice(0, 4).map((d) => { const ch = []; for (let x = d.parentElement; x && x !== e; x = x.parentElement) ch.push(x.tagName + '.' + (x.className || '').toString().slice(0, 18) + (getComputedStyle(x).whiteSpace === 'nowrap' ? '(nowrap)' : '') + ' w' + Math.round(x.getBoundingClientRect().width)); return ch.slice(0, 4).join('<') + ' >> ' + (d.textContent || '').slice(0, 24) + ' :: ' + d.tagName + '.' + (d.className || '').toString().slice(0, 30) + ' w' + Math.round(d.getBoundingClientRect().width) + (d.tagName === 'TABLE' ? ' layout=' + getComputedStyle(d).tableLayout : ''); }); hs.push((e.className || e.tagName).toString().slice(0, 40) + ' ' + e.scrollWidth + '>' + e.clientWidth + ' [' + wide.join(' | ') + ']'); } });
   if (document.documentElement.scrollWidth > innerWidth + 1) hs.push('document ' + document.documentElement.scrollWidth + '>' + innerWidth);
   res.hscroll = hs; hs.forEach((x) => res.issues.push('h-scroll: ' + x));
+  // Check for overlapping elements in tables
+  const overlaps = []; const tblEls = document.querySelectorAll('.qr-cks-tab td, .qr-cks-tab th, .qr-ck-tab td, .qr-ck-tab th');
+  const rects = [...tblEls].map((e) => ({ el: e, r: e.getBoundingClientRect(), text: (e.textContent || '').slice(0, 20) }));
+  for (let i = 0; i < rects.length; i++) { for (let j = i + 1; j < rects.length; j++) { const a = rects[i].r, b = rects[j].r;
+    if (a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom && a.width > 0 && b.width > 0) {
+      const same = rects[i].el.closest('tr') === rects[j].el.closest('tr'); if (same) overlaps.push(rects[i].text + ' overlaps ' + rects[j].text); } } }
+  res.overlaps = overlaps.slice(0, 5); overlaps.slice(0, 3).forEach((x) => res.issues.push('overlap: ' + x));
+  // Check for Print button visibility
+  const printBtn = document.querySelector('[data-testid=btn-print]'); res.printButton = !!printBtn;
+  if (!printBtn) res.issues.push('Print button not found');
   return res;
 };
 (async () => {
   const prof = path.join(out, 'layout_profile'); fs.rmSync(prof, { recursive: true, force: true }); fs.mkdirSync(prof, { recursive: true });
   fs.writeFileSync(path.join(prof, 'qr-settings.json'), JSON.stringify({ uiLanguage: 'en', firstRunDone: true, textSize: 'normal', palette: 'industrial-steel' }));
   const app = await _electron.launch({ executablePath: exe, args: appDir ? [appDir] : [], env: { ...process.env, QR_PROFILE_DIR: prof } });
-  const win = await app.firstWindow(); const size = (w, h) => app.evaluate(({ BrowserWindow }, [w, h]) => { const b = BrowserWindow.getAllWindows()[0]; b.setSkipTaskbar(true); b.unmaximize(); b.setContentBounds({ x: -30000, y: -30000, width: w, height: h }); }, [w, h]);
+  const win = await app.firstWindow();
+  const size = (w, h, dpi = 1) => app.evaluate(({ BrowserWindow, webContents }, [w, h, dpi]) => {
+    const b = BrowserWindow.getAllWindows()[0]; b.setSkipTaskbar(true); b.unmaximize();
+    b.setContentBounds({ x: -30000, y: -30000, width: Math.round(w / dpi), height: Math.round(h / dpi) });
+    b.webContents.setZoomFactor(dpi);
+  }, [w, h, dpi]);
   await win.waitForTimeout(2500); await size(1400, 900); await win.waitForTimeout(1200);
   if (await win.$('[data-testid=first-run-ok]')) await win.click('[data-testid=first-run-ok]').catch(() => {});
   const files = []; for (const d of DOCS) { const f = path.join(out, `SYN_${d.pn}_A.pdf`);
@@ -64,13 +80,51 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   await win.waitForFunction((n) => !document.querySelector('[data-testid=busy]') && (window.__qrParts || []).length >= n, files.length, { timeout: 240000 }); await sleep(800);
   const report = { idle: [], busy: [], scan: [] }; let fail = 0; const QUICK = !!process.env.QUICK;
   const set = async (pal, lang) => { await win.evaluate((p) => window.__qrSetSettings && window.__qrSetSettings(p), { palette: pal, uiLanguage: lang }); await sleep(500); };
-  for (const lang of ['en', 'he']) for (const [w, h] of SIZES) { await size(w, h); await sleep(500);
-    for (const pal of (QUICK ? ['industrial-steel'] : PALETTES)) { await set(pal, lang); await win.evaluate(() => window.__qrStep(4)); await sleep(500); const m = await win.evaluate(MEASURE); const r = { lang, size: w + 'x' + h, palette: pal, ...m, issues: [...new Set(m.issues)] }; if (Math.abs(r.w - w) > 24) r.issues.push('window width ' + r.w + ' != ' + w); if (r.hasTable) { const ex = await win.evaluate(() => { const b = document.querySelector('[data-testid=cks-expand]'); if (!b) return false; b.click(); return true; }); await sleep(500); if (!ex) r.issues.push('no expand toggle'); else { const m2 = await win.evaluate(MEASURE); r.expandedRow = { table: m2.table, wraps: m2.wraps, hscroll: m2.hscroll, abbreviations: m2.abbreviations }; if (!(m2.table && m2.table.expanded)) r.issues.push('expanded row did not open'); m2.issues.forEach((x) => r.issues.push('expanded: ' + x)); if (!QUICK || pal === 'industrial-steel') await win.screenshot({ path: path.join(out, 'expanded_' + lang + '_' + w + '_' + pal + '.png') }).catch(() => {}); await win.evaluate(() => { const b = document.querySelector('[data-testid=cks-expand]'); if (b) b.click(); }); await sleep(300); } r.issues = [...new Set(r.issues)]; }
- report.idle.push(r); if (r.issues.length || !r.hasTable) fail++; } }
-  // other steps: any horizontal scrollbar at all
+  // Test at different resolutions and DPI scales
+  const DPI_TO_TEST = QUICK ? [1] : DPI_SCALES;
+  for (const lang of ['en', 'he']) for (const [w, h] of SIZES) for (const dpi of DPI_TO_TEST) {
+    // Skip DPI variations for smaller screens (only test DPI on 1920+ widths)
+    if (w < 1920 && dpi !== 1) continue;
+    await size(w, h, dpi); await sleep(500);
+    for (const pal of (QUICK ? ['industrial-steel'] : PALETTES)) {
+      await set(pal, lang); await win.evaluate(() => window.__qrStep(4)); await sleep(500);
+      const m = await win.evaluate(MEASURE);
+      const r = { lang, size: w + 'x' + h, dpi, palette: pal, ...m, issues: [...new Set(m.issues)] };
+      if (Math.abs(r.w - w) > 24 * dpi) r.issues.push('window width ' + r.w + ' != ' + w);
+      if (r.hasTable) {
+        const ex = await win.evaluate(() => { const b = document.querySelector('[data-testid=cks-expand]'); if (!b) return false; b.click(); return true; });
+        await sleep(500);
+        if (!ex) r.issues.push('no expand toggle');
+        else {
+          const m2 = await win.evaluate(MEASURE);
+          r.expandedRow = { table: m2.table, wraps: m2.wraps, hscroll: m2.hscroll, abbreviations: m2.abbreviations, overlaps: m2.overlaps };
+          if (!(m2.table && m2.table.expanded)) r.issues.push('expanded row did not open');
+          m2.issues.forEach((x) => r.issues.push('expanded: ' + x));
+          // Take screenshots at key resolutions
+          if (!QUICK || (pal === 'industrial-steel' && dpi === 1)) {
+            const shotName = `summary_${lang}_${w}x${h}_dpi${dpi}_${pal}.png`;
+            await win.screenshot({ path: path.join(out, shotName) }).catch(() => {});
+          }
+          await win.evaluate(() => { const b = document.querySelector('[data-testid=cks-expand]'); if (b) b.click(); }); await sleep(300);
+        }
+        r.issues = [...new Set(r.issues)];
+      }
+      report.idle.push(r); if (r.issues.length || !r.hasTable) fail++;
+    }
+  }
+  // other steps: any horizontal scrollbar at all, test all resolutions
   await set('industrial-steel', 'en');
-  for (const lang of ['en', 'he']) for (const [w, h] of SIZES) { await size(w, h); await sleep(400); await set('industrial-steel', lang);
-    for (const st of [2, 3, 4]) { await win.evaluate((s) => { window.__qrStep(s); if (s === 2) window.__qrSelect && window.__qrSelect(0, 'drawing'); }, st); await sleep(900); const m = await win.evaluate(MEASURE); report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps }); if (m.hscroll.length || m.wraps.length) fail++; } }
+  for (const lang of ['en', 'he']) for (const [w, h] of SIZES) {
+    await size(w, h, 1); await sleep(400); await set('industrial-steel', lang);
+    for (const st of [2, 3, 4]) {
+      await win.evaluate((s) => { window.__qrStep(s); if (s === 2) window.__qrSelect && window.__qrSelect(0, 'drawing'); }, st); await sleep(900);
+      const m = await win.evaluate(MEASURE);
+      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, printButton: m.printButton });
+      if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length)) fail++;
+      // Check Print button is visible on each step
+      if (!m.printButton) { report.scan[report.scan.length - 1].issues = ['Print button not visible']; fail++; }
+    }
+  }
   // busy state (re-analysis running on Summary), once per palette at 1280x800 EN, plus HE
   await size(1280, 800);
   for (const [lang, pals] of (QUICK ? [] : [['en', PALETTES], ['he', ['industrial-steel']]])) for (const pal of pals) { await set(pal, lang); await win.evaluate(() => window.__qrStep(4)); await sleep(400);
@@ -80,6 +134,14 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     await win.waitForFunction(() => !document.querySelector('[data-testid=busy]'), null, { timeout: 240000 }).catch(() => {}); await sleep(600); }
   report.fail = fail; fs.writeFileSync(path.join(out, 'layout_report.json'), JSON.stringify(report, null, 1));
   const bad = [...report.idle, ...report.busy].filter((r) => r.issues.length || (r.hasTable === false));
-  console.log(JSON.stringify({ idleChecked: report.idle.length, busyChecked: report.busy.length, scanChecked: report.scan.length, fail, bad: bad.slice(0, 12).map((r) => ({ lang: r.lang, size: r.size, pal: r.palette, hasTable: r.hasTable, issues: r.issues.slice(0, 5) })), minContrast: Math.min(...report.idle.concat(report.busy).filter((r) => r.minContrast).map((r) => r.minContrast)), scanBad: report.scan.filter((s) => s.hscroll.length) }, null, 1));
+  const scanBad = report.scan.filter((s) => s.hscroll.length || s.wraps.length || (s.overlaps && s.overlaps.length) || s.issues);
+  console.log(JSON.stringify({
+    idleChecked: report.idle.length, busyChecked: report.busy.length, scanChecked: report.scan.length, fail,
+    sizes: SIZES.map((s) => s.join('x')), dpiScales: DPI_SCALES,
+    bad: bad.slice(0, 12).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, pal: r.palette, hasTable: r.hasTable, issues: r.issues.slice(0, 5) })),
+    minContrast: Math.min(...report.idle.concat(report.busy).filter((r) => r.minContrast).map((r) => r.minContrast)),
+    scanBad: scanBad.slice(0, 8).map((s) => ({ lang: s.lang, size: s.size, step: s.step, issues: s.issues, hscroll: s.hscroll.length, wraps: s.wraps.length, overlaps: (s.overlaps || []).length })),
+    printButtonVisible: report.scan.every((s) => s.printButton)
+  }, null, 1));
   await app.close().catch(() => {}); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });

@@ -7,6 +7,7 @@ const P: Record<string, string> = {
   saveas: 'M5 4h11l3 3v5M8 4v5h7V4M5 4v16h6M17 14v7M13.5 17.5h7',
   open: 'M3 6h6l2 2h10v3M3 6v12h15l3-7H6l-3 7',
   help: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.5',
+  print: 'M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z',
 };
 export const ICONS = Object.keys(P);
 export function Ico({ name, size = 18 }: { name: string; size?: number }) {

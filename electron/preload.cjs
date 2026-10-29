@@ -37,4 +37,5 @@ contextBridge.exposeInMainWorld('qr', {
   stdConfirm: (s, c) => ipcRenderer.invoke('qr:std:confirm', s, c),
   stdUpload: (s, c, o) => ipcRenderer.invoke('qr:std:upload', s, c, o),
   stdOpen: (f) => ipcRenderer.invoke('qr:std:open', f),
+  print: () => ipcRenderer.invoke('qr:print'),
 });

@@ -183,6 +183,12 @@ ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
 });
 ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
+ipcMain.handle('qr:print', async () => {
+  if (!win || win.isDestroyed()) return;
+  win.webContents.print({ silent: false, printBackground: true }, (success, reason) => {
+    if (!success && reason !== 'cancelled') mainLog('print failed: ' + reason);
+  });
+});
 
 // Single instance: a second launch focuses the existing window instead of starting a hidden duplicate.
 // Outlook 'Send to QR': QR.exe --import <dir> (first launch or a second instance).

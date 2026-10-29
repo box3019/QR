@@ -245,7 +245,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 /* Checklist (part card + summary): token fonts only; colour only for yes / no / not found */
 .qr-ck { margin: 8px 0; } .qr-ck > summary { font-size: var(--qr-fs-md); font-weight: 600; cursor: pointer; padding: 4px 0; }
 .qr-ck-ind { display: flex; flex-direction: column; gap: 2px; font-size: var(--qr-fs-sm); margin: 4px 0 6px; }
-.qr-ck-lvl { font-weight: 600; } .qr-ck-lvl[data-lvl="veryTight"], .qr-ck-lvl[data-lvl="complex"] { text-decoration: underline; }
+/* Precision levels: red only for veryTight (genuinely tight tolerances); others neutral */
+.qr-ck-lvl { font-weight: 600; } .qr-ck-lvl[data-lvl="veryTight"] { color: var(--qr-bad-text); text-decoration: underline; } .qr-ck-lvl[data-lvl="tight"] { color: var(--qr-warn-text); } .qr-ck-lvl[data-lvl="complex"] { text-decoration: underline; }
 .qr-ck-warn { font-size: var(--qr-fs-xs); margin: 2px 0 4px; } .qr-ck-zn { font-size: var(--qr-fs-xs); }
 .qr-ck-tab { table-layout: auto; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
 .qr-ck-tab td, .qr-ck-tab th { padding: 2px 6px; vertical-align: top; border-bottom: 1px solid var(--qr-line, rgba(128,128,128,.25)); text-align: start; }
@@ -254,7 +255,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-ck-l { width: 1%; white-space: nowrap; overflow-wrap: normal; } .qr-ck-w { width: 99%; max-width: 0; overflow: hidden; }
 .qr-ck-gh th, .qr-ck-ind > div { white-space: nowrap; }
 .qr-ck-ind > div { overflow: hidden; text-overflow: ellipsis; }
-.qr-ck-s { font-weight: 600; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--qr-bad-text); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
+/* Checklist states: yes = ok (green), no = neutral (no color, normal operation), notfound = warn. Red only for tight tolerances (below). */
+.qr-ck-s { font-weight: 600; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--mrt-text-muted); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
 .qr-ck-items { margin: 0; padding: 0; list-style: none; } .qr-ck-where { font-size: var(--qr-fs-xs); }
 .qr-ck-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline dotted; cursor: pointer; text-align: start; }
 .qr-root .qr-cks-card { margin: 0; padding: 8px 8px 10px; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r); box-shadow: var(--qr-card-shadow); width: 100%; box-sizing: border-box; min-width: 0; }
@@ -293,3 +295,110 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-cks-xr > td { padding: 6px 10px; white-space: normal; background: var(--mrt-surface); }
 .qr-cks-xin { width: 0; min-width: 100%; contain: inline-size; }
 .qr-cks-xin .qr-ck-tab td, .qr-cks-xin .qr-ck-tab th { border-width: 0 0 1px 0; padding: 2px 6px; background: transparent; }
+
+/* ===== Large screen layout: every value/label/header on one line, no wrap, no overlap at any window size or DPI ===== */
+/* Table cells: fixed column widths where appropriate, nowrap for all labels and values */
+.qr-root .qr-cks-tab { table-layout: fixed; }
+.qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: none; }
+.qr-root .qr-cks-tab th:first-child { width: 120px; min-width: 100px; } /* Part column */
+.qr-root .qr-cks-tab th:nth-child(2), .qr-root .qr-cks-tab th:nth-child(3) { width: 80px; min-width: 70px; } /* Precision, Complexity */
+.qr-root .qr-cks-tab th:nth-child(4) { width: 100px; min-width: 80px; } /* Material */
+.qr-root .qr-cks-tab th:nth-child(n+5) { width: auto; min-width: 80px; } /* Other group columns */
+
+/* Checklist part card table: auto layout with nowrap cells */
+.qr-root .qr-ck-tab { table-layout: auto; }
+.qr-root .qr-ck-tab th, .qr-root .qr-ck-tab td { white-space: nowrap; }
+.qr-root .qr-ck-tab .qr-ck-w { white-space: normal; } /* Item column can have multiple items stacked */
+.qr-root .qr-ck-tab .qr-ck-l { white-space: nowrap; }
+
+/* Indicators and levels: never wrap */
+.qr-root .qr-ck-ind, .qr-root .qr-ck-ind > div, .qr-root .qr-ck-lvl { white-space: nowrap; }
+
+/* Stats bar: proper grid sizing for large screens */
+.qr-root .qr-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+.qr-root .qr-stat { white-space: nowrap; }
+.qr-root .qr-stat-l, .qr-root .qr-stat-n { white-space: nowrap; }
+
+/* Tiles: proper sizing at large screens */
+@media (min-width: 1920px) {
+  .qr-root .qr-tiles { grid-template-columns: repeat(4, minmax(120px, 1fr)); }
+  .qr-root .qr-tile-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (min-width: 2560px) {
+  .qr-root .qr-cks-tab th:first-child { width: 160px; }
+  .qr-root .qr-cks-tab th:nth-child(2), .qr-root .qr-cks-tab th:nth-child(3) { width: 100px; }
+  .qr-root .qr-cks-tab th:nth-child(4) { width: 120px; }
+}
+
+/* Part rows in list view: fixed grid columns */
+.qr-root .qr-prow { grid-template-columns: minmax(100px, 200px) 60px minmax(100px, 160px) minmax(0, 1fr) 24px; }
+.qr-root .qr-prow > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Ensure all buttons, headers, labels never wrap */
+.qr-root button, .qr-root th, .qr-root summary, .qr-root .qr-menu-item, .qr-root .qr-tab, .qr-root .qr-chip, .qr-root .qr-tag,
+.qr-root .qr-lbl, .qr-root .qr-status, .qr-root .qr-badge, .qr-root .qr-cks-t, .qr-root .qr-cks-i, .qr-root .qr-cks-p bdi { white-space: nowrap !important; }
+
+/* Block card: prevent line wrapping in titles and values */
+.qr-root .qr-block-title, .qr-root .qr-block-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qr-root .qr-block-main { min-width: 0; }
+
+/* DPI-independent sizing: use token-based sizes that scale properly */
+.qr-root .qr-cks-tab, .qr-root .qr-ck-tab { font-size: var(--qr-fs-sm); }
+
+/* ===== Print stylesheet: white background, dark text, full words, no app chrome ===== */
+@media print {
+  /* Hide app chrome */
+  .qr-topbar, .qr-statusbar, .qr-rail, .qr-rail-context, .qr-wiz-footer, .qr-ptabs,
+  .qr-busy, .qr-notice, .qr-modal-bg, .qr-modal-back, .qr-pnav, .qr-card-nav,
+  .qr-drop-btns, .qr-warnbar button, .qr-next-line, button[data-testid="btn-print"],
+  .qr-ai-hint, [data-testid="btn-details"], [data-testid="btn-history"], [data-testid="btn-settings"],
+  [data-testid="btn-help"], [data-testid="btn-file"] { display: none !important; }
+
+  /* Reset layout for print */
+  html, body, #root, .qr-root, .qr-projs, .qr-proj, .qr-wiz, .qr-wiz-main { height: auto !important; overflow: visible !important; display: block !important; }
+  .qr-root { background: #fff !important; color: #000 !important; }
+  .qr-wiz { display: block !important; grid-template-columns: none !important; }
+  .qr-wiz-main { padding: 0 !important; }
+
+  /* Full width content */
+  .qr-summary-step, .qr-sum-wrap, .qr-pview-cols, .qr-panel, .qr-card, .qr-scroll { width: 100% !important; max-width: none !important; overflow: visible !important; }
+  .qr-pview-cols { display: block !important; }
+
+  /* White cards with dark text */
+  .qr-cks-card, .qr-rc, .qr-panel, .qr-block, .qr-ck, .qr-box, details { background: #fff !important; color: #000 !important; border-color: #333 !important; page-break-inside: avoid; }
+
+  /* Tables: visible borders, full words */
+  .qr-cks-tab, .qr-ck-tab, .qr-table, table { width: 100% !important; border-collapse: collapse !important; }
+  .qr-cks-tab th, .qr-cks-tab td, .qr-ck-tab th, .qr-ck-tab td, .qr-table th, .qr-table td { border: 1px solid #333 !important; background: #fff !important; color: #000 !important; padding: 4px 6px !important; white-space: nowrap !important; }
+  .qr-cks-tab th, .qr-ck-tab th, .qr-table th { background: #f0f0f0 !important; font-weight: 600 !important; }
+
+  /* Expand all details for print */
+  details { display: block !important; }
+  details > summary { display: none !important; }
+  details > *:not(summary) { display: block !important; }
+
+  /* Status dots: use grayscale shapes */
+  .qr-dot, .qr-ck-s, .qr-cks-t { color: #000 !important; }
+  .qr-dot[data-s="ok"], .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: #000 !important; }
+  .qr-dot[data-s="warn"], .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: #666 !important; }
+
+  /* Headers and titles */
+  .qr-wiz-title, .qr-box-title, .qr-panel-h, h1, h2, h3 { color: #000 !important; font-weight: 700 !important; }
+
+  /* Stats bar */
+  .qr-stats { display: flex !important; flex-wrap: wrap !important; gap: 12px !important; margin-bottom: 12px !important; }
+  .qr-stat { color: #000 !important; }
+  .qr-stat-n { font-weight: 700 !important; }
+
+  /* Links: no underline, dark text */
+  a, .qr-ck-link { color: #000 !important; text-decoration: none !important; }
+
+  /* Muted text: slightly lighter but still readable */
+  .qr-muted { color: #333 !important; }
+
+  /* Force page breaks for parts */
+  .qr-cks-xr { page-break-inside: avoid; }
+
+  /* Indicators */
+  .qr-ck-ind, .qr-ck-lvl { color: #000 !important; }
+}
