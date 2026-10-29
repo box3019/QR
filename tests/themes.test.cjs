@@ -40,9 +40,9 @@ test('layering: tinted canvas, bordered shadowed cards, distinct bars and side c
   assert.match(css, /\.qr-box[^{]*\{[^}]*border:\s*1px solid var\(--mrt-border-strong\)[^}]*box-shadow:\s*var\(--qr-card-shadow\)/);
   assert.match(css, /\.qr-topbar\s*\{[^}]*background:\s*var\(--mrt-chrome-surface\)/); assert.match(css, /\.qr-rail-context[^{]*\{[^}]*background:\s*var\(--qr-rail-bg\)/);
   const mx = css.match(/--qr-max:\s*(\d+)px/); assert.ok(mx && +mx[1] >= 1200 && +mx[1] <= 1400, 'max-width 1200-1400');
-  assert.match(css, /\.qr-sum-wrap\s*\{[^}]*max-width:\s*var\(--qr-max\)[^}]*margin-inline:\s*auto/);
-  assert.match(css, /\.qr-sum-grid\s*\{[^}]*repeat\(2,/); assert.match(css, /\.qr-stats\s*\{[^}]*grid/);
-  assert.match(css, /\.qr-box-b > button[^{]*\{[^}]*align-self:\s*flex-end/, 'small buttons sit at the card end');
+  assert.match(css, /\.qr-sum-wrap\s*\{[^}]*max-width:\s*none[^}]*margin-inline:\s*0/);
+  assert.match(css, /\.qr-sum-grid\s*\{[^}]*repeat\(4,/); assert.match(css, /\.qr-stats\s*\{[^}]*flex/);
+  assert.match(css, /\.qr-box-b > button[^{]*\{[^}]*align-self:\s*flex-start/, 'small buttons sit at the card start');
   assert.doesNotMatch(css, /border-radius:\s*(50%|999px)/);
 });
 test('Summary: stat tiles on top, four cards (questions / Excel / report on screen / PDF), no narrow column', () => {

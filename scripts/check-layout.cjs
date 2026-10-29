@@ -59,6 +59,34 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   // Check for Print button visibility
   const printBtn = document.querySelector('[data-testid=btn-print]'); res.printButton = !!printBtn;
   if (!printBtn) res.issues.push('Print button not found');
+  // Check header height (should be <=56px)
+  const header = document.querySelector('.qr-wiz-head');
+  if (header) {
+    const hRect = header.getBoundingClientRect();
+    res.headerHeight = Math.round(hRect.height);
+    if (hRect.height > 56) res.issues.push('header too tall: ' + Math.round(hRect.height) + 'px > 56px');
+  }
+  // Check for large empty vertical regions in the top area (>24px unused band between header and content)
+  const topbar = document.querySelector('.qr-topbar');
+  const mainContent = document.querySelector('.qr-wiz-main');
+  if (topbar && mainContent) {
+    const topbarRect = topbar.getBoundingClientRect();
+    const mainRect = mainContent.getBoundingClientRect();
+    const firstChild = mainContent.querySelector(':scope > *:not(.qr-wiz-head)');
+    if (firstChild) {
+      const firstRect = firstChild.getBoundingClientRect();
+      const gapToContent = firstRect.top - mainRect.top;
+      res.topGap = Math.round(gapToContent);
+      if (gapToContent > 24) res.issues.push('large gap above content: ' + Math.round(gapToContent) + 'px > 24px');
+    }
+    // Check rail-context height matches header
+    const railContext = document.querySelector('.qr-rail-context');
+    if (railContext && header) {
+      const rcRect = railContext.getBoundingClientRect();
+      res.railContextHeight = Math.round(rcRect.height);
+      if (rcRect.height > 56) res.issues.push('rail context too tall: ' + Math.round(rcRect.height) + 'px > 56px');
+    }
+  }
   return res;
 };
 (async () => {
