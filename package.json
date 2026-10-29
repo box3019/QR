@@ -1,7 +1,7 @@
 {
   "name": "qr",
   "productName": "QR",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "QR: drawing intake, problems list and route card preview",
   "author": "Alex Krylov <box3019@gmail.com>",
   "private": true,
