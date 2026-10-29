@@ -50,3 +50,17 @@ test('customer questions: new and old (saved) English wording both translate to 
   const msgs = ['Range 1.5 - 1.2: minimum is larger than maximum.', 'Range 1.5 - 1.2: min is larger than max.'];
   for (const m of msgs) { const g = buildQuestions([{ partNo: 'P1', rev: 'A', problems: [{ severity: 'Question', message: m, status: 'open' }], tasks: [], route: [] }], 'he'); const out = JSON.stringify(g); assert.ok(out.includes('\u05D4\u05DE\u05D9\u05E0\u05D9\u05DE\u05DC\u05D9'), 'translated: ' + m); assert.ok(!/larger than/.test(out), m); }
 });
+
+test('English labels never shorten "Heat treatment" and block cards never cut text with an ellipsis', () => {
+  const en = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'i18n', 'en.json'), 'utf8'));
+  for (const [k, v] of Object.entries(en)) assert.ok(!/\bHeat treat\b(?!ment)/.test(String(v)), 'abbreviated label in ' + k + ': ' + v);
+  const css = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'styles', 'wizard.css'), 'utf8');
+  assert.ok(!/\.qr-block-(title|line)[^{]*\{[^}]*text-overflow:\s*ellipsis/.test(css), 'block card text must wrap, not be cut');
+});
+test('every problem severity has a label in English and Hebrew (no raw "sev.X" key on screen)', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  for (const lang of ['en', 'he']) {
+    const j = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'src', 'i18n', lang + '.json'), 'utf8'));
+    for (const s of ['Blocker', 'Question', 'Info', 'Warning']) assert.ok(j['sev.' + s], lang + ' sev.' + s);
+  }
+});

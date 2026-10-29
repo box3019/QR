@@ -38,6 +38,7 @@
   "sev.Blocker": "חוסם",
   "sev.Question": "שאלה",
   "sev.Info": "מידע",
+  "sev.Warning": "אזהרה",
   "dw.sheet": "גיליון {n}",
   "dw.text": "טקסט: {mode}",
   "dw.ocrInfo": "OCR {dpi} DPI, {words} מילים, {sec} שניות",

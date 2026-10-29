@@ -53,7 +53,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const overlaps = []; const tblEls = document.querySelectorAll('.qr-cks-tab td, .qr-cks-tab th, .qr-ck-tab td, .qr-ck-tab th');
   const rects = [...tblEls].map((e) => ({ el: e, r: e.getBoundingClientRect(), text: (e.textContent || '').slice(0, 20) }));
   for (let i = 0; i < rects.length; i++) { for (let j = i + 1; j < rects.length; j++) { const a = rects[i].r, b = rects[j].r;
-    if (a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom && a.width > 0 && b.width > 0) {
+    const dx = Math.min(a.right, b.right) - Math.max(a.left, b.left), dy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top); /* sub-pixel rounding at fractional display scales is not an overlap */ if (dx > 2 && dy > 2 && a.width > 0 && b.width > 0) {
       const same = rects[i].el.closest('tr') === rects[j].el.closest('tr'); if (same) overlaps.push(rects[i].text + ' overlaps ' + rects[j].text); } } }
   res.overlaps = overlaps.slice(0, 5); overlaps.slice(0, 3).forEach((x) => res.issues.push('overlap: ' + x));
   // Check for Print button visibility
@@ -96,7 +96,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const win = await app.firstWindow();
   const size = (w, h, dpi = 1) => app.evaluate(({ BrowserWindow, webContents }, [w, h, dpi]) => {
     const b = BrowserWindow.getAllWindows()[0]; b.setSkipTaskbar(true); b.unmaximize();
-    b.setContentBounds({ x: -30000, y: -30000, width: Math.round(w / dpi), height: Math.round(h / dpi) });
+    b.setContentBounds({ x: -30000, y: -30000, width: w, height: h }); // physical size w x h at display scale dpi: the page then sees (w / dpi) CSS pixels
     b.webContents.setZoomFactor(dpi);
   }, [w, h, dpi]);
   await win.waitForTimeout(2500); await size(1400, 900); await win.waitForTimeout(1200);
@@ -109,7 +109,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const report = { idle: [], busy: [], scan: [] }; let fail = 0; const QUICK = !!process.env.QUICK;
   const set = async (pal, lang) => { await win.evaluate((p) => window.__qrSetSettings && window.__qrSetSettings(p), { palette: pal, uiLanguage: lang }); await sleep(500); };
   // Test at different resolutions and DPI scales
-  const DPI_TO_TEST = QUICK ? [1] : DPI_SCALES;
+  const DPI_TO_TEST = process.env.DPIS ? process.env.DPIS.split(',').map(Number) : QUICK ? [1] : DPI_SCALES;
   for (const lang of ['en', 'he']) for (const [w, h] of SIZES) for (const dpi of DPI_TO_TEST) {
     // Skip DPI variations for smaller screens (only test DPI on 1920+ widths)
     if (w < 1920 && dpi !== 1) continue;
@@ -118,7 +118,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await set(pal, lang); await win.evaluate(() => window.__qrStep(4)); await sleep(500);
       const m = await win.evaluate(MEASURE);
       const r = { lang, size: w + 'x' + h, dpi, palette: pal, ...m, issues: [...new Set(m.issues)] };
-      if (Math.abs(r.w - w) > 24 * dpi) r.issues.push('window width ' + r.w + ' != ' + w);
+      if (Math.abs(r.w - w / dpi) > 24) r.issues.push('window width ' + r.w + ' != ' + Math.round(w / dpi));
       if (r.hasTable) {
         const ex = await win.evaluate(() => { const b = document.querySelector('[data-testid=cks-expand]'); if (!b) return false; b.click(); return true; });
         await sleep(500);
