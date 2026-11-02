@@ -20,6 +20,9 @@ import { saveWhy } from './wizard/nextstep.mjs';
 import { Notice } from './ui/Notice';
 import { FileMenu } from './components/FileMenu';
 import { AppVersion } from './about/AppVersion';
+import { UpdateBanner } from './update/UpdateBanner';
+import { UpdateProgress } from './update/UpdateProgress';
+import { useReleaseUpdate } from './update/useReleaseUpdate';
 
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
@@ -55,6 +58,7 @@ export default function App() {
   const w = window as any; w.__qrAddTab = P.add; w.__qrTabs = () => P.list.map((p) => ({ id: p.id, active: p.id === P.active, ...(P.metas[p.id] || {}) })); w.__qrSelectTab = P.setActive; w.__qrMoveTab = P.move; w.__qrHistory = () => hist; w.__qrReopen = P.reopen;
   const saveSettings = async (s: any) => setSettings(await qr().setSettings(s));
   const assistant = useAssistant(settings, saveSettings);
+  const upd = useReleaseUpdate(settings, notify);
   const m = P.metas[P.active] || {}; const bar = toolbarFor(m.step || 1, (m.nParts || 0) > 0);
   const tabs = P.list.map((p) => ({ id: p.id, label: '', customer: '', status: 'empty', ...(P.metas[p.id] || {}) }));
 
@@ -66,11 +70,17 @@ export default function App() {
         {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
         <FileMenu why={saveWhy(m.nParts || 0, m.status === 'busy')} status={saveStatus(m)} at={m.savedAt ? hhmm(m.savedAt) : ''} onSave={() => P.save()} onSaveAs={() => P.saveAs()} onOpen={() => P.openProject()} />
-        <TopButton icon={<Ico name="print" />} label={t('top.print')} tip={t('tip.print')} testid="btn-print" disabled={!(m.nParts > 0)} onClick={() => qr().print?.()} />
+        <TopButton icon={<Ico name="print" />} label={t('top.print')} tip={t('tip.print')} testid="btn-print" disabled={!(m.nParts > 0)} onClick={async () => {
+          const payload = (window as any).__qrPrintPayload?.();
+          const r = await qr().print?.(payload);
+          if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed')));
+        }} />
         <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
         <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
         <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => { setTourStage(0); setDialog('tutorial'); }} />
       </div>
+      {upd.avail && <UpdateBanner version={upd.avail.latestVersion} mandatory={!!upd.avail.mandatory} onNow={upd.install} onLater={upd.later} />}
+      {upd.busy && <UpdateProgress version={upd.busy.version} notes={upd.busy.notes} frac={upd.busy.frac} phase={upd.busy.phase} onCancel={upd.cancel} />}
       <div className="qr-projs">
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
           details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}

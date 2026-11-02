@@ -16,7 +16,7 @@ function QuestionSample({ lang }: { lang: string }) {
   return <div className="qr-sample" dir={lang === 'he' ? 'rtl' : 'ltr'} data-testid="question-sample">{t}</div>;
 }
 
-const TABS = ['interface', 'general', 'language', 'ocr', 'precision', 'materials', 'processes', 'customers', 'outlook', 'folders', 'assistant'] as const;
+const TABS = ['interface', 'general', 'language', 'ocr', 'precision', 'materials', 'processes', 'customers', 'outlook', 'folders', 'updates', 'assistant'] as const;
 type Tab = typeof TABS[number];
 
 function Field({ label, children }: any) { return <div className="qr-field"><label>{label}</label><div>{children}</div></div>; }
@@ -31,6 +31,7 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
   const orig = useRef<any>(structuredClone(settings)); // the saved values: __qrSetSettings mutates the `settings` prop while previewing, so Cancel restores from this copy
   const [prev, setPrev] = useState<string>(settings.palette); // previewed preset (live); s.palette is the committed one
   const [tab, setTab] = useState<Tab>(initialTab || 'interface');
+  const [updMsg, setUpdMsg] = useState('');
   const set = (k: string, v: any) => setS((o: any) => ({ ...o, [k]: v }));
   // live preview of language / size; restored on Cancel
   const live = (k: string, v: any) => { set(k, v); (window as any).__qrSetSettings?.({ [k]: v }); };
@@ -73,6 +74,13 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
           <Field label={t('st.company')}><FolderInput value={s.companyFolder} onChange={(v: string) => set('companyFolder', v)} /></Field>
           <Field label={t('st.export')}><FolderInput value={s.exportFolder} onChange={(v: string) => set('exportFolder', v)} /></Field>
           <Field label={t('st.roots')}><textarea className="qr-input" style={{ width: '100%' }} rows={4} value={(s.searchRoots || []).join('\n')} onChange={(e) => set('searchRoots', e.target.value.split('\n').map((x) => x.trim()).filter(Boolean))} /></Field>
+        </>}
+        {tab === 'updates' && <>
+          <Field label={t('st.upd.current')}><span data-testid="upd-current" className="qr-ltr" dir="ltr"><AppVersion /></span></Field>
+          <Field label={t('st.upd.feed')}><FolderInput value={s.updateFeedFolder} onChange={(v: string) => set('updateFeedFolder', v)} testid="upd-feed" /></Field>
+          <Field label={t('st.upd.onStart')}><input type="checkbox" data-testid="upd-on-start" checked={s.updateCheckOnStartup !== false} onChange={(e) => set('updateCheckOnStartup', e.target.checked)} /></Field>
+          <Field label={t('st.upd.interval')}><select className="qr-input" data-testid="upd-interval" value={s.updateCheckInterval === 'hourly' ? 'hourly' : 'daily'} onChange={(e) => set('updateCheckInterval', e.target.value)}><option value="hourly">{t('st.upd.hourly')}</option><option value="daily">{t('st.upd.daily')}</option></select></Field>
+          <Field label={t('st.upd.checkNow')}><div><button type="button" className={MRT_ACTION_BTN} data-testid="upd-check-now" title={t('st.upd.checkNow')} onClick={async () => { const r = await window.qr.releaseUpdate?.('check', { feedFolder: s.updateFeedFolder }); setUpdMsg(r && r.update ? t('upd.available', { version: r.update.latestVersion }) : r && r.code ? t('notice.' + r.code) : (r && r.error ? r.error : t('notice.updNone'))); }}>{t('st.upd.checkNow')}</button><div className="qr-muted" data-testid="upd-check-result">{updMsg}</div></div></Field>
         </>}
         {tab === 'assistant' && <>
           <Field label={t('st.assistLang')}><select className="qr-input" value={s.assistantLanguage || 'auto'} data-testid="assistant-lang" onChange={(e) => { live('assistantLanguageSet', e.target.value !== 'auto'); live('assistantLanguage', e.target.value); }}><option value="auto">{t('st.assistAuto')}</option><option value="he">עברית</option><option value="en">English</option><option value="ru">Русский</option></select><div className="qr-muted" data-testid="assistant-lang-note">{t('st.assistLangNote')}</div></Field>

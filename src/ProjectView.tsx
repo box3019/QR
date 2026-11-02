@@ -63,7 +63,14 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   useEffect(() => { if (busy) return; const h = setTimeout(() => doSave().catch(() => {}), 500); return () => clearTimeout(h); }, [busy, step, parts, rfqs, unknown, lastRun, sel, tab, dirty]);
   useEffect(() => { onMeta(id, tabMeta({ parts, rfqs, busy, view, step, lastRun, dirty, unsaved, savedAt })); }, [parts, rfqs, busy, view, step, lastRun, dirty, unsaved, savedAt]);
   useHistoryTouch(id, active, busy, parts, rfqs, step, onHistory);
-  if (active) exposeTestHooks({ setDetails, setStep: stepTo, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); setPartOpen(true); if (tb) { setTab(tb); setStep(2); } } });
+  if (active) {
+    exposeTestHooks({ setDetails, setStep: stepTo, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); setPartOpen(true); if (tb) { setTab(tb); setStep(2); } } });
+    (window as any).__qrPrintPayload = () => ({
+      parts, step, sel,
+      lang: parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he',
+      meta: tabMeta({ parts, rfqs }),
+    });
+  }
   const has = parts.length > 0;
   const updatePart = (fn: (p: Part) => Part) => { setDirty(true); setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p))); };
 

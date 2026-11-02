@@ -29,6 +29,9 @@ const DEFAULTS = {
   assistant: true,
   precision: { tolMm: 0.01, tolIn: 0.0005, fitMaxIT: 7, gdtMm: 0.02, gdtIn: 0.001, raUm: 0.8, decimalsMm: 3, decimalsIn: 4 }, // what counts as a tight / unusual dimension in the checklist (Settings > Precision)
   floatPos: {}, // remembered positions of draggable windows: { key: { x, y } }
+  updateFeedFolder: 'Y:\\Alex\\QR\\v0.1.5\\',
+  updateCheckOnStartup: true,
+  updateCheckInterval: 'daily', // hourly | daily
 };
 /** Pure: stored object -> full settings with the capability catalog merged over the defaults. */
 function normalizeSettings(stored) {
@@ -54,6 +57,9 @@ function normalizeSettings(stored) {
   s.materialsCatalog = mergeCatalog(MATERIALS, s.materialsCatalog);
   s.processesCatalog = mergeCatalog(PROCESSES, s.processesCatalog);
   s.customers = mergeCustomers(stored && stored.customers);
+  s.updateFeedFolder = typeof s.updateFeedFolder === 'string' ? s.updateFeedFolder : DEFAULTS.updateFeedFolder;
+  s.updateCheckOnStartup = s.updateCheckOnStartup !== false;
+  s.updateCheckInterval = s.updateCheckInterval === 'hourly' ? 'hourly' : 'daily';
   return s;
 }
 /** Pure: settings -> the catalog object the checks use. */

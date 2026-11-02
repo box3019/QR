@@ -183,12 +183,28 @@ ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
 });
 ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
-ipcMain.handle('qr:print', async () => {
-  if (!win || win.isDestroyed()) return;
-  win.webContents.print({ silent: false, printBackground: true }, (success, reason) => {
-    if (!success && reason !== 'cancelled') mainLog('print failed: ' + reason);
-  });
+const { launchElectronHtmlPrintDialog, partsForPrint, EMPTY_PRINT_ERROR } = require('./qrPrint.cjs');
+ipcMain.handle('qr:print', async (_e, payload) => {
+  try {
+    const p = payload || {};
+    const all = Array.isArray(p.parts) ? p.parts : [];
+    const parts = partsForPrint(all, p.step, p.sel);
+    if (!parts.length) return { ok: false, error: EMPTY_PRINT_ERROR };
+    await attachChecklist(parts);
+    const { reportHtml } = require('../core/report.cjs');
+    const lang = p.lang || loadSettings().questionsLanguage || 'he';
+    const html = reportHtml(parts, lang, p.meta || {});
+    const r = await launchElectronHtmlPrintDialog({ html, BrowserWindow, shell, log: mainLog });
+    return r;
+  } catch (e) {
+    const error = (e && e.message) || String(e);
+    mainLog('print failed: ' + error);
+    return { ok: false, error };
+  }
 });
+const { createUpdateHost } = require('./qrUpdate.cjs');
+const qrUpdate = createUpdateHost({ app, shell, getSettings: loadSettings, getWin: () => win });
+ipcMain.handle('qr:release-update', (_e, action, payload) => qrUpdate.handle(action, payload));
 
 // Single instance: a second launch focuses the existing window instead of starting a hidden duplicate.
 // Outlook 'Send to QR': QR.exe --import <dir> (first launch or a second instance).

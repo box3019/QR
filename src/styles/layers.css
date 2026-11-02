@@ -74,6 +74,7 @@
 .qr-root .qr-bar { height: 4px; background: var(--mrt-surface-muted); border: 1px solid var(--mrt-border-strong); border-radius: 2px; margin-top: 0.35rem; }
 .qr-root .qr-bar > div { background: var(--mrt-accent); }
 .qr-root .qr-busy-tech { opacity: 1; color: var(--mrt-text-muted); font-size: 0.65rem; }
+.qr-root .qr-upd-banner { background: var(--mrt-surface); color: var(--mrt-text); border-bottom-color: var(--mrt-border-strong); }
 
 /* theme-aware replacements for the older hard-coded surfaces */
 .qr-root .qr-input, .qr-root input[type='text'], .qr-root textarea { background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--qr-input-border); }

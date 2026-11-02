@@ -14,7 +14,8 @@
     "dist:win": "node scripts/build-addin.cjs && vite build && electron-builder --win nsis --x64",
     "selftest": "node scripts/selftest.cjs",
     "test:unit": "node --test tests/",
-    "build:addin": "node scripts/build-addin.cjs"
+    "build:addin": "node scripts/build-addin.cjs",
+    "publish:update-folder": "node scripts/publish-update-folder.cjs"
   },
   "dependencies": {
     "@kenjiuno/msgreader": "^1.29.0",

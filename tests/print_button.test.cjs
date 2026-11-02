@@ -23,19 +23,20 @@ test('Print button is disabled when no parts are loaded', () => {
 
 test('Print button triggers qr.print IPC', () => {
   const a = src('src/App.tsx');
-  assert.ok(/onClick=\{.*qr\(\)\.print/.test(a), 'Print button should call qr().print');
+  assert.ok(/qr\(\)\.print\?\.?\(payload\)/.test(a) || /qr\(\)\.print\?\.\(payload\)/.test(a) || /qr\(\)\.print\?\(payload\)/.test(a), 'Print button should call qr().print with the report payload');
+  assert.ok(/__qrPrintPayload/.test(a), 'Print uses the current project payload, not the live window');
 });
 
 test('print IPC handler exists in main process', () => {
   const m = src('electron/main.cjs');
   assert.ok(/ipcMain\.handle\('qr:print'/.test(m), 'qr:print handler should exist');
-  assert.ok(/webContents\.print\(/.test(m), 'print handler should use webContents.print');
-  assert.ok(/printBackground:\s*true/.test(m), 'print handler should enable printBackground');
+  assert.ok(/launchElectronHtmlPrintDialog/.test(m), 'print handler should print report HTML in a hidden window');
+  assert.ok(/reportHtml/.test(m), 'print handler should use the existing report');
 });
 
 test('print method is exposed in preload', () => {
   const p = src('electron/preload.cjs');
-  assert.ok(/print:\s*\(\)\s*=>\s*ipcRenderer\.invoke\('qr:print'\)/.test(p), 'print method should be exposed');
+  assert.ok(/print:\s*\(payload\)\s*=>\s*ipcRenderer\.invoke\('qr:print',\s*payload\)/.test(p), 'print method should be exposed');
 });
 
 test('Print icon is defined', () => {
