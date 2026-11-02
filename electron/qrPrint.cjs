@@ -119,8 +119,8 @@ function reportPdfStem(parts, step, sel, meta, payload) {
   return String(m.rfq || m.label || m.key || (list[0] && (list[0].partNo || list[0].title)) || '').trim();
 }
 
-function partPdfFileName(part) {
-  return sanitizeWinFileName((part && (part.partNo || part.title)) || 'part') + '.pdf';
+function partPdfFileName(part, now) {
+  return sanitizeWinFileName((part && (part.partNo || part.title)) || 'part') + '_' + ymdLocal(now) + '.pdf';
 }
 
 function ymdLocal(d) {
@@ -130,7 +130,26 @@ function ymdLocal(d) {
 
 function reportPdfFileName(payload, now) {
   const p = payload || {};
-  return sanitizeWinFileName(reportPdfStem(p.parts, p.step, p.sel, p.meta, p)) + '_QR_report_' + ymdLocal(now) + '.pdf';
+  const date = ymdLocal(now);
+  const one = p.mode === 'part' || p.partOpen || ((p.step === 2 || p.step === 3) && p.mode !== 'package');
+  if (one) {
+    const list = partsForPrint(p.parts, p.step, p.sel, p);
+    return partPdfFileName(list[0] || { partNo: reportPdfStem(p.parts, p.step, p.sel, p.meta, p) }, now);
+  }
+  return sanitizeWinFileName(reportPdfStem(p.parts, p.step, p.sel, p.meta, p) || 'package') + '_summary_' + date + '.pdf';
+}
+
+/** If dest exists, suggest " (2)", " (3)", … before the extension. */
+function uniquePdfPath(dest, existsFn, used) {
+  const exists = existsFn || ((p) => { try { return fs.existsSync(p); } catch { return false; } });
+  const seen = used || new Set();
+  const key = (p) => String(p).toLowerCase();
+  if (!exists(dest) && !seen.has(key(dest))) return dest;
+  const ext = path.extname(dest) || '.pdf';
+  const stem = dest.slice(0, dest.length - ext.length);
+  let n = 2, p;
+  do { p = stem + ' (' + n + ')' + ext; n++; } while (exists(p) || seen.has(key(p)));
+  return p;
 }
 
 function defaultPdfDir(last, documents, existsFn) {
@@ -211,5 +230,5 @@ module.exports = {
   EMPTY_PRINT_ERROR, LOAD_TIMEOUT_MS, PDF_PRINT_OPTS, partsForPrint, printDocumentStatsJs, isPrintDocumentReady,
   parseRegValue, parseOpenCommand, isAcrobatExe, resolvePdfOpenCommand, openPdfForPrint,
   launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, renderReportPdfInHiddenWindow, waitDidFinishLoad,
-  sanitizeWinFileName, reportPdfStem, reportPdfFileName, partPdfFileName, defaultPdfDir, ymdLocal,
+  sanitizeWinFileName, reportPdfStem, reportPdfFileName, partPdfFileName, uniquePdfPath, defaultPdfDir, ymdLocal,
 };

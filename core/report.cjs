@@ -1,5 +1,5 @@
 'use strict';
-// Summary PDF report: HTML template for Electron printToPDF. EN or HE (RTL), following the export language setting.
+// Summary PDF report: HTML template for Electron printToPDF. EN or HE (RTL), following the program (UI) language.
 // Header (QR logo, RFQ, customer, date), summary by group with colored labels, per-part sections, customer questions,
 // documents to upload. No dependencies.
 const { buildQuestions, toHebrew } = require('./questions.cjs');

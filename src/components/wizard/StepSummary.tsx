@@ -1,8 +1,7 @@
-// Step 4: stat tiles across the top, then a 2-column card grid (questions / Excel / report on screen / PDF) in a centred container.
+// Step 4: stat tiles, checklist, route card, then questions / Excel / on-screen report. Header Save PDF is the single PDF export.
 import React from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
-import { exportReport } from '../../wizard/report';
 import { Box } from './Box';
 import { RouteCardSummary } from '../partcard/RouteCardSection';
 import { ChecklistSummary } from '../../checklist/ChecklistSummary';
@@ -16,7 +15,7 @@ function Stat({ k, n, label, dot, testid }: any) {
   </div>;
 }
 
-export function StepSummary({ parts, openDialog, goPart, lang, meta }: any) {
+export function StepSummary({ parts, openDialog, goPart }: any) {
   const { nq, np, flagged } = summaryCounts(parts);
   const xlsx = async () => { const r = await (window as any).qr.exportRequirements(parts); if (r && r.path) (window as any).qr.openPath(r.path); };
   const counts = tileCounts(parts);
@@ -41,10 +40,6 @@ export function StepSummary({ parts, openDialog, goPart, lang, meta }: any) {
       <Box title={t('wz.secShow')} testid="box-show-report">
         <p className="qr-box-text">{t('wz.showText')}</p>
         <button className={MRT_BTN} data-testid="btn-summary" title={t('wz.tipReport')} onClick={() => openDialog('summary')}>{t('wz.showReport')}</button>
-      </Box>
-      <Box title={t('wz.secPdf')} testid="box-export-pdf">
-        <p className="qr-box-text">{t('wz.pdfText')}</p>
-        <button className={MRT_BTN} data-testid="btn-export-pdf" title={t('tip.exportPdf')} onClick={() => exportReport(parts, lang, meta)}>{t('wz.pdfBtn')}</button>
       </Box>
     </div>
   </div></div>;

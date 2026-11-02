@@ -114,6 +114,9 @@ test('material triage: suitable, not suitable, unknown, manual move', async () =
   assert.equal(t.isIncluded(al), true);
   assert.equal(t.isIncluded(st), false);
   assert.equal(t.isIncluded(t.setInclude(st, true)), true);
+  assert.deepEqual(t.saveEachIndexes([al, st, un], 'suitable'), [0]);
+  assert.deepEqual(t.saveEachIndexes([al, st, un], 'all'), [0, 1, 2]);
+  assert.deepEqual(t.saveEachCounts([al, st, un]), { checked: 1, suitable: 1, all: 3 });
 });
 
 test('package report cover lists both groups, processed count, numbered suitable summaries only', () => {
@@ -144,14 +147,15 @@ test('package report cover lists both groups, processed count, numbered suitable
   assert.doesNotMatch(he, /Suitable|Not suitable|Processed/);
 });
 
-test('per-part PDF file name is the part number; package print uses mode', () => {
-  assert.equal(P.partPdfFileName({ partNo: '518310-A' }), '518310-A.pdf');
-  assert.equal(P.partPdfFileName({ partNo: 'P1:A/B' }), 'P1_A_B.pdf');
+test('per-part PDF file name is the part number plus date; package print uses mode', () => {
+  const now = new Date(2026, 10, 2);
+  assert.equal(P.partPdfFileName({ partNo: '518310-A' }, now), '518310-A_2026-11-02.pdf');
+  assert.equal(P.partPdfFileName({ partNo: 'P1:A/B' }, now), 'P1_A_B_2026-11-02.pdf');
   const parts = [part({}), part({ partNo: 'P2' })];
   assert.deepStrictEqual(P.partsForPrint(parts, 2, 1, { mode: 'package' }).map((x) => x.partNo), ['518310', 'P2']);
   assert.deepStrictEqual(P.partsForPrint(parts, 2, 1, { mode: 'part' }).map((x) => x.partNo), ['P2']);
-  const name = P.reportPdfFileName({ parts, step: 2, sel: 0, mode: 'package', meta: { label: 'PKG-1' } }, new Date(2026, 10, 2));
-  assert.match(name, /PKG-1_QR_report_2026-11-02\.pdf/);
+  const name = P.reportPdfFileName({ parts, step: 2, sel: 0, mode: 'package', meta: { label: 'PKG-1' } }, now);
+  assert.match(name, /PKG-1_summary_2026-11-02\.pdf/);
   const one = reportHtml([parts[0]], 'en', {});
   assert.match(one, /Number 1/);
   assert.doesNotMatch(one, /Package report/);
@@ -162,7 +166,7 @@ test('per-part PDF file name is the part number; package print uses mode', () =>
   assert.match(proj, /savePdfEach/);
 });
 
-test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.11', () => {
+test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.12', () => {
   const tri = src('src/components/wizard/TriageView.tsx');
   assert.match(tri, /tri-print/);
   assert.match(tri, /tri-save/);
@@ -179,14 +183,68 @@ test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.11',
   assert.match(main, /partPdfFileName/);
   assert.match(main, /mode === 'package'/);
   const pkg = JSON.parse(src('package.json'));
-  assert.equal(pkg.version, '0.1.11');
+  assert.equal(pkg.version, '0.1.12');
   assert.ok(pkg.dependencies['node-unrar-js']);
   const en = JSON.parse(src('src/i18n/en.json')); const he = JSON.parse(src('src/i18n/he.json'));
-  for (const k of ['tri.suitable', 'tri.notSuitable', 'tri.unknown', 'tri.toSuit', 'tri.toNot', 'tri.saveEach', 'st.mat.shopHelp', 'pdf.savedEach']) {
+  for (const k of ['tri.suitable', 'tri.notSuitable', 'tri.unknown', 'tri.toSuit', 'tri.toNot', 'tri.saveEach', 'tri.saveEachAsk', 'tri.saveChecked', 'tri.saveSuitable', 'tri.saveAll', 'st.mat.shopHelp', 'pdf.savedEach']) {
     assert.ok(en[k] && he[k], k);
   }
   assert.equal(en['tri.saveEach'], 'Save each part as separate PDF');
+  assert.match(tri, /SaveEachChoice/);
+  assert.match(src('src/components/wizard/SaveEachChoice.tsx'), /save-each-suitable/);
+  assert.match(src('src/ProjectView.tsx'), /reportLang/);
+  assert.doesNotMatch(src('src/ProjectView.tsx'), /questionsLanguage.*print|printLang/);
+  const sum = src('src/components/wizard/StepSummary.tsx');
+  assert.doesNotMatch(sum, /btn-export-pdf/);
   assert.doesNotMatch(en['tri.unknown'], /N\/A|TBD|n\/a/);
   const st = src('src/settings/SettingsDialog.tsx');
   assert.match(st, /st\.mat\.shopHelp/);
+});
+
+function miniPdf(pn) {
+  const text = 'PART NO ' + pn + ' REV A MATERIAL ALUMINUM 6061-T6 BAR NOTES: 1. BREAK ALL SHARP EDGES TITLE BRACKET';
+  const stream = 'BT /F1 12 Tf 72 720 Td (' + text + ') Tj ET';
+  return Buffer.from('%PDF-1.1\n1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj\n2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj\n3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources<< /Font<< /F1 5 0 R >> >> >>endobj\n4 0 obj<< /Length ' + stream.length + ' >>stream\n' + stream + '\nendstream\nendobj\n5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj\ntrailer<< /Root 1 0 R >>\n%%EOF\n');
+}
+
+test('7-part RAR: extract cache reuse, file roles, busy stays until every part is done', async () => {
+  const { runPipeline } = require('../core/pipeline.cjs');
+  const { stopBusy, reduceBusy, startBusy, busyComplete } = await import(pathToFileURL(path.join(__dirname, '..', 'src', 'wizard', 'progress.mjs')).href);
+  const d = tmp(); const cache = path.join(d, 'cache');
+  const entries = [];
+  for (let i = 1; i <= 7; i++) {
+    const pn = '51831' + i;
+    entries.push({ name: pn + '-A-PD-01.pdf', data: miniPdf(pn) });
+    entries.push({ name: pn + '-A-PD-01.step', data: 'ISO-10303-21;' });
+  }
+  entries.push({ name: 'notes.txt', data: 'package notes' });
+  const rar = write(d, 'pack.rar', buildRar4(entries));
+  const ev = [];
+  const t0 = Date.now();
+  const r = await runPipeline([rar], { ocr: false, importCache: cache }, (e) => ev.push({ ...e, ms: Date.now() - t0 }));
+  const firstMs = Date.now() - t0;
+  const t1 = Date.now();
+  const r2 = await runPipeline([rar], { ocr: false, importCache: cache }, () => {});
+  const cacheMs = Date.now() - t1;
+  assert.equal(r.parts.length, 7);
+  assert.equal(r.files.length, 15);
+  assert.equal(r2.parts.length, 7);
+  assert.ok(fs.existsSync(path.join(cache, fs.readdirSync(cache)[0], CACHE_MARKER)));
+  assert.ok(cacheMs <= firstMs, 'cache reuse should not be slower than first extract+analyse');
+  const roles = ev.filter((e) => e.type === 'fileStatus');
+  assert.ok(roles.some((e) => /\.step$/i.test(e.name) && e.status === 'attached' && e.partNo));
+  assert.ok(roles.some((e) => e.name === 'notes.txt' && (e.status === 'unused' || e.status === 'attached')));
+  const partEv = ev.filter((e) => e.type === 'part');
+  const doneEv = ev.filter((e) => e.type === 'done');
+  assert.equal(partEv.length, 7);
+  assert.equal(doneEv.length, 1);
+  assert.ok(doneEv[0].ms >= partEv[partEv.length - 1].ms);
+  let b = startBusy();
+  for (const e of ev) {
+    if (e.type === 'part' || e.type === 'status' || e.type === 'done') b = reduceBusy(b, e);
+    if (e.type === 'part') assert.equal(stopBusy(b) == null, busyComplete(b), 'busy stays until every part is done');
+  }
+  assert.equal(busyComplete(b), true);
+  assert.equal(stopBusy(b), null);
+  console.log('7-part rar timing ms', { first: firstMs, cache: cacheMs, parts: r.parts.length });
 });

@@ -13,13 +13,14 @@ test('next step: empty, loaded, needs document first, then answer, then done / e
   const ok = [P('A1'), P('X', { status: 'rejected' })]; assert.strictEqual(n.nextAction(2, ok).key, 'ns.done'); assert.strictEqual(n.nextAction(2, ok).dot, 'ok'); assert.deepStrictEqual(n.nextAction(4, ok).go, { action: 'export' }); });
 test('disabled reasons', async () => { const n = await load('wizard/nextstep.mjs');
   assert.strictEqual(n.nextWhy(1, false), 'dis.noParts'); assert.strictEqual(n.nextWhy(4, true), 'dis.lastStep'); assert.strictEqual(n.nextWhy(2, true), null);
+  assert.strictEqual(n.nextWhy(1, true, true), 'dis.busyNext'); assert.strictEqual(n.nextWhy(2, true, true), 'dis.busyNext');
   assert.strictEqual(n.cancelWhy(false), 'dis.nothingToClear'); assert.strictEqual(n.cancelWhy(true), null); assert.strictEqual(n.stepWhy(3, false), 'dis.stepLocked'); assert.strictEqual(n.stepWhy(1, false), null);
   assert.strictEqual(n.saveWhy(0, false), 'dis.nothingToSave'); assert.strictEqual(n.saveWhy(3, true), 'dis.busySave'); assert.strictEqual(n.saveWhy(3, false), null); });
 test('every disabled-able button uses a reason, texts exist in en and he', () => {
   assert.ok(/nextWhy/.test(src('src/components/wizard/WizardFooter.tsx')) && /cancelWhy/.test(src('src/components/wizard/WizardFooter.tsx')));
   assert.ok(/stepWhy/.test(src('src/components/wizard/Stepper.tsx'))); assert.ok(/saveWhy/.test(src('src/App.tsx'))); assert.ok(/dis\.presetSame/.test(src('src/settings/PresetsPanel.tsx')));
   const en = JSON.parse(src('src/i18n/en.json')), he = JSON.parse(src('src/i18n/he.json'));
-  for (const k of ['ns.load', 'ns.check', 'ns.check1', 'ns.needsDoc', 'ns.needsDoc1', 'ns.needsAnswer', 'ns.needsAnswer1', 'ns.done', 'ns.export', 'tip.nextLine', 'dis.noParts', 'dis.lastStep', 'dis.nothingToClear', 'dis.stepLocked', 'dis.nothingToSave', 'dis.busySave', 'dis.presetSame', 'dis.firstPart', 'notice.cleared', 'notice.undo']) { assert.ok(en[k], 'en ' + k); assert.ok(he[k], 'he ' + k); }
+  for (const k of ['ns.load', 'ns.check', 'ns.check1', 'ns.needsDoc', 'ns.needsDoc1', 'ns.needsAnswer', 'ns.needsAnswer1', 'ns.done', 'ns.export', 'tip.nextLine', 'dis.noParts', 'dis.lastStep', 'dis.nothingToClear', 'dis.stepLocked', 'dis.nothingToSave', 'dis.busySave', 'dis.busyNext', 'dis.presetSame', 'dis.firstPart', 'notice.cleared', 'notice.undo']) { assert.ok(en[k], 'en ' + k); assert.ok(he[k], 'he ' + k); }
   assert.ok(/\{part\}/.test(en['ns.needsDoc']) && /\{part\}/.test(he['ns.needsDoc'])); });
 test('the next-step line is in the step header and is clickable', () => { const h = src('src/components/wizard/StepHeader.tsx'), n = src('src/components/wizard/NextStep.tsx');
   assert.ok(/<NextStep/.test(h)); assert.ok(/data-testid="next-step"/.test(n) && /onClick=\{\(\) => onGo\(next\.go\)\}/.test(n) && /title=\{t\('tip\.nextLine'\)\}/.test(n)); assert.ok(/nextAction\(step, parts/.test(src('src/ProjectView.tsx'))); });

@@ -10,6 +10,7 @@ const { analyzePart } = require('./analyze.cjs');
 const { expand } = require('./intake/expand.cjs');
 const { attachPackageFiles } = require('./intake/package.cjs');
 const { fileKind, modelRank } = require('./intake/classify.cjs');
+const { mapLimit, DEFAULT_CONCURRENCY } = require('./intake/pool.cjs');
 const { readEmail } = require('./email/index.cjs');
 const { analyzeFile } = require('./requirements/index.cjs');
 const { attachRfqs } = require('./rfq/attach.cjs');
@@ -18,6 +19,7 @@ const { buildRouteCard } = require('./docs/stage.cjs');
 
 const sha256 = (f) => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
 const isModel = (f) => fileKind(f) === 'model';
+const isPdfDrawing = (f) => fileKind(f) === 'drawing' && /\.pdf$/i.test(f.replace(/(\.pdf)+$/i, '.pdf'));
 
 function classify(pages, name) {
   if (/\bpart\s*list\b|\bparts\s*list\b/i.test(require('path').basename(String(name)))) return 'partsList';
@@ -64,68 +66,134 @@ function locate(pages, pr) {
 }
 
 const { ocrChart, mergeChartTokens, rawWithChart } = require('./ocr/chart.cjs');
+
+let ocrChain = Promise.resolve();
+const withOcrLock = (fn) => {
+  const run = ocrChain.then(fn);
+  ocrChain = run.then(() => {}, () => {});
+  return run;
+};
+
+function pageCache() {
+  const memo = new Map();
+  return (file) => {
+    if (!memo.has(file)) {
+      memo.set(file, Promise.all([
+        extractPdf(file),
+        require('./requirements/mupdf.cjs').pageLines(file).catch(() => null),
+      ]).then(([pages, mu]) => ({ pages, mu })));
+    }
+    return memo.get(file);
+  };
+}
+
+function emitFileRoles(parts, files, emit) {
+  const used = new Map();
+  for (const p of parts || []) {
+    const pn = p.partNo || '';
+    for (const n of p.packageFiles || []) used.set(n, pn);
+    if (p.model && p.model.path) used.set(path.basename(p.model.path), pn);
+    if (p.drawing && p.drawing.name) used.set(p.drawing.name, pn);
+  }
+  for (const f of files || []) {
+    const n = path.basename(f);
+    if (isPdfDrawing(f)) continue;
+    const pn = used.get(n);
+    emit({ type: 'fileStatus', file: f, name: n, status: pn ? 'attached' : 'unused', partNo: pn || '' });
+  }
+}
+
+async function processDrawing(d, drawings, partsLists, models, files, settings, emit, iDraw) {
+  const key = d.pages.map((p) => p.raw).join('\n');
+  if (settings.ocr !== false) for (const p of d.pages) {
+    if (p.quality.mode === 'text') continue;
+    emit({ type: 'status', stage: 'ocr', i: iDraw + 1, n: drawings.length, text: `OCR ${d.name} page ${p.n} (${p.quality.reasons.join(', ')}) at ${settings.ocrDpi || 400} DPI` });
+    try {
+      const t0 = Date.now();
+      p.ocr = await withOcrLock(() => ocrPage(d.path, p.n, p.tokens, { dpi: settings.ocrDpi || 400, langPath: settings.langPath, cachePath: settings.ocrCachePath, onProgress: (x) => emit({ type: 'progress', file: d.name, page: p.n, value: x }) }));
+      p.ocr.seconds = Math.round((Date.now() - t0) / 1000);
+      const raw0 = p.raw, ocrWords = p.ocr.words;
+      p.tokens = p.tokens.concat(ocrWords);
+      if (ocrWords.length) p.raw += '\n' + ocrWords.filter((w) => w.conf >= 0.6).map((w) => w.text).join(' ');
+      try {
+        const ch = await withOcrLock(() => ocrChart(d.path, p.n, p.tokens, { langPath: settings.langPath, cachePath: settings.ocrCachePath }));
+        if (ch) { p.chart = { rows: ch.rows, text: ch.text, box: ch.box, dpi: ch.dpi }; p.tokens = mergeChartTokens(p.tokens, ch); p.raw = rawWithChart(raw0, ocrWords, ch); emit({ type: 'status', text: `Routing chart on ${d.name} page ${p.n}: ${ch.rows.filter((r) => r.no).length} rows read` }); }
+      } catch (e) { emit({ type: 'status', text: `Routing chart OCR failed on ${d.name} page ${p.n}: ${(e && e.message) || e}` }); }
+    } catch (e) { p.ocrError = String((e && e.message) || e); emit({ type: 'status', text: `OCR failed on ${d.name} page ${p.n}: ${p.ocrError}` }); }
+  }
+  const pl = partsLists.find((l) => { const forPn = (l.name.match(/\bfor\s+([A-Z0-9-]{5,})/i) || [])[1]; if (forPn) return d.name.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(forPn.toUpperCase().replace(/[^A-Z0-9]/g, '')) || key.toUpperCase().includes('ASSEMBLY') && key.includes(forPn.toUpperCase()) && d.name.toUpperCase().includes(forPn.toUpperCase()); const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
+  let requirements = [];
+  try { requirements = await analyzeFile(d.path, d.pages, d.mu); } catch (e) { emit({ type: 'status', text: `Requirements extraction failed on ${d.name}: ${e.message || e}` }); }
+  const a = analyzePart({ drawing: d, partsList: pl, models, settings, library: settings.library || [], requirements });
+  const mm = findModels(a.partNo, d.path, models, a.profile, settings.searchRoots);
+  a.model = mm.models[0] ? { path: mm.models[0], ...stepHeader(mm.models[0]) } : null;
+  a.modelSearchLog = mm.log;
+  if (settings.libraryBase) { try { await attachStandards(a, d.pages.map((p) => p.raw || '').join('\n'), { base: settings.libraryBase, customerDirs: (settings.customerDocDirs || []).filter(Boolean), jobFiles: files, problem }); a.routeCard = { ...buildRouteCard(a), v: 2 }; } catch (e) { emit({ type: 'status', text: `Standards lookup failed on ${d.name}: ${e.message || e}` }); } }
+  for (const pr of a.problems) pr.loc = locate(d.pages, pr);
+  for (const p of d.pages) if (p.ocrError) a.problems.unshift({ id: 'OCR' + p.n, ...problem('Info', 'OCR warning', 'ocr.failed', { n: p.n, err: p.ocrError }), evidence: [], status: 'open', loc: null });
+  return { drawing: d, a, pl };
+}
+
 async function runPipeline(paths, settings, emit = () => {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-'));
   const errors = [];
-  const { files, rfqs, sources } = await expand(paths, tmp, { sevenZip: settings.sevenZip, importCache: settings.importCache, readEmail: (f, out) => readEmail(f, out, { customers: settings.customers }), onStatus: (text, extra) => emit({ type: 'status', text, ...(extra || {}) }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
-  for (const r of rfqs) emit({ type: 'rfq', rfq: r });
-  emit({ type: 'files', files: files.map((f) => { const s = sources && sources.get(f); return { path: f, name: path.basename(f), label: s ? s.label : path.basename(f), title: s ? s.title : f }; }) });
-  const docs = [];
-  const nPdf = files.filter((f) => fileKind(f) === 'drawing').length; let iPdf = 0;
-  for (const f of files) {
-    if (fileKind(f) !== 'drawing' || !/\.pdf$/i.test(f.replace(/(\.pdf)+$/i, '.pdf'))) continue;
-    try {
-      emit({ type: 'status', stage: 'read', i: ++iPdf, n: nPdf, text: `Reading ${path.basename(f)}` });
-      const pages = await extractPdf(f);
-      docs.push({ path: f, name: path.basename(f), sha256: sha256(f), pages, kind: classify(pages, f) });
-    } catch (e) { emit({ type: 'error', file: f, text: String(e.message || e) }); }
-  }
-  const drawings = docs.filter((d) => d.kind === 'drawing').sort((x, y) => /-pas\b/i.test(x.name) - /-pas\b/i.test(y.name));
-  const partsLists = docs.filter((d) => d.kind === 'partsList');
-  const models = files.filter(isModel);
   const parts = [];
-  for (const d of drawings) {
-    const key = d.pages.map((p) => p.raw).join('\n');
-    // OCR fallback per page (mandatory for pages flagged no_text / garbage / low_ratio)
-    if (settings.ocr !== false) for (const p of d.pages) {
-      if (p.quality.mode === 'text') continue;
-      emit({ type: 'status', stage: 'ocr', i: drawings.indexOf(d) + 1, n: drawings.length, text: `OCR ${d.name} page ${p.n} (${p.quality.reasons.join(', ')}) at ${settings.ocrDpi || 400} DPI` });
+  const limit = Math.max(1, Number(settings && settings.analysisConcurrency) || DEFAULT_CONCURRENCY);
+  const pagesOf = pageCache();
+  try {
+    const { files, rfqs, sources } = await expand(paths, tmp, { sevenZip: settings.sevenZip, importCache: settings.importCache, readEmail: (f, out) => readEmail(f, out, { customers: settings.customers }), onStatus: (text, extra) => emit({ type: 'status', text, ...(extra || {}) }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
+    for (const r of rfqs) emit({ type: 'rfq', rfq: r });
+    emit({ type: 'files', files: files.map((f) => { const s = sources && sources.get(f); return { path: f, name: path.basename(f), label: s ? s.label : path.basename(f), title: s ? s.title : f }; }) });
+    const pdfs = files.filter(isPdfDrawing);
+    emit({ type: 'status', stage: 'parts', i: 0, n: pdfs.length, text: `Analysed 0 of ${pdfs.length} parts` });
+    const loaded = await mapLimit(pdfs, limit, async (f, idx) => {
       try {
-        const t0 = Date.now();
-        p.ocr = await ocrPage(d.path, p.n, p.tokens, { dpi: settings.ocrDpi || 400, langPath: settings.langPath, cachePath: settings.ocrCachePath, onProgress: (x) => emit({ type: 'progress', file: d.name, page: p.n, value: x }) });
-        p.ocr.seconds = Math.round((Date.now() - t0) / 1000);
-        const raw0 = p.raw, ocrWords = p.ocr.words;
-        p.tokens = p.tokens.concat(ocrWords);
-        if (ocrWords.length) p.raw += '\n' + ocrWords.filter((w) => w.conf >= 0.6).map((w) => w.text).join(' ');
-        // a ruled PRODUCTION ROUTING CHART on a page without a text layer is read cell by cell (tiled OCR cuts it into fragments)
-        try {
-          const ch = await ocrChart(d.path, p.n, p.tokens, { langPath: settings.langPath, cachePath: settings.ocrCachePath });
-          if (ch) { p.chart = { rows: ch.rows, text: ch.text, box: ch.box, dpi: ch.dpi }; p.tokens = mergeChartTokens(p.tokens, ch); p.raw = rawWithChart(raw0, ocrWords, ch); emit({ type: 'status', text: `Routing chart on ${d.name} page ${p.n}: ${ch.rows.filter((r) => r.no).length} rows read` }); }
-        } catch (e) { emit({ type: 'status', text: `Routing chart OCR failed on ${d.name} page ${p.n}: ${(e && e.message) || e}` }); }
-      } catch (e) { p.ocrError = String((e && e.message) || e); emit({ type: 'status', text: `OCR failed on ${d.name} page ${p.n}: ${p.ocrError}` }); }
-    }
-    const pl = partsLists.find((l) => { const forPn = (l.name.match(/\bfor\s+([A-Z0-9-]{5,})/i) || [])[1]; if (forPn) return d.name.toUpperCase().replace(/[^A-Z0-9]/g, '').includes(forPn.toUpperCase().replace(/[^A-Z0-9]/g, '')) || key.toUpperCase().includes('ASSEMBLY') && key.includes(forPn.toUpperCase()) && d.name.toUpperCase().includes(forPn.toUpperCase()); const t = l.pages[0].raw; const m = t.match(/\b(\d{4}[A-Z]\d{3}-\d{3}|[A-Z0-9-]{6,})\b/g) || []; return m.some((x) => key.includes(x) && x.length >= 8); });
-    try {
-      let requirements = [];
-      try { requirements = await analyzeFile(d.path, d.pages); } catch (e) { emit({ type: 'status', text: `Requirements extraction failed on ${d.name}: ${e.message || e}` }); }
-      const a = analyzePart({ drawing: d, partsList: pl, models, settings, library: settings.library || [], requirements });
-      const mm = findModels(a.partNo, d.path, models, a.profile, settings.searchRoots);
-      a.model = mm.models[0] ? { path: mm.models[0], ...stepHeader(mm.models[0]) } : null;
-      a.modelSearchLog = mm.log;
-      if (settings.libraryBase) { try { await attachStandards(a, d.pages.map((p) => p.raw || '').join('\n'), { base: settings.libraryBase, customerDirs: (settings.customerDocDirs || []).filter(Boolean), jobFiles: files, problem }); a.routeCard = { ...buildRouteCard(a), v: 2 }; } catch (e) { emit({ type: 'status', text: `Standards lookup failed on ${d.name}: ${e.message || e}` }); } }
-      for (const pr of a.problems) pr.loc = locate(d.pages, pr);
-      for (const p of d.pages) if (p.ocrError) a.problems.unshift({ id: 'OCR' + p.n, ...problem('Info', 'OCR warning', 'ocr.failed', { n: p.n, err: p.ocrError }), evidence: [], status: 'open', loc: null });
-      const dup = parts.find((q) => q.partNo && q.partNo === a.partNo && q.rev === a.rev && q.customer === a.customer);
-      if (dup) { (dup.duplicates = dup.duplicates || []).push(d.name); emit({ type: 'status', text: `${d.name}: same drawing as ${dup.drawing.name}, skipped` }); continue; }
-      parts.push({ id: 'part' + (parts.length + 1), drawing: { path: d.path, name: d.name, sha256: d.sha256, pages: d.pages.map((p) => ({ n: p.n, width: p.width, height: p.height, quality: p.quality, ocr: p.ocr ? { dpi: p.ocr.dpi, tiles: p.ocr.tiles, seconds: p.ocr.seconds, words: p.ocr.words } : null, ocrError: p.ocrError })) }, partsList: pl ? { path: pl.path, name: pl.name } : null, ...a });
-      emit({ type: 'part', part: parts[parts.length - 1] });
-    } catch (e) { emit({ type: 'error', file: d.path, text: String(e.stack || e) }); }
+        emit({ type: 'status', stage: 'read', i: idx + 1, n: pdfs.length, text: `Reading ${path.basename(f)}` });
+        const { pages, mu } = await pagesOf(f);
+        return { path: f, name: path.basename(f), sha256: sha256(f), pages, mu, kind: classify(pages, f) };
+      } catch (e) { emit({ type: 'error', file: f, text: String(e.message || e) }); return null; }
+    });
+    const docs = loaded.filter(Boolean);
+    const drawings = docs.filter((d) => d.kind === 'drawing').sort((x, y) => /-pas\b/i.test(x.name) - /-pas\b/i.test(y.name));
+    const partsLists = docs.filter((d) => d.kind === 'partsList');
+    const models = files.filter(isModel);
+    const nDraw = drawings.length;
+    emit({ type: 'status', stage: 'parts', i: 0, n: nDraw, text: `Analysed 0 of ${nDraw} parts` });
+    let analysed = 0;
+    let lock = Promise.resolve();
+    const withLock = (fn) => {
+      const run = lock.then(fn);
+      lock = run.then(() => {}, () => {});
+      return run;
+    };
+    const finishOne = (part) => withLock(() => {
+      analysed++;
+      emit({ type: 'status', stage: 'parts', i: analysed, n: nDraw, text: `Analysed ${analysed} of ${nDraw} parts` });
+      if (part) emit({ type: 'part', part });
+    });
+    await mapLimit(drawings, limit, async (d, iDraw) => {
+      try {
+        const { drawing, a, pl } = await processDrawing(d, drawings, partsLists, models, files, settings, emit, iDraw);
+        const part = await withLock(() => {
+          const dup = parts.find((q) => q.partNo && q.partNo === a.partNo && q.rev === a.rev && q.customer === a.customer);
+          if (dup) { (dup.duplicates = dup.duplicates || []).push(drawing.name); emit({ type: 'status', text: `${drawing.name}: same drawing as ${dup.drawing.name}, skipped` }); return null; }
+          const next = { id: 'part' + (parts.length + 1), drawing: { path: drawing.path, name: drawing.name, sha256: drawing.sha256, pages: drawing.pages.map((p) => ({ n: p.n, width: p.width, height: p.height, quality: p.quality, ocr: p.ocr ? { dpi: p.ocr.dpi, tiles: p.ocr.tiles, seconds: p.ocr.seconds, words: p.ocr.words } : null, ocrError: p.ocrError })) }, partsList: pl ? { path: pl.path, name: pl.name } : null, ...a };
+          parts.push(next);
+          return next;
+        });
+        await finishOne(part);
+      } catch (e) { emit({ type: 'error', file: d.path, text: String(e.stack || e) }); await finishOne(null); }
+    });
+    await lock;
+    if (analysed < nDraw) emit({ type: 'status', stage: 'parts', i: nDraw, n: nDraw, text: `Analysed ${nDraw} of ${nDraw} parts` });
+    attachPackageFiles(parts, files);
+    emitFileRoles(parts, files, emit);
+    const unknown = docs.filter((d) => d.kind === 'spec').map((d) => d.name);
+    const rfqOut = attachRfqs(parts, rfqs);
+    const other = files.filter((f) => !['drawing', 'model'].includes(fileKind(f))).map((f) => path.basename(f));
+    return { parts, unknown, other, errors, rfqs: rfqOut, files: files.map((f) => path.basename(f)) };
+  } finally {
+    emit({ type: 'done', n: parts.length });
   }
-  attachPackageFiles(parts, files);
-  const unknown = docs.filter((d) => d.kind === 'spec').map((d) => d.name);
-  const rfqOut = attachRfqs(parts, rfqs);
-  const other = files.filter((f) => !['drawing', 'model'].includes(fileKind(f))).map((f) => path.basename(f));
-  return { parts, unknown, other, errors, rfqs: rfqOut, files: files.map((f) => path.basename(f)) };
 }
-module.exports = { runPipeline };
-
+module.exports = { runPipeline, DEFAULT_CONCURRENCY };

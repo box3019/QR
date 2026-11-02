@@ -11,8 +11,11 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 .qr-topbar .mrt-topbar-cmd { height: auto !important; min-height: 44px !important; max-height: 48px; min-width: 64px !important; padding: 3px 8px !important; font-size: 11px !important; } /* px: toolbar does not grow with text size */
 .qr-topbar .mrt-topbar-cmd > span:not(.ico) { white-space: nowrap !important; overflow-wrap: normal !important; }
 .qr-topbar .mrt-topbar-cmd[data-testid='btn-save-pdf'] { width: auto !important; min-width: 88px !important; max-width: none !important; flex-shrink: 0 !important; }
-.qr-root .qr-tri-acts button, .qr-root .qr-tri-bar button, .qr-root .qr-tri-open {
+.qr-root .qr-tri-acts button, .qr-root .qr-tri-bar button {
   white-space: nowrap !important; overflow-wrap: normal !important; max-width: none;
+}
+.qr-root .qr-tri-open {
+  white-space: nowrap !important; overflow-wrap: normal !important; max-width: 5.5rem;
 }
 .qr-topbar { height: auto !important; min-height: 0 !important; flex-wrap: wrap; }
 .qr-topbar .mrt-topbar-cmd .ico { font-size: 1.15em; line-height: 1; }

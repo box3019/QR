@@ -183,8 +183,10 @@ test('Print and Save PDF share one hidden-window printToPDF function', () => {
 test('report PDF file name uses part or quote, date, and sanitizes Windows characters', () => {
   const now = new Date(2026, 10, 2);
   const parts = [part({ partNo: 'P1:A/B' }), part({ partNo: 'P2' })];
-  assert.strictEqual(P.reportPdfFileName({ parts, step: 2, sel: 0, meta: { label: 'RFQ-77' } }, now), 'P1_A_B_QR_report_2026-11-02.pdf');
-  assert.strictEqual(P.reportPdfFileName({ parts, step: 4, sel: 0, meta: { label: 'RFQ 77?*' } }, now), 'RFQ 77_QR_report_2026-11-02.pdf');
+  assert.strictEqual(P.reportPdfFileName({ parts, step: 2, sel: 0, meta: { label: 'RFQ-77' } }, now), 'P1_A_B_2026-11-02.pdf');
+  assert.strictEqual(P.reportPdfFileName({ parts, step: 4, sel: 0, meta: { label: 'RFQ 77?*' } }, now), 'RFQ 77_summary_2026-11-02.pdf');
+  assert.strictEqual(P.uniquePdfPath('C:\\out\\P1_2026-11-02.pdf', () => false), 'C:\\out\\P1_2026-11-02.pdf');
+  assert.strictEqual(P.uniquePdfPath('C:\\out\\P1_2026-11-02.pdf', (p) => p === 'C:\\out\\P1_2026-11-02.pdf'), 'C:\\out\\P1_2026-11-02 (2).pdf');
   assert.strictEqual(P.sanitizeWinFileName('  con<>:"/\\|?*x  '), 'con_x');
   assert.strictEqual(P.defaultPdfDir('C:\\gone', 'D:\\Docs', () => false), 'D:\\Docs');
   assert.strictEqual(P.defaultPdfDir('C:\\keep', 'D:\\Docs', (p) => p === 'C:\\keep'), 'C:\\keep');

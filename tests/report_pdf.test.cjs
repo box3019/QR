@@ -28,7 +28,12 @@ test('report CSS base font is at least 10.5pt; page margins unchanged', () => {
   assert.doesNotMatch(h, /th,td\{[^}]*white-space:nowrap/, 'table cells must wrap: nowrap cut long text at the page edge in the PDF');
   assert.match(h, /th,td\{[^}]*overflow-wrap:anywhere/);
 });
-test('Summary has Export PDF with tooltip, EN/HE keys', () => {
-  const s = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'components', 'wizard', 'StepSummary.tsx'), 'utf8'); assert.match(s, /btn-export-pdf" title=\{t\('tip.exportPdf'\)\}/);
-  const he = require('../src/i18n/he.json'), en = require('../src/i18n/en.json'); for (const k of ['wz.secPdf', 'wz.pdfBtn', 'wz.pdfText', 'tip.exportPdf']) { assert.ok(en[k] && he[k], k); assert.doesNotMatch(he[k], /[A-Za-z]/); }
+test('Summary has no duplicate Export PDF card; header Save PDF is the single way', () => {
+  const s = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'components', 'wizard', 'StepSummary.tsx'), 'utf8');
+  assert.doesNotMatch(s, /btn-export-pdf/); assert.doesNotMatch(s, /box-export-pdf/);
+  const app = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'App.tsx'), 'utf8');
+  assert.match(app, /btn-save-pdf/);
+  const h = reportHtml(parts, 'en', { rfq: 'RFQ-77' });
+  assert.doesNotMatch(h, /th,td\{[^}]*white-space:nowrap/, 'table cells must keep overflow-wrap');
+  assert.match(h, /th,td\{[^}]*overflow-wrap:anywhere/);
 });

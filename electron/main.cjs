@@ -190,7 +190,7 @@ ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
 });
 ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
-const { launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, partsForPrint, EMPTY_PRINT_ERROR, reportPdfFileName, partPdfFileName, defaultPdfDir } = require('./qrPrint.cjs');
+const { launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, partsForPrint, EMPTY_PRINT_ERROR, reportPdfFileName, partPdfFileName, uniquePdfPath, defaultPdfDir } = require('./qrPrint.cjs');
 async function reportHtmlFromPayload(payload) {
   const p = payload || {};
   const all = Array.isArray(p.parts) ? p.parts : [];
@@ -198,7 +198,7 @@ async function reportHtmlFromPayload(payload) {
   if (!parts.length) return { ok: false, error: EMPTY_PRINT_ERROR };
   await attachChecklist(p.mode === 'package' ? all : parts);
   const { reportHtml } = require('../core/report.cjs');
-  const lang = p.lang || loadSettings().questionsLanguage || 'he';
+  const lang = p.lang || loadSettings().uiLanguage || 'en';
   const meta = { ...(p.meta || {}), package: p.mode === 'package' };
   return { ok: true, html: reportHtml(p.mode === 'package' ? all : parts, lang, meta), payload: p };
 }
@@ -230,17 +230,13 @@ ipcMain.handle('qr:savePdfEach', async (_e, payload, targetDir) => {
     }
     fs.mkdirSync(dir, { recursive: true });
     const { reportHtml } = require('../core/report.cjs');
-    const lang = p.lang || s.questionsLanguage || 'he';
+    const lang = p.lang || s.uiLanguage || 'en';
     const files = [];
     const used = new Set();
+    const now = new Date();
     for (const part of list) {
       await attachChecklist([part]);
-      let dest = path.join(dir, partPdfFileName(part));
-      if (used.has(dest.toLowerCase()) || fs.existsSync(dest)) {
-        const ext = path.extname(dest), stem = dest.slice(0, -ext.length);
-        let n = 2; while (fs.existsSync(stem + '_' + n + ext) || used.has((stem + '_' + n + ext).toLowerCase())) n++;
-        dest = stem + '_' + n + ext;
-      }
+      let dest = uniquePdfPath(path.join(dir, partPdfFileName(part, now)), undefined, used);
       used.add(dest.toLowerCase());
       await saveElectronHtmlReportPdf({ html: reportHtml([part], lang, p.meta || {}), dest, BrowserWindow, log: mainLog });
       files.push(dest);
@@ -261,7 +257,7 @@ ipcMain.handle('qr:savePdf', async (_e, payload, target) => {
     let dest = target;
     if (!dest) {
       const dir = defaultPdfDir(s.lastPdfFolder, app.getPath('documents'));
-      const r = await dialog.showSaveDialog(win, { defaultPath: path.join(dir, reportPdfFileName(prep.payload)), filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+      const r = await dialog.showSaveDialog(win, { defaultPath: uniquePdfPath(path.join(dir, reportPdfFileName(prep.payload))), filters: [{ name: 'PDF', extensions: ['pdf'] }] });
       if (r.canceled || !r.filePath) return { ok: false, canceled: true };
       dest = r.filePath;
     }

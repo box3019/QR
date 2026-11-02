@@ -21,7 +21,7 @@
 .qr-root .qr-rail-context, .qr-root .qr-rail .mrt-wizard-steps { background: var(--qr-rail-bg); }
 .qr-root .qr-wsum { box-shadow: var(--qr-card-shadow); }
 /* canvas: the main area is the tinted canvas, content sits on cards */
-.qr-root .qr-wiz > .qr-wiz-main { background: var(--mrt-bg); overflow: auto; }
+.qr-root .qr-wiz > .qr-wiz-main { background: var(--mrt-bg); overflow-x: hidden; overflow-y: auto; }
 .qr-root .qr-wiz-main > :not(.qr-wiz-head) { min-height: 0; }
 
 /* cards: white (or the dark card tone) + 1px border + subtle shadow */
@@ -55,7 +55,7 @@
 .qr-root .qr-stat-n { font-size: 1.25rem; line-height: 1.2; font-weight: 600; font-variant-numeric: tabular-nums; }
 .qr-root .qr-stat-l { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--mrt-text-muted); white-space: nowrap; }
 .qr-root .qr-stat[data-zero='true'] .qr-stat-n { color: var(--mrt-text-muted); }
-.qr-root .qr-sum-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(auto, auto); gap: var(--qr-space); align-items: stretch; }
+.qr-root .qr-sum-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(auto, auto); gap: var(--qr-space); align-items: stretch; }
 @media (max-width: 1200px) { .qr-root .qr-sum-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .qr-root .qr-sum-grid { grid-template-columns: minmax(0, 1fr); } }
 .qr-root .qr-sum-wrap { min-height: auto; }
@@ -181,3 +181,12 @@
 .qr-mock .qm-st i { display: block; height: 5px; border-radius: 3px; background: var(--mrt-warning); }
 .qr-mock .qm-st i[data-s='bad'] { background: var(--mrt-danger); } .qr-mock .qm-st i[data-s='ok'] { background: var(--mrt-success); }
 .qr-root .qr-pres-bar { position: sticky; bottom: -1px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px var(--qr-card-pad); background: var(--mrt-surface); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r); box-shadow: var(--qr-card-shadow); color: var(--mrt-text); }
+
+/* layers.css loads after wizard.css, so the 960 CSS-px Full HD @200% padding cuts live here. */
+@media (max-width: 1300px) {
+  .qr-root .qr-wiz { grid-template-columns: 2.75rem minmax(0, 1fr) !important; }
+  .qr-root[data-step="1"] .qr-wiz-main, .qr-root[data-step="4"] .qr-wiz-main { padding-inline: 0; }
+  .qr-root .qr-sum-wrap { padding-inline: 0; }
+  .qr-root .qr-cks-card { padding-inline: 4px; }
+  .qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { padding-inline: 2px; }
+}

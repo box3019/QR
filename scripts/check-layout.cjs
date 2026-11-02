@@ -119,7 +119,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     fs.writeFileSync(f, Buffer.from(b64, 'base64')); files.push(f); }
   await win.evaluate((f) => { window.__qrRun(f); }, files);
   await win.waitForFunction((n) => !document.querySelector('[data-testid=busy]') && (window.__qrParts || []).length >= n, files.length, { timeout: 240000 }); await sleep(800);
-  const report = { idle: [], busy: [], scan: [] }; let fail = 0; const QUICK = !!process.env.QUICK;
+  const report = { idle: [], busy: [], scan: [], triage: [] }; let fail = 0; const QUICK = !!process.env.QUICK;
   const set = async (pal, lang) => { await win.evaluate((p) => window.__qrSetSettings && window.__qrSetSettings(p), { palette: pal, uiLanguage: lang }); await sleep(500); };
   // Test at different resolutions and DPI scales
   const DPI_TO_TEST = process.env.DPIS ? process.env.DPIS.split(',').map(Number) : QUICK ? [1] : DPI_SCALES;
@@ -153,6 +153,41 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       report.idle.push(r); if (r.issues.length || !r.hasTable) fail++;
     }
   }
+  // triage reason: one line, not truncated, at 1366x768 @100% and 1920x1080 @200%
+  await set('industrial-steel', 'en');
+  await win.evaluate(() => window.__qrStep(2));
+  await sleep(700);
+  const toNot = await win.$('[data-testid=tri-to-not]');
+  if (toNot) { await toNot.click(); await sleep(250); }
+  const TRI_SIZES = [[1366, 768, 1], [1920, 1080, 2]];
+  for (const [w, h, dpi] of TRI_SIZES) {
+    await size(w, h, dpi); await sleep(500);
+    const m = await win.evaluate(() => {
+      const issues = [];
+      const why = [...document.querySelectorAll('[data-testid=tri-why]')];
+      if (!why.length) issues.push('no triage reason cells');
+      why.forEach((el) => {
+        const cs = getComputedStyle(el);
+        const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (cs.textOverflow === 'ellipsis' || (cs.overflow === 'hidden' && el.scrollWidth > el.clientWidth + 1)) issues.push('triage reason truncated: ' + t.slice(0, 48));
+        const rg = document.createRange(); rg.selectNodeContents(el);
+        const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3)));
+        if (rows.size > 1) issues.push('triage reason wraps: ' + t.slice(0, 32));
+      });
+      const moved = document.querySelector('[data-testid=tri-moved]');
+      if (moved) {
+        const cs = getComputedStyle(moved);
+        if (cs.textOverflow === 'ellipsis' && moved.scrollWidth > moved.clientWidth + 1) issues.push('moved badge truncated');
+      }
+      const hs = [];
+      document.querySelectorAll('.qr-triage, .qr-tri-row, .qr-wiz-main').forEach((e) => { if (e.scrollWidth > e.clientWidth + 1) hs.push((e.className || '').toString().slice(0, 24) + ' ' + e.scrollWidth + '>' + e.clientWidth); });
+      hs.forEach((x) => issues.push('h-scroll: ' + x));
+      return { issues, nWhy: why.length, sample: why[0] && why[0].textContent, moved: !!(moved && moved.textContent) };
+    });
+    const r = { size: w + 'x' + h, dpi, ...m, issues: [...new Set(m.issues)] };
+    report.triage.push(r); if (r.issues.length) fail++;
+  }
+
   // other steps: any horizontal scrollbar at all, test all resolutions
   await set('industrial-steel', 'en');
   for (const lang of ['en', 'he']) for (const [w, h] of SIZES) {
@@ -178,7 +213,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const bad = [...report.idle, ...report.busy].filter((r) => r.issues.length || (r.hasTable === false));
   const scanBad = report.scan.filter((s) => s.hscroll.length || s.wraps.length || (s.overlaps && s.overlaps.length) || s.issues);
   console.log(JSON.stringify({
-    idleChecked: report.idle.length, busyChecked: report.busy.length, scanChecked: report.scan.length, fail,
+    idleChecked: report.idle.length, busyChecked: report.busy.length, scanChecked: report.scan.length, triageChecked: report.triage.length, fail,
     sizes: SIZES.map((s) => s.join('x')), dpiScales: DPI_SCALES,
     bad: bad.slice(0, 12).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, pal: r.palette, hasTable: r.hasTable, issues: r.issues.slice(0, 5) })),
     minContrast: Math.min(...report.idle.concat(report.busy).filter((r) => r.minContrast).map((r) => r.minContrast)),

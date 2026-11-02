@@ -26,12 +26,13 @@ import { exposeTestHooks } from './hooks/testHooks';
 
 const qr = () => (window as any).qr;
 type Part = any;
-function printLang(parts: Part[], settings: any) { return parts.find((p: any) => p.questionsLanguage)?.questionsLanguage || settings?.questionsLanguage || 'he'; }
-function afterPdf(notify: any, r: any, each?: boolean) {
+function reportLang(settings: any) { return (settings && settings.uiLanguage) === 'he' || getLang() === 'he' ? 'he' : 'en'; }
+function afterPdf(notify: any, r: any, each?: boolean, counts?: any) {
   if (!r || r.canceled) return;
   if (r.ok === false) { notify(r.error === 'Print document rendered empty' ? t('print.empty') : t('pdf.failed', { text: r.error || '' })); return; }
   const path = each ? (r.files && r.files[0]) : r.path;
-  notify({ text: t(each ? 'pdf.savedEach' : 'pdf.saved', each ? { n: (r.files || []).length, path: r.dir } : { path: r.path }), action: { label: t('pdf.openFolder'), run: () => { qr().openPath(path); } } });
+  const vars = each ? { n: (r.files || []).length, path: r.dir, checked: counts?.checked ?? (r.files || []).length, suitable: counts?.suitable ?? 0, all: counts?.all ?? 0 } : { path: r.path };
+  notify({ text: t(each ? 'pdf.savedEach' : 'pdf.saved', vars), action: { label: t('pdf.openFolder'), run: () => { qr().openPath(path); } } });
 }
 export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, notify, over, onMeta, register, recent, onReopen, onHistory }: any) {
   setCkSettings(settings); // the checklist thresholds (Settings > Precision) for the screens below
@@ -40,7 +41,11 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   const [partOpen, setPartOpen] = useState(false); const [sel, setSel] = useState(I.sel || 0); const [step, setStep] = useState(I.step || 1); const [tab, setTab] = useState(I.tab || 'drawing');
   const [dialog, setDialog] = useState(null as null | 'questions' | 'summary'); const [focus, setFocus] = useState(null as any);
   const [lastRun, setLastRun] = useState(I.lastRun || null); const [rfqs, setRfqs] = useState((I.rfqs || []) as any[]); const [dirty, setDirty] = useState(!!I.dirty); const [savedAt, setSavedAt] = useState((I.savedAt || null) as string | null);
-  const { busy, view, start, stop, clear } = useBusy(id, (p) => setParts((ps) => [...ps, p]));
+  const { busy, view, start, stop, clear } = useBusy(id, (p) => setParts((ps) => {
+    const k = (p && p.drawing && p.drawing.path) || p.id;
+    if (k && ps.some((x: any) => ((x.drawing && x.drawing.path) || x.id) === k)) return ps;
+    return [...ps, p];
+  }));
   const partsRef = useRef(parts); partsRef.current = parts; const queue = useRef(Promise.resolve() as Promise<any>);
   const rfqsRef = useRef(rfqs); rfqsRef.current = rfqs; const [ask, setAsk] = useState(null as any);
   const pick = (i: number) => { setSel(i); setFocus(null); };
@@ -74,7 +79,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
     exposeTestHooks({ setDetails, setStep: stepTo, run, parts, rfqs, unknown, setDialog, select: (i: number, tb?: any) => { setSel(i); setPartOpen(true); if (tb) { setTab(tb); setStep(2); } } });
     (window as any).__qrPrintPayload = () => ({
       parts, step, sel, partOpen,
-      lang: printLang(parts, settings), meta: tabMeta({ parts, rfqs }),
+      lang: reportLang(settings), meta: tabMeta({ parts, rfqs }),
       mode: step === 2 && !partOpen ? 'package' : (partOpen && (step === 2 || step === 3) ? 'part' : undefined),
     });
   }
@@ -96,15 +101,15 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
         {step === 1 && <StepIntake view={view} parts={parts} files={lastRun?.files || []} onNext={() => stepTo(2)} onPart={(i: number) => openPart(i, 2)} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} recent={recent} onReopen={onReopen} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder({ zip: true }); if (f) run([f]); }} />}
         {step === 2 && has && <StepCheckParts parts={parts} sel={sel} open={partOpen} onOpen={(i: number) => openPart(i, 2)} onBack={() => setPartOpen(false)} onGo={pick} onLeave={() => stepTo(3)} rtl={getLang() === 'he'} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={stepTo}
           onPatch={(i: number, next: any) => { setDirty(true); setParts((ps) => ps.map((p, j) => (j === i ? next : p))); }}
-          onPrint={(i: number) => qr().print({ parts, step: 2, sel: i, partOpen: true, mode: 'part', lang: printLang(parts, settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => { if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed'))); })}
-          onSave={(i: number) => qr().savePdf({ parts, step: 2, sel: i, partOpen: true, mode: 'part', lang: printLang(parts, settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => afterPdf(notify, r))}
-          onPrintPack={() => qr().print({ parts, step, sel, partOpen: false, mode: 'package', lang: printLang(parts, settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => { if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed'))); })}
-          onSavePack={() => qr().savePdf({ parts, step, sel, partOpen: false, mode: 'package', lang: printLang(parts, settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => afterPdf(notify, r))}
-          onSaveEach={(indexes: number[]) => qr().savePdfEach({ parts, indexes, lang: printLang(parts, settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => afterPdf(notify, r, true))} />}
+          onPrint={(i: number) => qr().print({ parts, step: 2, sel: i, partOpen: true, mode: 'part', lang: reportLang(settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => { if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed'))); })}
+          onSave={(i: number) => qr().savePdf({ parts, step: 2, sel: i, partOpen: true, mode: 'part', lang: reportLang(settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => afterPdf(notify, r))}
+          onPrintPack={() => qr().print({ parts, step, sel, partOpen: false, mode: 'package', lang: reportLang(settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => { if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed'))); })}
+          onSavePack={() => qr().savePdf({ parts, step, sel, partOpen: false, mode: 'package', lang: reportLang(settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => afterPdf(notify, r))}
+          onSaveEach={(indexes: number[], counts: any) => qr().savePdfEach({ parts, indexes, lang: reportLang(settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => afterPdf(notify, r, true, counts))} />}
         {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} open={partOpen} onOpen={(i: number) => openPart(i, 3)} onBack={() => setPartOpen(false)} onGo={pick} onLeave={() => stepTo(4)} rtl={getLang() === 'he'} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setPartOpen(true); setTab('drawing'); setFocus(loc); }} />}
-        {step === 4 && has && <StepSummary parts={parts} lang={printLang(parts, settings)} meta={tabMeta({ parts, rfqs })} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => openPart(i, 2)} />}
+        {step === 4 && has && <StepSummary parts={parts} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => openPart(i, 2)} />}
       </main>
-      <WizardFooter step={step} partOpen={partOpen} setStep={stepTo} hasParts={has} onCancel={clearAll} onClose={() => window.close()} />
+      <WizardFooter step={step} partOpen={partOpen} setStep={stepTo} hasParts={has} busy={!!busy} onCancel={clearAll} onClose={() => window.close()} />
     </div>
     {active && ask && <DropChoice onChoose={(c: 'append' | 'new') => ask(c)} />}
     {active && busy && view?.active && step !== 1 && <ProgressToast busy={busy} details={details} />}

@@ -11,12 +11,16 @@ test('statuses: waiting -> reading -> done / needs check; e-mail subject and sen
   v = m.reduceImport(v, { type: 'status', stage: 'read', i: 1, n: 2, text: 'Reading a.pdf' }); assert.strictEqual(v.files[0].status, 'reading');
   v = m.reduceImport(v, { type: 'part', part: { drawing: { name: 'a.pdf' }, problems: [] } }); assert.strictEqual(v.files[0].status, 'done');
   v = m.reduceImport(v, { type: 'part', part: { drawing: { name: 'b.pdf' }, problems: [{ severity: 'Question', status: 'open' }] } }); assert.strictEqual(v.files[1].status, 'check');
-  assert.deepStrictEqual(m.importProgress(v), { d: 2, n: 3, frac: 2 / 3 });
-  v = m.finishImport(v); assert.deepStrictEqual(v.files.map((f) => f.status), ['done', 'check', 'done']); assert.strictEqual(v.active, false);
+  assert.deepStrictEqual(m.importProgress(v), { d: 2, n: 3, frac: 2 / 3, kind: 'files' });
+  v = m.reduceImport(v, { type: 'fileStatus', file: 'C:\\t\\c.step', name: 'c.step', status: 'attached', partNo: 'P1' });
+  assert.strictEqual(v.files[2].status, 'attached'); assert.strictEqual(v.files[2].partNo, 'P1');
+  v = m.finishImport(v); assert.deepStrictEqual(v.files.map((f) => f.status), ['done', 'check', 'attached']); assert.strictEqual(v.active, false);
+  const leftover = m.finishImport(m.reduceImport(m.startImport(null), { type: 'files', files: [{ name: 'notes.txt' }, { name: 'a.x_t' }] }));
+  assert.deepStrictEqual(leftover.files.map((f) => f.status), ['unused', 'unused']);
   assert.strictEqual(m.reduceImport(v, { type: 'error', file: 'C:\\t\\c.step', text: 'x' }).files[2].status, 'check'); });
 test('archive files show source as archive > inner path with full-path tooltip', async () => { const m = await load('importView.mjs');
   let v = m.reduceImport(m.startImport(null), { type: 'status', stage: 'unpack', i: 1, n: 4, text: 'Unpacking pack.ZIP' });
-  assert.deepStrictEqual(m.importProgress(v), { d: 1, n: 4, frac: 1 / 4 });
+  assert.deepStrictEqual(m.importProgress(v), { d: 1, n: 4, frac: 1 / 4, kind: 'files' });
   v = m.reduceImport(v, { type: 'files', files: [{ path: 'C:\\cache\\a.pdf', name: 'a.pdf', label: 'pack.ZIP > data\\files\\a.pdf', title: 'pack.ZIP > data\\files\\a.pdf\nC:\\cache\\a.pdf' }] });
   assert.strictEqual(v.files[0].name, 'pack.ZIP > data\\files\\a.pdf'); assert.ok(v.files[0].title.includes('C:\\cache\\a.pdf'));
   v = m.reduceImport(v, { type: 'status', stage: 'read', i: 1, n: 1, text: 'Reading a.pdf' }); assert.strictEqual(v.files[0].status, 'reading');
@@ -26,7 +30,7 @@ test('archive files show source as archive > inner path with full-path tooltip',
 test('a later drop is added to the view, a fresh run replaces it', async () => { const m = await load('importView.mjs');
   let v = m.reduceImport(m.startImport(null), { type: 'files', files: [{ name: 'a.pdf' }] }); v = m.finishImport(v);
   const more = m.reduceImport(m.startImport(v, true), { type: 'files', files: [{ name: 'a.pdf' }, { name: 'd.pdf' }] });
-  assert.deepStrictEqual(more.files.map((f) => [f.name, f.status]), [['a.pdf', 'done'], ['d.pdf', 'waiting']]); assert.strictEqual(more.active, true);
+  assert.deepStrictEqual(more.files.map((f) => [f.name, f.status]), [['a.pdf', 'unused'], ['d.pdf', 'waiting']]); assert.strictEqual(more.active, true);
   assert.deepStrictEqual(m.startImport(v, false).files, []); });
 test('drop zone only when nothing is loaded; it hides as soon as an import starts', async () => { const m = await load('importView.mjs');
   assert.strictEqual(m.showDrop(null, 0), true); assert.strictEqual(m.showDrop(m.emptyImport(), 0), true);
@@ -36,7 +40,7 @@ test('auto-advance: step 1 -> 2 when parts arrived; stays when none; never moves
 test('App uses afterImport and the import view; labels in EN and HE', () => { const fs = require('fs');
   const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'ProjectView.tsx'), 'utf8'); assert.match(app, /afterImport\(/);
   assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'wizard', 'StepIntake.tsx'), 'utf8'), /showDrop\(/);
-  for (const k of ['imp.subject', 'imp.from', 'imp.files', 'imp.progress', 'imp.st.waiting', 'imp.st.reading', 'imp.st.done', 'imp.st.check']) { assert.ok(en[k], k); assert.ok(he[k], k); assert.doesNotMatch(he[k].replace(/\{\w+\}/g, ''), /[A-Za-z]/, k); } });
+  for (const k of ['imp.subject', 'imp.from', 'imp.files', 'imp.progress', 'imp.analysed', 'imp.st.waiting', 'imp.st.reading', 'imp.st.done', 'imp.st.check', 'imp.st.attached', 'imp.st.unused']) { assert.ok(en[k], k); assert.ok(he[k], k); assert.doesNotMatch(he[k].replace(/\{\w+\}/g, ''), /[A-Za-z]/, k); } });
 test('one part: singular hint in EN and HE', async () => { const { hintFor } = await load('hints.mjs');
   const one = hintFor(1, { hasParts: true, nParts: 1 }); assert.strictEqual(one.key, 'as.h1done1'); assert.doesNotMatch(en[one.key], /parts/);
   assert.strictEqual(hintFor(1, { hasParts: true, nParts: 3 }).key, 'as.h1done'); assert.ok(he['as.h1done1']); });

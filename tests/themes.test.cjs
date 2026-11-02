@@ -41,14 +41,15 @@ test('layering: tinted canvas, bordered shadowed cards, distinct bars and side c
   assert.match(css, /\.qr-topbar\s*\{[^}]*background:\s*var\(--mrt-chrome-surface\)/); assert.match(css, /\.qr-rail-context[^{]*\{[^}]*background:\s*var\(--qr-rail-bg\)/);
   const mx = css.match(/--qr-max:\s*(\d+)px/); assert.ok(mx && +mx[1] >= 1200 && +mx[1] <= 1400, 'max-width 1200-1400');
   assert.match(css, /\.qr-sum-wrap\s*\{[^}]*max-width:\s*none[^}]*margin-inline:\s*0/);
-  assert.match(css, /\.qr-sum-grid\s*\{[^}]*repeat\(4,/); assert.match(css, /\.qr-stats\s*\{[^}]*flex/);
+  assert.match(css, /\.qr-sum-grid\s*\{[^}]*repeat\(3,/); assert.match(css, /\.qr-stats\s*\{[^}]*flex/);
   assert.match(css, /\.qr-box-b > button[^{]*\{[^}]*align-self:\s*flex-start/, 'small buttons sit at the card start');
   assert.doesNotMatch(css, /border-radius:\s*(50%|999px)/);
 });
-test('Summary: stat tiles on top, four cards (questions / Excel / report on screen / PDF), no narrow column', () => {
+test('Summary: stat tiles on top, three cards (questions / Excel / report on screen); PDF is header Save PDF only', () => {
   const tsx = rd('src', 'components', 'wizard', 'StepSummary.tsx');
-  assert.match(tsx, /className="qr-stats"/); assert.match(tsx, /className="qr-sum-grid"/); for (const id of ['box-export-questions', 'box-export-xlsx', 'box-show-report', 'box-export-pdf']) assert.ok(tsx.includes(id), id);
-  assert.ok(tsx.indexOf('box-export-questions') < tsx.indexOf('box-export-xlsx') && tsx.indexOf('box-export-xlsx') < tsx.indexOf('box-show-report') && tsx.indexOf('box-show-report') < tsx.indexOf('box-export-pdf'), 'card order');
+  assert.match(tsx, /className="qr-stats"/); assert.match(tsx, /className="qr-sum-grid"/); for (const id of ['box-export-questions', 'box-export-xlsx', 'box-show-report']) assert.ok(tsx.includes(id), id);
+  assert.ok(!tsx.includes('box-export-pdf'));
+  assert.ok(tsx.indexOf('box-export-questions') < tsx.indexOf('box-export-xlsx') && tsx.indexOf('box-export-xlsx') < tsx.indexOf('box-show-report'), 'card order');
   for (const f of ['qr.css', 'wizard.css', 'system.css', 'surface.css', 'layers.css']) assert.doesNotMatch(rd('src', 'styles', f).replace(/\/\*[\s\S]*?\*\//g, '').replace(/\.qr-summary-step\s*\{[^}]*max-width:\s*none[^}]*\}/g, ''), /\.qr-summary-step\s*\{[^}]*max-width:\s*\d/, f + ' narrows the summary');
 });
 test('progress toast is a card with a header and a bar; no language selector outside Settings', () => {

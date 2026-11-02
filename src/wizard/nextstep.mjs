@@ -12,7 +12,7 @@ export function nextAction(step, parts, busy) {
   return step < 4 ? { key: 'ns.done', vars: {}, dot: 'ok', go: { step: 4 } } : { key: 'ns.export', vars: {}, dot: 'ok', go: { action: 'export' } };
 }
 /** Why a button is disabled (i18n key) or null when it is enabled. */
-export const nextWhy = (step, hasParts) => (!hasParts ? 'dis.noParts' : step >= 4 ? 'dis.lastStep' : null);
+export const nextWhy = (step, hasParts, busy) => (busy && step < 4 ? 'dis.busyNext' : !hasParts ? 'dis.noParts' : step >= 4 ? 'dis.lastStep' : null);
 export const cancelWhy = (hasParts) => (hasParts ? null : 'dis.nothingToClear');
 export const stepWhy = (n, hasParts) => (n === 1 || hasParts ? null : 'dis.stepLocked');
 export const saveWhy = (nParts, busy) => (!nParts ? 'dis.nothingToSave' : busy ? 'dis.busySave' : null);

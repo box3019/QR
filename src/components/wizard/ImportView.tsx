@@ -10,10 +10,10 @@ export function ImportView({ view }: any) {
       <tr><th>{t('imp.subject')}</th><td><bdi>{m.subject || '\u2014'}</bdi></td></tr>
       <tr><th>{t('imp.from')}</th><td><bdi>{m.from || '\u2014'}</bdi></td></tr>
     </tbody></table></div>)}
-    <div className="qr-import-prog" data-testid="import-progress"><span>{t('imp.progress', { d: pr.d, n: pr.n })}</span>
+    <div className="qr-import-prog" data-testid="import-progress" data-done={pr.kind === 'parts' && pr.n > 0 && pr.d >= pr.n}><span className={pr.kind === 'parts' && pr.n > 0 && pr.d >= pr.n ? 'qr-import-done' : undefined}>{t(pr.kind === 'parts' ? 'imp.analysed' : 'imp.progress', { d: pr.d, n: pr.n })}</span>
       <div className="qr-bar" data-testid="import-bar"><div style={{ width: Math.round(pr.frac * 100) + '%' }} /></div></div>
     <div className="qr-panel-h">{t('imp.files', { n: view.files.length })}</div>
     <ul className="qr-import-files" data-testid="import-files">{view.files.map((f: any) => <li key={f.path || f.name} data-status={f.status} title={f.title || f.name}>
-      <bdi className="qr-ltr">{f.name}</bdi><span className="qr-import-st" data-status={f.status}>{t('imp.st.' + f.status)}</span></li>)}</ul>
+      <bdi className="qr-ltr">{f.name}</bdi><span className="qr-import-st" data-status={f.status}>{f.status === 'attached' ? t('imp.st.attached', { pn: f.partNo || '' }) : t('imp.st.' + f.status)}</span></li>)}</ul>
   </div>;
 }

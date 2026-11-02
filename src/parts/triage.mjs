@@ -57,3 +57,16 @@ export function triageCounts(parts) {
 export function includedParts(parts) {
   return (parts || []).filter(isIncluded);
 }
+
+/** Which parts to save as separate PDFs: checked (include box), all suitable, or all. */
+export function saveEachIndexes(parts, which) {
+  const list = parts || [];
+  if (which === 'all') return list.map((_, i) => i);
+  if (which === 'checked') return list.map((p, i) => (isIncluded(p) ? i : -1)).filter((i) => i >= 0);
+  return list.map((p, i) => (triageListOf(p) === 'suitable' ? i : -1)).filter((i) => i >= 0);
+}
+
+export function saveEachCounts(parts) {
+  const list = parts || [];
+  return { checked: list.filter(isIncluded).length, suitable: list.filter((p) => triageListOf(p) === 'suitable').length, all: list.length };
+}

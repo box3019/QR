@@ -7,9 +7,11 @@ const { analyzePage } = require('./page.cjs');
  * file + QR extractPdf pages -> per-page results. Text lines come from MuPDF (same as the original script).
  * A page with no text layer uses QR's OCR tokens when there are any (the original stops at NEEDS_OCR).
  */
-async function analyzeFile(file, qrPages = []) {
-  let mu = null;
-  try { mu = await require('./mupdf.cjs').pageLines(file); } catch { mu = null; }
+async function analyzeFile(file, qrPages = [], muPages) {
+  let mu = muPages;
+  if (mu === undefined) {
+    try { mu = await require('./mupdf.cjs').pageLines(file); } catch { mu = null; }
+  }
   const pages = mu || qrPages.map((p) => ({ n: p.n, width: p.width, lines: null }));
   return pages.map((p) => {
     let lines = p.lines ? linesFromPymupdf(p.lines) : [];

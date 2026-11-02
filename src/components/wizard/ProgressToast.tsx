@@ -5,8 +5,8 @@ import { progressView } from '../../wizard/progress.mjs';
 
 export function ProgressToast({ busy, details }: any) {
   const v = progressView(busy);
-  return <div className="qr-busy" data-testid="busy" role="status">
-    <div className="qr-busy-h"><i className="qr-dot" data-s="warn" aria-hidden="true" />{t('wz.busyCard')}{v.frac != null && <span className="qr-busy-pct">{Math.round(v.frac * 100)}%</span>}</div>
+  return <div className="qr-busy" data-testid="busy" data-done={!!v.done} role="status">
+    <div className="qr-busy-h"><i className="qr-dot" data-s={v.done ? 'ok' : 'warn'} aria-hidden="true" />{t('wz.busyCard')}{v.frac != null && <span className="qr-busy-pct">{Math.round(v.frac * 100)}%</span>}</div>
     <div className="qr-busy-b"><div data-testid="busy-text">{t(v.key, v.vars)}</div>
       {v.frac != null && <div className="qr-bar"><div style={{ width: Math.round(v.frac * 100) + '%' }} /></div>}
       {details && v.tech && <div className="qr-busy-tech" data-testid="busy-tech">{v.tech}</div>}</div></div>;
