@@ -63,7 +63,7 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
       {['tolMm', 'tolIn', 'fitMaxIT', 'gdtMm', 'gdtIn', 'raUm', 'decimalsMm', 'decimalsIn'].map((k) => <Field key={k} label={t('st.prec.' + k)}><input className="qr-input qr-ltr" style={{ width: 110 }} inputMode="decimal" title={t('tip.precField')} data-testid={'prec-' + k} value={String((s.precision || {})[k] ?? '')} onChange={(e) => set('precision', { ...(s.precision || {}), [k]: e.target.value })} /></Field>)}
       <button type="button" className={MRT_ACTION_BTN} data-testid="prec-reset" title={t('tip.precReset')} onClick={() => set('precision', { tolMm: 0.01, tolIn: 0.0005, fitMaxIT: 7, gdtMm: 0.02, gdtIn: 0.001, raUm: 0.8, decimalsMm: 3, decimalsIn: 4 })}>{t('st.prec.reset')}</button>
     </div>}
-    {tab === 'materials' && <CatalogTable kind="materials" rows={s.materialsCatalog} onChange={(r) => set('materialsCatalog', r)} />}
+    {tab === 'materials' && <><p className="qr-muted" data-testid="mat-shop-help">{t('st.mat.shopHelp')}</p><CatalogTable kind="materials" rows={s.materialsCatalog} onChange={(r) => set('materialsCatalog', r)} /></>}
         {tab === 'processes' && <CatalogTable kind="processes" rows={s.processesCatalog} onChange={(r) => set('processesCatalog', r)} />}
         {tab === 'customers' && <CustomersTab rows={s.customers} onChange={(r) => set('customers', r)} />}
         {tab === 'outlook' && <>

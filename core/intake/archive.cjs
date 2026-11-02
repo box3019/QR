@@ -1,5 +1,5 @@
 'use strict';
-// intake/archive: unpack ZIP in-process (yauzl; never 7z/WinRAR) and RAR/7z with bundled 7-Zip.
+// intake/archive: unpack ZIP (yauzl) and RAR (node-unrar-js WASM) in-process; never WinRAR. 7z still uses bundled 7-Zip.
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -86,6 +86,75 @@ function zipError(file, e) {
   if (/encrypted|password/i.test(m)) return new Error('Cannot open ' + name + ': the ZIP is password-protected. Remove the password and try again.');
   if (/Unsafe path/i.test(m) || /too large|too many files/i.test(m)) return e instanceof Error ? e : new Error(m);
   return new Error('Cannot open ' + name + ': the ZIP is damaged or unreadable.');
+}
+
+function rarError(file, e) {
+  const m = String((e && e.message) || e);
+  const name = path.basename(file);
+  if (/encrypted|password/i.test(m)) return new Error('Cannot open ' + name + ': the RAR is password-protected. Remove the password and try again.');
+  if (/Unsafe path/i.test(m) || /too large|too many files/i.test(m)) return e instanceof Error ? e : new Error(m);
+  return new Error('Cannot open ' + name + ': the RAR is damaged or unreadable.');
+}
+
+const isZipName = (f) => /\.zip$/i.test(f);
+const isRarName = (f) => /\.rar$/i.test(f);
+/** ZIP and RAR: in-process, cached, nest depth ZIP_NEST_DEPTH. */
+const isInProcessArchive = (f) => isZipName(f) || isRarName(f);
+
+function toArrayBuffer(buf) {
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+}
+
+async function unrar(file, outDir, opts = {}) {
+  const { createExtractorFromData } = await import('node-unrar-js');
+  let extractor;
+  try {
+    extractor = await createExtractorFromData({ data: toArrayBuffer(fs.readFileSync(file)) });
+  } catch (e) { throw rarError(file, e); }
+  let list;
+  try { list = extractor.getFileList(); } catch (e) { throw rarError(file, e); }
+  if (list && list.arcHeader && list.arcHeader.flags && list.arcHeader.flags.headerEncrypted) throw rarError(file, new Error('encrypted'));
+  let headers;
+  try { headers = [...(list.fileHeaders || [])]; } catch (e) { throw rarError(file, e); }
+  if (headers.length > MAX_FILES) throw new Error('Archive has too many files (' + headers.length + ').');
+  for (const h of headers) {
+    if (h.flags && h.flags.directory) continue;
+    if (h.flags && h.flags.encrypted) throw rarError(file, new Error('encrypted'));
+    try { safeRel(String(h.name || '')); } catch (x) { throw x; }
+  }
+  const out = [];
+  const names = opts.names;
+  let written = 0;
+  let files = 0;
+  let extracted;
+  try { extracted = extractor.extract({}); } catch (e) { throw rarError(file, e); }
+  try {
+    for (const f of extracted.files) {
+      const h = f.fileHeader || {};
+      const flags = h.flags || {};
+      if (flags.directory) continue;
+      if (flags.encrypted) throw rarError(file, new Error('encrypted'));
+      files++;
+      if (files > MAX_FILES) throw new Error('Archive has too many files.');
+      const inner = String(h.name || '').replace(/\\/g, '/');
+      const size = Number(h.unpSize) || (f.extraction ? f.extraction.length : 0);
+      if (written + size > MAX_UNCOMPRESSED) throw new Error('Archive is too large to unpack (over 2 GB uncompressed).');
+      let dest;
+      try { dest = uniquePath(winLong(safeJoin(outDir, inner))); } catch (x) { throw x; }
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      if (typeof opts.onProgress === 'function') try { opts.onProgress({ i: files, n: headers.length || files, name: inner }); } catch {}
+      const buf = f.extraction ? Buffer.from(f.extraction) : Buffer.alloc(0);
+      written += buf.length;
+      if (written > MAX_UNCOMPRESSED) throw new Error('Archive is too large to unpack (over 2 GB uncompressed).');
+      fs.writeFileSync(dest, buf);
+      out.push(dest);
+      if (names) names.set(dest, inner.replace(/\//g, path.sep));
+    }
+  } catch (e) {
+    if (e instanceof Error && /Cannot open |Unsafe path|too many|too large/i.test(e.message)) throw e;
+    throw rarError(file, e);
+  }
+  return out;
 }
 
 function pruneImportCache(root, keepDir) {
@@ -201,28 +270,33 @@ function flattenSingleFolder(outDir) {
   return true;
 }
 
-/** Unpack any supported archive into outDir. ZIP is in-process only. @returns {Promise<string[]>} */
+async function extractInProcess(file, outDir, opts, unpack, wrapError, flatten) {
+  const marker = path.join(outDir, CACHE_MARKER);
+  if (fs.existsSync(marker)) return walk(outDir);
+  try {
+    await unpack(file, outDir, opts);
+    if (flatten) flattenSingleFolder(outDir);
+    fs.writeFileSync(marker, 'ok');
+  } catch (e) {
+    try { fs.rmSync(outDir, { recursive: true, force: true }); } catch {}
+    throw e instanceof Error ? e : wrapError(file, e);
+  }
+  return walk(outDir);
+}
+
+/** Unpack any supported archive into outDir. ZIP and RAR are in-process only. @returns {Promise<string[]>} */
 async function extractArchive(file, outDir, opts = {}) {
   fs.mkdirSync(outDir, { recursive: true });
-  if (/\.zip$/i.test(file)) {
-    const marker = path.join(outDir, CACHE_MARKER);
-    if (fs.existsSync(marker)) return walk(outDir);
-    try {
-      await unzip(file, outDir, opts);
-      fs.writeFileSync(marker, 'ok');
-    } catch (e) {
-      try { fs.rmSync(outDir, { recursive: true, force: true }); } catch {}
-      throw e instanceof Error ? e : zipError(file, e);
-    }
-    return walk(outDir);
-  }
+  if (isZipName(file)) return extractInProcess(file, outDir, opts, unzip, zipError, false);
+  if (isRarName(file)) return extractInProcess(file, outDir, opts, unrar, rarError, true);
   await sevenZip(file, outDir, opts.sevenZip);
   flattenSingleFolder(outDir);
   return walk(outDir);
 }
 
 module.exports = {
-  extractArchive, flattenSingleFolder, defaultSevenZip, walk, unzip, decodeZipName, safeJoin,
-  cacheDirFor, pruneImportCache, defaultImportCache, sha256File, zipError,
+  extractArchive, flattenSingleFolder, defaultSevenZip, walk, unzip, unrar, decodeZipName, safeJoin,
+  cacheDirFor, pruneImportCache, defaultImportCache, sha256File, zipError, rarError,
+  isZipName, isRarName, isInProcessArchive,
   MAX_UNCOMPRESSED, MAX_FILES, ZIP_NEST_DEPTH, CACHE_MARKER,
 };

@@ -3,11 +3,11 @@
 const fs = require('fs');
 const path = require('path');
 const { fileKind } = require('./classify.cjs');
-const { extractArchive, cacheDirFor, defaultImportCache, ZIP_NEST_DEPTH } = require('./archive.cjs');
+const { extractArchive, cacheDirFor, defaultImportCache, ZIP_NEST_DEPTH, isInProcessArchive } = require('./archive.cjs');
 
 let n = 0;
 const sub = (tmp, name) => path.join(tmp, `${path.basename(name).replace(/[^\w.\- ]/g, '_')}_${Date.now()}_${n++}`);
-const isZip = (p) => /\.zip$/i.test(p);
+const isCached = (p) => isInProcessArchive(p);
 const sourceLabel = (archives, inner) => [...archives, String(inner || '').replace(/\//g, path.sep)].filter(Boolean).join(' > ');
 
 /**
@@ -27,12 +27,12 @@ async function expand(paths, tmp, opts = {}, depth = 0) {
     let st; try { st = fs.statSync(p); } catch (e) { fail(p, e); continue; }
     if (st.isDirectory()) { const r = await expand(fs.readdirSync(p).map((x) => path.join(p, x)), tmp, { ...opts, sources, names, chain }, depth); files.push(...r.files); rfqs.push(...r.rfqs); continue; }
     const kind = fileKind(p);
-    const zip = isZip(p);
-    const max = zip ? ZIP_NEST_DEPTH : 5;
+    const cached = isCached(p);
+    const max = cached ? ZIP_NEST_DEPTH : 5;
     if (kind === 'archive' && depth < max) {
       try {
         tell(`Unpacking ${path.basename(p)}`, { stage: 'unpack', i: depth + 1, n: Math.max(1, max) });
-        const dest = zip ? cacheDirFor(p, opts.importCache || defaultImportCache()) : sub(tmp, p);
+        const dest = cached ? cacheDirFor(p, opts.importCache || defaultImportCache()) : sub(tmp, p);
         const extracted = await extractArchive(p, dest, {
           ...opts,
           names,

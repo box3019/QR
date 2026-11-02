@@ -3,7 +3,7 @@
 const test = require('node:test'); const assert = require('node:assert'); const fs = require('fs'); const path = require('path'); const { pathToFileURL } = require('url');
 const src = (...p) => path.join(__dirname, '..', 'src', ...p);
 const load = (...p) => import(pathToFileURL(src(...p)).href);
-const MODS = ['components/wizard/Stepper.tsx', 'components/wizard/StepHeader.tsx', 'components/wizard/StepIntake.tsx', 'components/wizard/StepCheckParts.tsx', 'components/wizard/StepDocsQuestions.tsx', 'components/wizard/StepSummary.tsx', 'components/wizard/ProgressToast.tsx', 'components/wizard/RfqBar.tsx', 'components/wizard/Box.tsx',
+const MODS = ['components/wizard/Stepper.tsx', 'components/wizard/StepHeader.tsx', 'components/wizard/StepIntake.tsx', 'components/wizard/StepCheckParts.tsx', 'components/wizard/TriageView.tsx', 'components/wizard/StepDocsQuestions.tsx', 'components/wizard/StepSummary.tsx', 'components/wizard/ProgressToast.tsx', 'components/wizard/RfqBar.tsx', 'components/wizard/Box.tsx',
   'components/partcard/PartCard.tsx', 'components/partcard/BlockCard.tsx', 'components/partcard/Fields.tsx', 'components/partcard/TableDialog.tsx', 'hooks/useBusy.ts', 'hooks/usePartCard.ts', 'views/Viewer.tsx'];
 test('modules exist, start with a one-line job comment, stay small; App.tsx thin', () => {
   for (const m of MODS) { const s = fs.readFileSync(src(m), 'utf8'); assert.match(s.split('\n')[0], /^\/\/ \S/, m + ' job comment'); assert.ok(s.split('\n').length < 150, m + ' too long'); }

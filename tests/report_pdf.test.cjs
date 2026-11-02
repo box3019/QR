@@ -25,7 +25,8 @@ test('report CSS base font is at least 10.5pt; page margins unchanged', () => {
   assert.ok(parseFloat(cell[1]) >= 10.5, 'cells ' + cell[1]);
   assert.match(h, /@page\{size:A4;margin:14mm 12mm\}/);
   assert.match(h, /th,td\{[^}]*padding:4px 6px/);
-  assert.match(h, /th,td\{[^}]*white-space:nowrap/);
+  assert.doesNotMatch(h, /th,td\{[^}]*white-space:nowrap/, 'table cells must wrap: nowrap cut long text at the page edge in the PDF');
+  assert.match(h, /th,td\{[^}]*overflow-wrap:anywhere/);
 });
 test('Summary has Export PDF with tooltip, EN/HE keys', () => {
   const s = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'components', 'wizard', 'StepSummary.tsx'), 'utf8'); assert.match(s, /btn-export-pdf" title=\{t\('tip.exportPdf'\)\}/);

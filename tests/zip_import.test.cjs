@@ -83,7 +83,7 @@ test('nested zip depth limit is 3', async () => {
 
 test('ZIP never falls back to 7z.exe', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'core', 'intake', 'archive.cjs'), 'utf8');
-  const start = src.indexOf('if (/\\.zip$/i.test(file))');
+  const start = src.indexOf('if (isZipName(file))');
   const unzipFn = src.slice(start, src.indexOf('await sevenZip(file, outDir', start));
   assert.ok(start >= 0 && unzipFn.length > 20);
   assert.ok(!/sevenZip\(/.test(unzipFn), 'zip branch must not call 7z');
@@ -96,7 +96,7 @@ test('pick files and pick folder accept zip; drop uses the same run()', () => {
   const proj = fs.readFileSync(path.join(__dirname, '..', 'src', 'ProjectView.tsx'), 'utf8');
   assert.match(main, /extensions: \['pdf', 'zip'/);
   assert.match(main, /opts && opts\.zip/);
-  assert.match(main, /extensions: \['zip'\]/);
+  assert.match(main, /extensions: \['zip', 'rar'\]/);
   assert.match(main, /LOCALAPPDATA.*ImportCache/);
   assert.match(pre, /pickFolder: \(opts\) => ipcRenderer\.invoke\('qr:pickFolder', opts\)/);
   assert.match(proj, /pickFolder\(\{ zip: true \}\)/);

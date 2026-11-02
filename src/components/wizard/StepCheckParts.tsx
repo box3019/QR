@@ -2,14 +2,14 @@
 import React from 'react';
 import { t } from '../../i18n';
 import { viewerTabs } from '../../wizard/steps.mjs';
-import { PartsList } from '../../views/Parts';
+import { TriageView } from './TriageView';
 import { DrawingView, RouteCard, ModelView, DataView } from '../../views/Viewer';
 import { PartCard } from '../partcard/PartCard';
 import { PartNav } from './PartNav';
 
-export function StepCheckParts({ parts, sel, open, onOpen, onBack, onGo, onLeave, rtl, unknown, details, tab, setTab, focus, setFocus, setStep }: any) {
+export function StepCheckParts({ parts, sel, open, onOpen, onBack, onGo, onLeave, rtl, unknown, details, tab, setTab, focus, setFocus, setStep, onPatch, onPrint, onSave, onPrintPack, onSavePack, onSaveEach }: any) {
   const part = parts[sel];
-  if (!open || !part) return <div className="qr-body qr-onefocus" data-testid="step2-list"><PartsList parts={parts} sel={sel} onOpen={onOpen} unknown={unknown} details={details} /></div>;
+  if (!open || !part) return <div className="qr-body qr-onefocus" data-testid="step2-list"><TriageView parts={parts} sel={sel} onOpen={onOpen} onPatch={onPatch} onPrint={onPrint} onSave={onSave} onPrintPack={onPrintPack} onSavePack={onSavePack} onSaveEach={onSaveEach} /></div>;
   const tabs = viewerTabs(details); const cur = tabs.includes(tab) ? tab : 'drawing';
   return <div className="qr-body qr-onefocus qr-pview" data-testid="step2-part">
     <PartNav parts={parts} sel={sel} step={2} onBack={onBack} onGo={onGo} onLeave={onLeave} rtl={rtl} />

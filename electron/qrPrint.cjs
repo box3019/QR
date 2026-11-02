@@ -10,10 +10,13 @@ const EMPTY_PRINT_ERROR = 'Print document rendered empty';
 const LOAD_TIMEOUT_MS = 20000;
 const PDF_PRINT_OPTS = { pageSize: 'A4', printBackground: true, preferCSSPageSize: true, margins: { marginType: 'default' } };
 
-/** Steps 2/3: the selected part card. Step 4 (and others): the full summary. */
-function partsForPrint(parts, step, sel) {
+/** Steps 2/3 with a part open, or mode 'part': that part. mode 'package': the whole package. Otherwise the full list. */
+function partsForPrint(parts, step, sel, payload) {
   const list = Array.isArray(parts) ? parts : [];
-  if ((step === 2 || step === 3) && list.length) {
+  const mode = payload && payload.mode;
+  if (mode === 'package') return list;
+  const one = mode === 'part' || (payload && payload.partOpen) || ((step === 2 || step === 3) && mode !== 'package');
+  if (one && list.length) {
     const i = Math.min(Math.max(0, Number(sel) || 0), list.length - 1);
     return [list[i]];
   }
@@ -105,11 +108,19 @@ function sanitizeWinFileName(s) {
   return t || 'QR';
 }
 
-function reportPdfStem(parts, step, sel, meta) {
-  const list = partsForPrint(parts, step, sel);
-  if ((step === 2 || step === 3) && list[0]) return String(list[0].partNo || list[0].title || '').trim();
+function reportPdfStem(parts, step, sel, meta, payload) {
+  const list = partsForPrint(parts, step, sel, payload);
+  if (payload && payload.mode === 'package') {
+    const m = meta || {};
+    return String(m.rfq || m.label || m.key || 'package' || '').trim();
+  }
+  if ((payload && (payload.mode === 'part' || payload.partOpen) || step === 2 || step === 3) && list[0]) return String(list[0].partNo || list[0].title || '').trim();
   const m = meta || {};
   return String(m.rfq || m.label || m.key || (list[0] && (list[0].partNo || list[0].title)) || '').trim();
+}
+
+function partPdfFileName(part) {
+  return sanitizeWinFileName((part && (part.partNo || part.title)) || 'part') + '.pdf';
 }
 
 function ymdLocal(d) {
@@ -119,7 +130,7 @@ function ymdLocal(d) {
 
 function reportPdfFileName(payload, now) {
   const p = payload || {};
-  return sanitizeWinFileName(reportPdfStem(p.parts, p.step, p.sel, p.meta)) + '_QR_report_' + ymdLocal(now) + '.pdf';
+  return sanitizeWinFileName(reportPdfStem(p.parts, p.step, p.sel, p.meta, p)) + '_QR_report_' + ymdLocal(now) + '.pdf';
 }
 
 function defaultPdfDir(last, documents, existsFn) {
@@ -200,5 +211,5 @@ module.exports = {
   EMPTY_PRINT_ERROR, LOAD_TIMEOUT_MS, PDF_PRINT_OPTS, partsForPrint, printDocumentStatsJs, isPrintDocumentReady,
   parseRegValue, parseOpenCommand, isAcrobatExe, resolvePdfOpenCommand, openPdfForPrint,
   launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, renderReportPdfInHiddenWindow, waitDidFinishLoad,
-  sanitizeWinFileName, reportPdfStem, reportPdfFileName, defaultPdfDir, ymdLocal,
+  sanitizeWinFileName, reportPdfStem, reportPdfFileName, partPdfFileName, defaultPdfDir, ymdLocal,
 };
