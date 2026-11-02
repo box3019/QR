@@ -282,14 +282,14 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     for (const [w, h, dpi] of TAB_SIZES) {
       await size(w, h, dpi); await sleep(500);
       const m = await win.evaluate(MEASURE);
-      const extra = await win.evaluate(() => {
+      const extra = await win.evaluate(async () => {
         const issues = [];
         const more = document.querySelector('[data-testid=tab-more]');
         const nShown = document.querySelectorAll('.qr-ptabs [data-testid=tab]').length;
         const nAll = (window.__qrTabs && window.__qrTabs().length) || nShown;
         if (nAll > nShown && !more) issues.push('More jobs missing with ' + nAll + ' tabs, ' + nShown + ' shown');
         if (more) {
-          more.click();
+          more.click(); await new Promise((r) => setTimeout(r, 150)); // the menu renders on the next tick
           const items = [...document.querySelectorAll('[data-testid=tab-more-item]')];
           const xs = [...document.querySelectorAll('[data-testid=tab-more-close]')];
           if (!items.length) issues.push('More jobs menu empty');
