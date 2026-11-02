@@ -32,7 +32,7 @@ async function expand(paths, tmp, opts = {}, depth = 0) {
     if (kind === 'archive' && depth < max) {
       try {
         tell(`Unpacking ${path.basename(p)}`, { stage: 'unpack', i: depth + 1, n: Math.max(1, max) });
-        const dest = cached ? cacheDirFor(p, opts.importCache || defaultImportCache()) : sub(tmp, p);
+        const dest = cached ? cacheDirFor(p, opts.importCache || defaultImportCache(), opts.jobId) : sub(tmp, p);
         const extracted = await extractArchive(p, dest, {
           ...opts,
           names,

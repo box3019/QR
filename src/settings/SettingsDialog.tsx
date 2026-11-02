@@ -26,7 +26,7 @@ function FolderInput({ value, onChange, testid }: any) {
 }
 
 const LIVE = ['uiLanguage', 'assistantLanguage', 'assistantLanguageSet', 'textSize', 'palette', 'accent', 'density', 'rowHeight'];
-export default function SettingsDialog({ settings, onClose, onSave, onApplyPreset, onRestartTour, initialTab }: any) {
+export default function SettingsDialog({ settings, onClose, onSave, onApplyPreset, onRestartTour, onCloseAllJobs, initialTab }: any) {
   const [s, setS] = useState<any>(structuredClone(settings));
   const orig = useRef<any>(structuredClone(settings)); // the saved values: __qrSetSettings mutates the `settings` prop while previewing, so Cancel restores from this copy
   const [prev, setPrev] = useState<string>(settings.palette); // previewed preset (live); s.palette is the committed one
@@ -50,6 +50,7 @@ export default function SettingsDialog({ settings, onClose, onSave, onApplyPrese
           <Field label={t('st.ifaceRows')}><select className="qr-input" value={s.rowHeight} data-testid="row-height" onChange={(e) => live('rowHeight', e.target.value)}>{ROW_HEIGHTS.map((k) => <option key={k} value={k}>{t('row.' + k)}</option>)}</select></Field>
         </>}
         {tab === 'general' && <>
+          <Field label={t('st.closeAll')}><button type="button" className={MRT_ACTION_BTN} data-testid="settings-close-all" title={t('st.closeAllTip')} onClick={() => onCloseAllJobs?.()}>{t('st.closeAll')}</button></Field>
           <Field label={t('st.qLang')}><select className="qr-input" value={s.questionsLanguage} data-testid="questions-lang" onChange={(e) => set('questionsLanguage', e.target.value)}><option value="he">{t('st.heDefault')}</option><option value="en">{t('st.english')}</option></select><QuestionSample lang={s.questionsLanguage} /></Field>
         </>}
         {tab === 'language' && <LanguagePanel value={s.uiLanguage} onPick={(l: string) => live('uiLanguage', l)} />}

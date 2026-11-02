@@ -12,7 +12,8 @@ test('tab meta: label, customer, status', async () => { const s = await load('pr
   assert.strictEqual(s.tabMeta({ rfqs: [{ subject: 'Quote request', customer: { name: 'ELTA' } }] }).customer, 'ELTA'); });
 test('reorder and close confirm', async () => { const s = await load('projects/store.mjs');
   assert.deepStrictEqual(s.reorder(['a', 'b', 'c'], 0, 2), ['b', 'c', 'a']); assert.deepStrictEqual(s.reorder(['a', 'b'], 1, 1), ['a', 'b']);
-  assert.strictEqual(s.closeNeedsConfirm({ status: 'ready' }), false); assert.strictEqual(s.closeNeedsConfirm({ status: 'busy' }), true); assert.strictEqual(s.closeNeedsConfirm({ status: 'ready', dirty: true }), false, 'closing never loses data: it stays in History'); assert.strictEqual(s.closeNeedsConfirm(null), false); });
+  assert.strictEqual(s.closeNeedsConfirm({ status: 'ready' }), false); assert.strictEqual(s.closeNeedsConfirm({ status: 'busy' }), true); assert.strictEqual(s.closeNeedsConfirm({ status: 'ready', dirty: true }), false, 'dirty without unsaved does not prompt'); assert.strictEqual(s.closeNeedsConfirm({ status: 'ready', unsaved: true, nParts: 1 }), true); assert.strictEqual(s.closeNeedsConfirm(null), false);
+  assert.strictEqual(s.closePrompt({ unsaved: true, nParts: 2 }).length > 0, true); assert.strictEqual(s.nextActiveAfterClose(['a', 'b', 'c'], 'b', ['b']), 'c'); assert.strictEqual(s.nextActiveAfterClose(['a'], 'a', ['a']), null); });
 test('Send to QR: the SAME e-mail focuses its tab, empty current tab is used, else a new tab', async () => { const s = await load('projects/store.mjs');
   const tabs = [{ id: 'a', key: '111111', mailKeys: ['mid:x@y'], status: 'ready' }, { id: 'b', key: null, status: 'empty' }];
   assert.deepStrictEqual(s.routeOutlook(tabs, ['mid:x@y'], 'b'), { kind: 'focus', id: 'a' });

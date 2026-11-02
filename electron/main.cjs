@@ -33,6 +33,8 @@ function loadSettings() { let raw = null; try { raw = JSON.parse(fs.readFileSync
 function saveSettings(s) { fs.mkdirSync(path.dirname(settingsFile()), { recursive: true }); fs.writeFileSync(settingsFile(), JSON.stringify(s, null, 2)); }
 const sevenZipPath = () => (app.isPackaged ? path.join(process.resourcesPath, '7zip', '7z.exe') : path.join(__dirname, '..', 'vendor', '7zip', '7z.exe'));
 const importCachePath = () => (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'QR', 'ImportCache') : path.join(app.getPath('userData'), 'ImportCache'));
+const jobTmp = new Map();
+const { releaseJobCache } = require('../core/intake/archive.cjs');
 const langPath = () => (app.isPackaged ? path.join(process.resourcesPath, 'ocr') : path.join(__dirname, '..', 'ocr'));
 
 let win = null;
@@ -70,11 +72,13 @@ ipcMain.handle('qr:process', async (e, paths, job) => {
   const s = loadSettings();
   const emit = (ev) => { try { e.sender.send('qr:event', { ...(ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev), job: job || null }); } catch {} };
   const t0 = Date.now();
-  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), libraryBase: app.getPath('userData'), sevenZip: sevenZipPath(), importCache: importCachePath(), catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
+  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), libraryBase: app.getPath('userData'), sevenZip: sevenZipPath(), importCache: importCachePath(), jobId: job || null, catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
   (res.parts || []).forEach(localizePart);
   res.seconds = Math.round((Date.now() - t0) / 1000);
-  lastResult = res;
-  return res;
+  if (job && res.tmp) jobTmp.set(job, res.tmp);
+  const { tmp, ...out } = res;
+  lastResult = out;
+  return out;
 });
 ipcMain.handle('qr:preview', async (_e, file, page, maxPx) => {
   const r = await renderPreview(file, page, maxPx || 2400);
@@ -165,6 +169,22 @@ const history = require('../core/history.cjs');
 ipcMain.handle('qr:history:list', () => history.readHistory(app.getPath('userData')));
 ipcMain.handle('qr:history:touch', (_e, entry) => history.touchHistory(app.getPath('userData'), entry).list);
 ipcMain.handle('qr:history:remove', (_e, id, deleteData) => history.removeHistory(app.getPath('userData'), id, !!deleteData));
+ipcMain.handle('qr:importCache:release', (_e, job) => {
+  const id = String(job || '');
+  try {
+    const data = history.loadProject(app.getPath('userData'), id);
+    if (data) {
+      const dest = path.join(app.getPath('userData'), 'projects', id, 'files');
+      const roots = [importCachePath(), jobTmp.get(id)].filter(Boolean);
+      const next = projects.adoptJobFiles(data, dest, roots);
+      projects.saveProject(app.getPath('userData'), id, next);
+    }
+  } catch (e) { mainLog('adoptJobFiles ' + ((e && e.message) || e)); }
+  try { releaseJobCache(importCachePath(), id); } catch (e) { mainLog('releaseJobCache ' + ((e && e.message) || e)); }
+  const tmp = jobTmp.get(id);
+  if (tmp) { try { fs.rmSync(tmp, { recursive: true, force: true }); } catch {} jobTmp.delete(id); }
+  return true;
+});
 const qrproj = require('../core/qrproj.cjs');
 // Save as: the whole project (state + every file it points to) as one .qrproj; Open: unpack it into a NEW project folder.
 ipcMain.handle('qr:projects:saveAs', async (_e, id, state, label, target) => {

@@ -50,9 +50,9 @@
   --mrt-btn-primary-border: #48484a;
   --mrt-btn-primary-bg-hover: #f2f2f7;
   /* Disabled controls stay legible: flat light fill, readable muted text (no opacity fade) */
-  --qr-disabled-bg: #f5f5f7;
-  --qr-disabled-fg: #6b6b70;
-  --qr-disabled-border: rgba(60, 60, 67, 0.18);
+  --qr-disabled-bg: #ffffff;
+  --qr-disabled-fg: #3a3a3c;
+  --qr-disabled-border: #86868b;
   /* Wizard rail (MRT: mix of surface-muted 55% and surface) */
   --qr-rail-bg: #fafafb;
   /* QR status tokens */

@@ -27,9 +27,9 @@
   /* states */
   --qr-btn-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1c1c1e;
   --qr-btn-disabled-opacity: 1;
-  --qr-btn-disabled-bg: #f5f5f7;
-  --qr-btn-disabled-fg: #6b6b70;
-  --qr-btn-disabled-border: rgba(60, 60, 67, 0.18);
+  --qr-btn-disabled-bg: #ffffff;
+  --qr-btn-disabled-fg: #3a3a3c;
+  --qr-btn-disabled-border: #86868b;
   --qr-radius: var(--qr-btn-radius);
 }
 .qr-btn, .qr-root .mrt-btn {
@@ -65,7 +65,11 @@
   background: var(--qr-btn-primary-bg-hover) !important; border-color: var(--qr-btn-primary-border-hover) !important;
 }
 .qr-btn:focus-visible, .qr-root .mrt-btn:not(.mrt-action-btn--dialog-secondary):focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--qr-btn-focus-ring) !important; }
-.qr-btn:disabled, .qr-root .mrt-btn:disabled { opacity: var(--qr-btn-disabled-opacity) !important; cursor: default !important; background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important; border-color: var(--qr-btn-disabled-border) !important; }
+.qr-btn:disabled, .qr-root .mrt-btn:disabled, .qr-root button:disabled {
+  opacity: var(--qr-btn-disabled-opacity) !important; cursor: default !important; pointer-events: auto !important; filter: none !important;
+  background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important;
+  border-color: var(--qr-btn-disabled-border) !important; border-style: dashed !important;
+}
 /* Same shape for badges, chips and status labels (colored fills allowed). */
 .qr-chip, .qr-badge, .qr-status, .qr-brand-badge {
   border-radius: var(--qr-btn-radius) !important; border-width: var(--qr-btn-border-w); border-style: solid;

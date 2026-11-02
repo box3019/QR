@@ -175,11 +175,27 @@ function pruneImportCache(root, keepDir) {
   }
 }
 
-function cacheDirFor(file, root) {
+function jobCacheBucket(root, jobId) {
   const base = root || defaultImportCache();
-  const dir = path.join(base, sha256File(file));
-  pruneImportCache(base, dir);
+  const id = String(jobId || '');
+  if (!/^[a-z0-9-]{4,64}$/i.test(id)) return base;
+  return path.join(base, id);
+}
+
+function cacheDirFor(file, root, jobId) {
+  const bucket = jobCacheBucket(root, jobId);
+  const dir = path.join(bucket, sha256File(file));
+  pruneImportCache(bucket, dir);
   return dir;
+}
+
+/** Delete this job's ImportCache folder. History/project.json is not touched. */
+function releaseJobCache(root, jobId) {
+  const id = String(jobId || '');
+  if (!/^[a-z0-9-]{4,64}$/i.test(id)) return false;
+  const dir = path.join(root || defaultImportCache(), id);
+  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+  return true;
 }
 
 function walk(d) {
@@ -296,7 +312,7 @@ async function extractArchive(file, outDir, opts = {}) {
 
 module.exports = {
   extractArchive, flattenSingleFolder, defaultSevenZip, walk, unzip, unrar, decodeZipName, safeJoin,
-  cacheDirFor, pruneImportCache, defaultImportCache, sha256File, zipError, rarError,
+  cacheDirFor, pruneImportCache, releaseJobCache, jobCacheBucket, defaultImportCache, sha256File, zipError, rarError,
   isZipName, isRarName, isInProcessArchive,
   MAX_UNCOMPRESSED, MAX_FILES, ZIP_NEST_DEPTH, CACHE_MARKER,
 };

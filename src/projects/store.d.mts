@@ -1,7 +1,12 @@
 export function newId(): string;
 export function tabMeta(s: any): { key: string | null; label: string; customer: string; status: 'busy' | 'check' | 'ready' | 'empty'; frac: number; step: number; nParts: number; dirty: boolean; unsaved: boolean; lastRun: any; mailKeys: string[]; savedAt: string | null };
 export function reorder<T>(list: T[], a: number, b: number): T[];
+export function closePrompt(m: any): 'busy' | 'unsaved' | null;
 export function closeNeedsConfirm(m: any): boolean;
+export function jobsNeedingCloseAsk(ids: string[], metas: Record<string, any>): { unsaved: { id: string; label: string; customer: string }[]; busy: boolean; needed: boolean };
+export function nextActiveAfterClose(order: string[], active: string, closingIds: string[]): string | null;
+export function tabFitCount(width: number, tabW: number, addW: number, moreW: number, n: number): number;
+export function visibleTabIds(ids: string[], active: string, maxN: number): { shown: string[]; rest: string[] };
 export function routeOutlook(tabs: any[], keys: string[], activeId: string): { kind: 'focus' | 'active' | 'new'; id?: string };
 export function persisted(s: any): any;
 export function shortcutAction(e: any): 'save' | 'saveAs' | 'close' | 'open' | null;

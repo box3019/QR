@@ -33,7 +33,7 @@ Caveats: MRT has a 5-step stepper with captions and 10px panel radius; QR has 4 
 | `--mrt-border-strong` | `rgba(60,60,67,.22)` | panel outline (MRT) |
 | `--qr-btn-border` | `rgba(60,60,67,.55)` | button border: deliberately darker than MRT's .20 so buttons are crisp (3:1 on white) |
 | `--mrt-btn-neutral-fill` | `#ffffff` (hover `#f2f2f7`) | buttons (light only) |
-| `--qr-disabled-bg` / `--qr-disabled-fg` | `#f5f5f7` / `#6b6b70` | disabled controls: flat fill and readable text (MRT fades to .48 opacity, which fails AA) |
+| `--qr-disabled-bg` / `--qr-disabled-fg` | `#ffffff` / `#3a3a3c` | disabled controls: white fill, dark text, dashed border (no grey-on-grey; MRT fades to .48 opacity, which fails AA) |
 
 Wizard geometry measured in MRT and used in QR: header padding 14/20, title 16px/600; info table rows 28px, label cells `#f5f5f7` 11-12px
 uppercase muted, values 15px/600; footer `#f5f5f7` with a top border, padding 16; stepper marker **22x22**, 11px/700, circle, 2px connector

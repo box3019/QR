@@ -3,7 +3,7 @@
  */
 
 const btnBase =
-  'mrt-btn mrt-action-btn inline-flex items-center justify-center rounded-[var(--mrt-radius,8px)] border leading-tight antialiased transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--mrt-focus)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45';
+  'mrt-btn mrt-action-btn inline-flex items-center justify-center rounded-[var(--mrt-radius,8px)] border leading-tight antialiased transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--mrt-focus)] focus-visible:ring-offset-2';
 
 /** Secondary — Cancel, Close, Back. */
 export const MRT_BTN = `${btnBase} mrt-app-control mrt-btn-secondary mrt-action-btn--dialog-secondary h-10 px-4 gap-2 text-[13px] font-medium`;

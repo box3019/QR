@@ -72,6 +72,21 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       if (rows.size > 1) res.issues.push('Save PDF label wraps: ' + t);
     }
   }
+  // Disabled Next (and other disabled buttons): white fill, dark text, dashed border, tooltip, contrast >= 4.5
+  const disBtns = [...document.querySelectorAll('.mrt-btn:disabled, [data-testid=btn-next]:disabled, [data-testid=btn-print]:disabled, [data-testid=btn-save-pdf]:disabled, [data-testid=btn-cancel]:disabled')].filter((e) => { const cs = getComputedStyle(e); return cs.display !== 'none' && cs.visibility !== 'hidden' && !e.closest('.qr-proj-off'); });
+  res.disabledButtons = disBtns.length;
+  disBtns.forEach((b) => {
+    const cs = getComputedStyle(b); const fg = rgba(cs.color); const bg = bgOf(b);
+    if (fg) { const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+      if (cr < 4.5) res.issues.push('disabled contrast ' + (Math.round(cr * 100) / 100) + ' ' + (b.getAttribute('data-testid') || b.textContent || '').toString().slice(0, 24)); }
+    if (cs.borderTopStyle !== 'dashed' && cs.borderStyle !== 'dashed') res.issues.push('disabled border not dashed: ' + (b.getAttribute('data-testid') || '').slice(0, 20));
+    const id = b.getAttribute('data-testid') || '';
+    if ((id === 'btn-next' || id === 'btn-print' || id === 'btn-save-pdf') && !(b.getAttribute('title') || '').trim()) res.issues.push('disabled ' + id + ' missing tooltip');
+  });
+  const tabClose = document.querySelector('[data-testid=tab-close]');
+  if (!tabClose) res.issues.push('tab close missing');
+  const ptabs = document.querySelector('.qr-ptabs');
+  if (ptabs) { const cs = getComputedStyle(ptabs); if (cs.overflowX === 'auto' || cs.overflowX === 'scroll') res.issues.push('job tabs must not scroll horizontally'); }
   // Check header height (should be <=56px)
   const header = document.querySelector('.qr-wiz-head');
   if (header) {

@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('qr', {
   pickFolder: (opts) => ipcRenderer.invoke('qr:pickFolder', opts),
   pathForFile: (f) => { try { return webUtils.getPathForFile(f); } catch { return f.path || ''; } },
   process: (paths, job) => ipcRenderer.invoke('qr:process', paths, job),
+  releaseImportCache: (job) => ipcRenderer.invoke('qr:importCache:release', job),
   listProjects: () => ipcRenderer.invoke('qr:projects:list'), saveProject: (id, data) => ipcRenderer.invoke('qr:projects:save', id, data),
   saveProjectsIndex: (idx) => ipcRenderer.invoke('qr:projects:index', idx), peekRfq: (paths) => ipcRenderer.invoke('qr:peekRfq', paths), peekMail: (paths) => ipcRenderer.invoke('qr:peekMail', paths),
   onNotify: (cb) => { const h = (_e, n) => cb(n); ipcRenderer.on('qr:notify', h); return () => ipcRenderer.removeListener('qr:notify', h); },

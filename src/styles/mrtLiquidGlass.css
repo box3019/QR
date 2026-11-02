@@ -740,10 +740,10 @@ html:has([data-mrt-palette='custom']) #root {
 
 .mrt-workspace-tab-strip {
   font-family: var(--mrt-font-family);
-  overflow-x: auto;
+  overflow-x: hidden;
   flex-wrap: nowrap;
   justify-content: flex-start;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
 
 .mrt-workspace-tab {

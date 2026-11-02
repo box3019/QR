@@ -15,9 +15,9 @@ test('shortcuts: Ctrl+S save, Ctrl+Shift+S save as, Ctrl+W close, Ctrl+O open', 
   const k = (key, o = {}) => s.shortcutAction({ key, ctrlKey: true, ...o });
   assert.strictEqual(k('s'), 'save'); assert.strictEqual(k('S', { shiftKey: true }), 'saveAs'); assert.strictEqual(k('w'), 'close'); assert.strictEqual(k('o'), 'open');
   assert.strictEqual(s.shortcutAction({ key: 's' }), null); assert.strictEqual(k('s', { altKey: true }), null); assert.strictEqual(k('x'), null); assert.strictEqual(s.shortcutAction(null), null); });
-test('closing: only a running job asks; never deletes', async () => { const s = await load('projects/store.mjs');
-  assert.strictEqual(s.closeNeedsConfirm({ status: 'busy' }), true); assert.strictEqual(s.closeNeedsConfirm({ status: 'ready', dirty: true }), false); assert.strictEqual(s.closeNeedsConfirm({ status: 'empty' }), false);
-  const up = src('src/projects/useProjects.ts'); assert.ok(!/removeHistory|rmSync|unlink/.test(up)); assert.ok(/closeNeedsConfirm/.test(up) && /\.save\(\)/.test(up)); });
+test('closing: running or unsaved asks Save / Do not save; never deletes History', async () => { const s = await load('projects/store.mjs');
+  assert.strictEqual(s.closeNeedsConfirm({ status: 'busy' }), true); assert.strictEqual(s.closeNeedsConfirm({ status: 'ready', dirty: true }), false); assert.strictEqual(s.closeNeedsConfirm({ status: 'ready', unsaved: true, nParts: 2 }), true); assert.strictEqual(s.closeNeedsConfirm({ status: 'empty' }), false);
+  const up = src('src/projects/useProjects.ts'); assert.ok(!/removeHistory|rmSync|unlink/.test(up)); assert.ok(/releaseImportCache/.test(up) && /\.save\(\)/.test(up) && /jobsNeedingCloseAsk/.test(up)); });
 test('tab x: on every tab (also the only one), MRT icon, middle click', () => { const t = src('src/components/tabs/TabsBar.tsx');
   assert.ok(!/tabs\.length\s*>\s*1/.test(t)); assert.ok(/strokeWidth="2\.25"/.test(t) && /width="12"/.test(t)); assert.ok(/mrt-workspace-tab__close/.test(t) && /onAuxClick/.test(t) && /title=\{t\('tab\.close'\)\}/.test(t));
   const css = src('src/styles/wizard.css'); assert.ok(!/__close \{[^}]*opacity: 0/.test(css)); });

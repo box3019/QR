@@ -12,6 +12,7 @@ import { useAssistant } from './hooks/useAssistant';
 import { useDrop } from './hooks/useDrop';
 import { useProjects } from './projects/useProjects';
 import { TabsBar } from './components/tabs/TabsBar';
+import { CloseJobsDialog } from './components/tabs/CloseJobsDialog';
 import { ProjectView } from './ProjectView';
 import { HistoryDialog } from './components/history/HistoryDialog';
 import { recent } from './projects/history.mjs';
@@ -27,8 +28,8 @@ import { useReleaseUpdate } from './update/useReleaseUpdate';
 declare global { interface Window { qr: any } }
 const qr = () => window.qr;
 
-function TopButton({ icon, label, tip, onClick, testid, active, disabled }: any) {
-  return <button type="button" title={tip || label} data-active={active} disabled={disabled} className={MRT_ACTION_BTN_TOPBAR} onClick={onClick} data-testid={testid}><span className="ico" aria-hidden>{icon}</span><span>{label}</span></button>;
+function TopButton({ icon, label, tip, onClick, testid, active, disabled, why }: any) {
+  return <button type="button" title={(disabled && why) ? t(why) : (tip || label)} data-active={active} disabled={disabled} className={MRT_ACTION_BTN_TOPBAR} onClick={onClick} data-testid={testid}><span className="ico" aria-hidden>{icon}</span><span>{label}</span></button>;
 }
 
 export default function App() {
@@ -60,7 +61,7 @@ export default function App() {
     window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h); }, []);
   // drops go into the current tab; a dropped .qrproj opens as a project
   const drop = useDrop((paths: string[]) => { const s = splitProjectFiles(paths); s.projects.forEach((f) => P.openProject(f)); if (s.rest.length) return P.runActive(s.rest); }, settings, setOver);
-  const w = window as any; w.__qrAddTab = P.add; w.__qrTabs = () => P.list.map((p) => ({ id: p.id, active: p.id === P.active, ...(P.metas[p.id] || {}) })); w.__qrSelectTab = P.setActive; w.__qrMoveTab = P.move; w.__qrHistory = () => hist; w.__qrReopen = P.reopen;
+  const w = window as any; w.__qrAddTab = P.add; w.__qrTabs = () => P.list.map((p) => ({ id: p.id, active: p.id === P.active, ...(P.metas[p.id] || {}) })); w.__qrSelectTab = P.setActive; w.__qrMoveTab = P.move; w.__qrCloseTab = P.close; w.__qrCloseAll = P.closeAll; w.__qrHistory = () => hist; w.__qrReopen = P.reopen;
   const saveSettings = async (s: any) => setSettings(await qr().setSettings(s));
   const assistant = useAssistant(settings, saveSettings);
   const upd = useReleaseUpdate(settings, notify);
@@ -71,16 +72,16 @@ export default function App() {
     <div className="qr-root" {...themeAttrs(settings)} data-step={m.step || 1} {...drop}>
       <div className="qr-topbar mrt-workspace-topbar-chrome">
         <div className="qr-brand"><span className="qr-brand-badge">QR</span><AppVersion /></div>
-        <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onMove={P.move} />
+        <TabsBar tabs={tabs} active={P.active} onSelect={P.setActive} onAdd={() => P.add()} onClose={P.close} onCloseOthers={P.closeOthers} onCloseAll={P.closeAll} onMove={P.move} />
         {bar.details && <TopButton icon={<Ico name="details" />} label={t('top.details')} tip={t('tip.details')} testid="btn-details" active={details} onClick={() => setDetails(!details)} />}
         {bar.details && details && m.lastRun && <span className="qr-muted" data-testid="run-info">{t('top.runInfo', { parts: m.nParts, files: m.lastRun.files.length, sec: m.lastRun.seconds })}</span>}
         <FileMenu why={saveWhy(m.nParts || 0, m.status === 'busy')} status={saveStatus(m)} at={m.savedAt ? hhmm(m.savedAt) : ''} onSave={() => P.save()} onSaveAs={() => P.saveAs()} onOpen={() => P.openProject()} />
-        <TopButton icon={<Ico name="print" />} label={t('top.print')} tip={t('tip.print')} testid="btn-print" disabled={!(m.nParts > 0)} onClick={async () => {
+        <TopButton icon={<Ico name="print" />} label={t('top.print')} tip={t('tip.print')} testid="btn-print" disabled={!(m.nParts > 0)} why="dis.nothingToPrint" onClick={async () => {
           const payload = (window as any).__qrPrintPayload?.();
           const r = await qr().print?.(payload);
           if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed')));
         }} />
-        <TopButton icon={<Ico name="pdf" />} label={t('top.savePdf')} tip={t('tip.savePdf')} testid="btn-save-pdf" disabled={!(m.nParts > 0)} onClick={async () => {
+        <TopButton icon={<Ico name="pdf" />} label={t('top.savePdf')} tip={t('tip.savePdf')} testid="btn-save-pdf" disabled={!(m.nParts > 0)} why="dis.nothingToPdf" onClick={async () => {
           const payload = (window as any).__qrPrintPayload?.();
           const r = await qr().savePdf?.(payload);
           if (!r || r.canceled) return;
@@ -99,7 +100,8 @@ export default function App() {
       </div>
       <div className="qr-statusbar" data-testid="status-bar" role="status">{saveStatus(m) === 'saved' && <span data-testid="saved-at" title={t('tip.savedAt', { time: hhmm(m.savedAt) })}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}{saveStatus(m) === 'unsaved' && <span data-testid="unsaved-note" title={t('tab.unsaved')}>{t('top.unsaved')}</span>}</div>
       {notice && <Notice text={notice} action={noticeAction ? { label: noticeAction.label, run: () => { noticeAction.run(); setNotice(''); setNoticeAction(null); } } : null} onClose={() => { setNotice(''); setNoticeAction(null); }} />}
-      {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} />}
+      {P.closeAsk && <CloseJobsDialog ask={P.closeAsk} onPick={P.resolveClose} />}
+      {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} onCloseAllJobs={() => { setDialog(null); P.closeAll(); }} />}
       {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={resolveAssistantLang(settings)} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}
       {dialog === 'tutorial' && <Tour lang0={resolveAssistantLang(settings) || 'en'} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}

@@ -1,26 +1,74 @@
 // Project tabs at the top, MRT workspace tab strip look: label, customer, status dot or progress; drag to reorder, x to close, + for a new project.
-import React, { useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
+import { tabFitCount, visibleTabIds } from '../../projects/store.mjs';
 
 /** MRT's tab close icon (lucide X, 12 px, stroke 2.25), drawn inline. */
 const CloseX = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>;
 
-export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onMove }: any) {
+function TabChip({ tb, on, onSelect, onClose, onMenu, onMove, from }: any) {
+  const label = tb.label || t('tab.new');
+  return <div className={'mrt-workspace-tab' + (on ? ' mrt-workspace-tab--active' : '')} data-testid="tab" data-id={tb.id} data-status={tb.status} data-active={on} draggable
+    onDragStart={(e) => { from.current = tb._i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/x-qr-tab', String(tb._i)); }}
+    onDragOver={(e) => { if (from.current >= 0) { e.preventDefault(); e.stopPropagation(); } }}
+    onDrop={(e) => { if (from.current < 0) return; e.preventDefault(); e.stopPropagation(); onMove(from.current, tb._i); from.current = -1; }}
+    onDragEnd={() => { from.current = -1; }}
+    onContextMenu={(e) => { e.preventDefault(); onMenu(tb.id, e.clientX, e.clientY); }}
+    onMouseDown={(e) => { if (e.button === 1) e.preventDefault(); }} onAuxClick={(e) => { if (e.button === 1) { e.preventDefault(); onClose(tb.id); } }}>
+    <button type="button" role="tab" aria-selected={on} className="mrt-workspace-tab__label" title={[label, tb.customer, t('tab.st.' + tb.status)].filter(Boolean).join(' \u00b7 ')} onClick={() => onSelect(tb.id)}>
+      {tb.status === 'busy' ? <span className="qr-tab-prog" aria-hidden><span style={{ width: Math.round((tb.frac || 0) * 100) + '%' }} /></span> : <span className="qr-tab-dot" data-status={tb.status} aria-hidden />}
+      <bdi>{label}</bdi>{tb.customer && <span className="qr-tab-cust"><bdi>{tb.customer}</bdi></span>}{tb.unsaved && tb.nParts > 0 && <span className="qr-tab-dirty" data-testid="tab-unsaved" title={t('tab.unsaved')} aria-label={t('tab.unsaved')}>{'\u25cf'}</span>}
+    </button>
+    <button type="button" className="mrt-workspace-tab__close" data-testid="tab-close" title={t('tab.close')} aria-label={t('tab.close')} onClick={(e) => { e.stopPropagation(); onClose(tb.id); }}><CloseX /></button>
+  </div>;
+}
+
+export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers, onCloseAll, onMove }: any) {
   const from = useRef(-1); // tab drags are internal: they never reach the import drop handler
-  return <div className="mrt-workspace-tab-strip qr-ptabs" dir="ltr" role="tablist" aria-label={t('tab.list')} data-testid="tabs">
-    {tabs.map((tb: any, i: number) => { const on = tb.id === active; const label = tb.label || t('tab.new');
-      return <div key={tb.id} className={'mrt-workspace-tab' + (on ? ' mrt-workspace-tab--active' : '')} data-testid="tab" data-id={tb.id} data-status={tb.status} data-active={on} draggable
-        onDragStart={(e) => { from.current = i; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/x-qr-tab', String(i)); }}
-        onDragOver={(e) => { if (from.current >= 0) { e.preventDefault(); e.stopPropagation(); } }}
-        onDrop={(e) => { if (from.current < 0) return; e.preventDefault(); e.stopPropagation(); onMove(from.current, i); from.current = -1; }}
-        onDragEnd={() => { from.current = -1; }}
-        onMouseDown={(e) => { if (e.button === 1) e.preventDefault(); }} onAuxClick={(e) => { if (e.button === 1) { e.preventDefault(); onClose(tb.id); } }}>
-        <button type="button" role="tab" aria-selected={on} className="mrt-workspace-tab__label" title={[label, tb.customer, t('tab.st.' + tb.status)].filter(Boolean).join(' \u00b7 ')} onClick={() => onSelect(tb.id)}>
-          {tb.status === 'busy' ? <span className="qr-tab-prog" aria-hidden><span style={{ width: Math.round((tb.frac || 0) * 100) + '%' }} /></span> : <span className="qr-tab-dot" data-status={tb.status} aria-hidden />}
-          <bdi>{label}</bdi>{tb.customer && <span className="qr-tab-cust"><bdi>{tb.customer}</bdi></span>}{tb.unsaved && tb.nParts > 0 && <span className="qr-tab-dirty" data-testid="tab-unsaved" title={t('tab.unsaved')} aria-label={t('tab.unsaved')}>{'\u25cf'}</span>}
+  const strip = useRef<HTMLDivElement>(null);
+  const addRef = useRef<HTMLButtonElement>(null);
+  const moreRef = useRef<HTMLButtonElement>(null);
+  const [maxN, setMaxN] = useState(tabs.length || 1);
+  const [menu, setMenu] = useState(null as null | { id: string; x: number; y: number; more?: boolean });
+  const ids = tabs.map((tb: any) => tb.id);
+  const fit = () => {
+    const el = strip.current; if (!el) return;
+    const addW = addRef.current ? addRef.current.getBoundingClientRect().width + 8 : 32;
+    const moreW = 120;
+    const sample = el.querySelector('.mrt-workspace-tab') as HTMLElement | null;
+    const tabW = sample ? Math.max(96, sample.getBoundingClientRect().width) : 160;
+    setMaxN(tabFitCount(el.clientWidth, tabW, addW, moreW, tabs.length));
+  };
+  useLayoutEffect(fit, [tabs.length, tabs.map((tb: any) => tb.label + tb.customer).join('|')]);
+  useEffect(() => { const el = strip.current; if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(fit); ro.observe(el); return () => ro.disconnect(); }, [tabs.length]);
+  const { shown, rest } = visibleTabIds(ids, active, maxN);
+  const byId = Object.fromEntries(tabs.map((tb: any, i: number) => [tb.id, { ...tb, _i: i }]));
+  const shownTabs = shown.map((id: string) => byId[id]).filter(Boolean);
+  const restTabs = rest.map((id: string) => byId[id]).filter(Boolean);
+  useEffect(() => { if (!menu) return;
+    const away = (e: MouseEvent) => { if (!(e.target as HTMLElement).closest('.qr-tab-menu,[data-testid=tab-more]')) setMenu(null); };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null); };
+    window.addEventListener('mousedown', away); window.addEventListener('keydown', esc);
+    return () => { window.removeEventListener('mousedown', away); window.removeEventListener('keydown', esc); };
+  }, [menu]);
+  const openMenu = (id: string, x: number, y: number, more?: boolean) => setMenu({ id, x: Math.max(4, Math.min(x, window.innerWidth - 260)), y, more });
+  const item = (testid: string, label: string, fn: () => void) =>
+    <button type="button" role="menuitem" className="qr-menu-item" data-testid={testid} title={label} onClick={() => { setMenu(null); fn(); }}>{label}</button>;
+  return <div className="mrt-workspace-tab-strip qr-ptabs" dir="ltr" role="tablist" aria-label={t('tab.list')} data-testid="tabs" ref={strip}>
+    {shownTabs.map((tb: any) => <TabChip key={tb.id} tb={tb} on={tb.id === active} onSelect={onSelect} onClose={onClose} onMenu={openMenu} onMove={onMove} from={from} />)}
+    {!!restTabs.length && <button type="button" ref={moreRef} className="qr-tab-more" data-testid="tab-more" title={t('tip.tabMore')} aria-label={t('tab.more')} aria-haspopup="menu" onClick={(e) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); openMenu(restTabs[0].id, r.left, r.bottom + 4, true); }}>{t('tab.more')}</button>}
+    <button type="button" ref={addRef} className="mrt-workspace-tab__add" data-testid="tab-add" title={t('tab.add')} aria-label={t('tab.add')} onClick={onAdd}>+</button>
+    {menu && <div className="qr-filemenu qr-tab-menu" role="menu" data-testid="tab-menu" style={{ top: menu.y, left: menu.x }}>
+      {menu.more && restTabs.map((tb: any) => <div key={tb.id} className="qr-more-job">
+        <button type="button" role="menuitem" className="qr-menu-item" data-testid="tab-more-item" data-id={tb.id} title={[tb.label || t('tab.new'), tb.customer].filter(Boolean).join(' ')} onClick={() => { setMenu(null); onSelect(tb.id); }}>
+          <bdi>{tb.label || t('tab.new')}</bdi>{tb.customer ? <span className="qr-tab-cust"> <bdi>{tb.customer}</bdi></span> : null}
         </button>
-        <button type="button" className="mrt-workspace-tab__close" data-testid="tab-close" title={t('tab.close')} aria-label={t('tab.close')} onClick={(e) => { e.stopPropagation(); onClose(tb.id); }}><CloseX /></button>
-      </div>; })}
-    <button type="button" className="mrt-workspace-tab__add" data-testid="tab-add" title={t('tab.add')} aria-label={t('tab.add')} onClick={onAdd}>+</button>
+        <button type="button" className="mrt-workspace-tab__close" data-testid="tab-more-close" title={t('tab.close')} aria-label={t('tab.close')} onClick={() => { setMenu(null); onClose(tb.id); }}><CloseX /></button>
+      </div>)}
+      {!menu.more && item('tab-menu-close', t('tab.close'), () => onClose(menu.id))}
+      {item('tab-menu-close-others', t('tab.closeOthers'), () => onCloseOthers(menu.more ? active : menu.id))}
+      {item('tab-menu-close-all', t('tab.closeAll'), () => onCloseAll())}
+    </div>}
   </div>;
 }

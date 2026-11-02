@@ -141,7 +141,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
   const limit = Math.max(1, Number(settings && settings.analysisConcurrency) || DEFAULT_CONCURRENCY);
   const pagesOf = pageCache();
   try {
-    const { files, rfqs, sources } = await expand(paths, tmp, { sevenZip: settings.sevenZip, importCache: settings.importCache, readEmail: (f, out) => readEmail(f, out, { customers: settings.customers }), onStatus: (text, extra) => emit({ type: 'status', text, ...(extra || {}) }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
+    const { files, rfqs, sources } = await expand(paths, tmp, { sevenZip: settings.sevenZip, importCache: settings.importCache, jobId: settings.jobId, readEmail: (f, out) => readEmail(f, out, { customers: settings.customers }), onStatus: (text, extra) => emit({ type: 'status', text, ...(extra || {}) }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
     for (const r of rfqs) emit({ type: 'rfq', rfq: r });
     emit({ type: 'files', files: files.map((f) => { const s = sources && sources.get(f); return { path: f, name: path.basename(f), label: s ? s.label : path.basename(f), title: s ? s.title : f }; }) });
     const pdfs = files.filter(isPdfDrawing);
@@ -191,7 +191,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
     const unknown = docs.filter((d) => d.kind === 'spec').map((d) => d.name);
     const rfqOut = attachRfqs(parts, rfqs);
     const other = files.filter((f) => !['drawing', 'model'].includes(fileKind(f))).map((f) => path.basename(f));
-    return { parts, unknown, other, errors, rfqs: rfqOut, files: files.map((f) => path.basename(f)) };
+    return { parts, unknown, other, errors, rfqs: rfqOut, files: files.map((f) => path.basename(f)), tmp };
   } finally {
     emit({ type: 'done', n: parts.length });
   }

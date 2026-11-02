@@ -24,8 +24,51 @@ export function tabMeta(s) {
 }
 /** Move item from index a to index b. */
 export function reorder(list, a, b) { if (a === b || a < 0 || b < 0 || a >= list.length || b >= list.length) return list; const l = [...list]; const [x] = l.splice(a, 1); l.splice(b, 0, x); return l; }
-/** Ask before closing only while a job is running in the tab (closing never deletes: the project stays in History and on disk). */
-export const closeNeedsConfirm = (m) => !!(m && m.status === 'busy');
+/** Why closing this tab needs a question: running job, unsaved changes, or nothing. Closing never deletes: the project stays in History. */
+export function closePrompt(m) {
+  if (!m) return null;
+  if (m.status === 'busy') return 'busy';
+  if (m.unsaved && m.nParts > 0) return 'unsaved';
+  return null;
+}
+/** True when the user must pick Save / Do not save / Cancel (or confirm a running job) before the tab goes. */
+export const closeNeedsConfirm = (m) => !!closePrompt(m);
+/** Unsaved (and whether any is still running) among the given tab ids. */
+export function jobsNeedingCloseAsk(ids, metas) {
+  const unsaved = []; let busy = false;
+  for (const id of ids || []) {
+    const m = (metas && metas[id]) || {};
+    if (m.status === 'busy') busy = true;
+    if (m.unsaved && m.nParts > 0) unsaved.push({ id, label: m.label || '', customer: m.customer || '' });
+  }
+  return { unsaved, busy, needed: busy || unsaved.length > 0 };
+}
+/** After closing `closingIds`, which tab becomes active (next neighbour, else previous). null = none left (empty start). */
+export function nextActiveAfterClose(order, active, closingIds) {
+  const gone = new Set(closingIds || []);
+  if (!gone.has(active)) return active;
+  const i = (order || []).indexOf(active);
+  for (let k = i + 1; k < order.length; k++) if (!gone.has(order[k])) return order[k];
+  for (let k = i - 1; k >= 0; k--) if (!gone.has(order[k])) return order[k];
+  return null;
+}
+/** How many tabs fit before the rest go under More jobs. `tabW` is a typical tab width in px. */
+export function tabFitCount(width, tabW, addW, moreW, n) {
+  const w = Number(width) || 0, tw = Math.max(48, Number(tabW) || 140), add = Number(addW) || 0, more = Number(moreW) || 0, count = Math.max(0, Number(n) || 0);
+  if (count * tw + add <= w) return count;
+  const room = w - add - more;
+  return Math.max(1, Math.min(count - 1, Math.floor(room / tw)));
+}
+/** First `maxN` tabs stay visible; the active tab is kept on the strip even when it would overflow. */
+export function visibleTabIds(ids, active, maxN) {
+  const list = Array.isArray(ids) ? ids : [];
+  const cap = Math.max(1, Number(maxN) || 1);
+  if (list.length <= cap) return { shown: list.slice(), rest: [] };
+  let shown = list.slice(0, cap);
+  if (active && !shown.includes(active) && list.includes(active)) shown = list.slice(0, cap - 1).concat(active);
+  const keep = new Set(shown);
+  return { shown, rest: list.filter((id) => !keep.has(id)) };
+}
 /** Outlook 'Send to QR': a tab opens for every e-mail. Only the SAME e-mail (same Message-ID / fingerprint) focuses its open tab; the current tab is reused only when it is empty. keys = mail keys of the import. */
 export function routeOutlook(tabs, keys, activeId) {
   const ks = (Array.isArray(keys) ? keys : [keys]).filter(Boolean);

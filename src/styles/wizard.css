@@ -153,12 +153,20 @@
 
 
 /* project tabs (MRT workspace tab strip; MRT's tailwind layout classes written out) and one mounted view per project */
-.qr-ptabs { display: flex; align-items: center; gap: 0.375rem; flex: 1 1 auto; min-width: 0; overflow-x: auto; }
+.qr-ptabs { display: flex; align-items: center; gap: 0.375rem; flex: 1 1 auto; min-width: 0; overflow: hidden; }
 .qr-ptabs .mrt-workspace-tab { display: flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 18rem; }
 .qr-ptabs .mrt-workspace-tab__label { display: inline-flex; align-items: center; gap: 0.4rem; min-width: 0; flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .qr-ptabs .mrt-workspace-tab__label bdi { overflow: hidden; text-overflow: ellipsis; }
-.qr-ptabs .mrt-workspace-tab__close { flex: 0 0 auto; } /* always visible (MRT shows it on hover only): every tab, even the only one, has its x */
+.qr-ptabs .mrt-workspace-tab__close { flex: 0 0 auto; color: var(--mrt-text, #1c1c1e); white-space: nowrap; } /* always visible (MRT shows it on hover only): every tab, even the only one, has its x */
 .qr-ptabs .mrt-workspace-tab__add { flex: 0 0 auto; }
+.qr-tab-more { flex: 0 0 auto; white-space: nowrap; height: 26px; padding: 0 0.55rem; border-radius: var(--mrt-radius, 6px); border: 1px solid var(--mrt-ui-border, var(--mrt-border)); background: var(--mrt-surface, #fff); color: var(--mrt-text, #1c1c1e); font: inherit; font-size: 0.6875rem; font-weight: 600; }
+.qr-tab-menu { position: fixed; z-index: 70; }
+.qr-more-job { display: flex; align-items: center; gap: 0.15rem; }
+.qr-more-job .qr-menu-item { flex: 1 1 auto; min-width: 0; }
+.qr-close-ask { margin: 0.5rem 0; white-space: normal; }
+.qr-close-jobs { margin: 0 0 0.75rem; padding-inline-start: 1.2rem; white-space: nowrap; }
+.qr-close-ask-btns { justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: nowrap; }
+.qr-close-ask-btns button { white-space: nowrap; }
 .qr-tab-cust { color: var(--mrt-text-muted, #636366); font-size: 0.92em; }
 .qr-tab-dirty { color: var(--mrt-accent, #007aff); }
 .qr-tab-dot { flex: 0 0 auto; width: 0.5rem; height: 0.5rem; border-radius: 2px; background: var(--qr-st-none, #8e8e93); }
@@ -244,7 +252,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-filemenu { position: fixed; z-index: 60; min-width: 15rem; padding: 0.25rem; display: flex; flex-direction: column; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border); border-radius: var(--mrt-radius, 8px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
 .qr-menu-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.7rem; background: transparent; border: 0; border-radius: 6px; font: inherit; color: inherit; text-align: start; cursor: pointer; white-space: nowrap; }
 .qr-menu-item:hover:not(:disabled), .qr-menu-item:focus-visible { background: rgba(127, 127, 127, 0.16); outline: none; }
-.qr-menu-item:disabled { opacity: 0.5; cursor: default; }
+.qr-menu-item:disabled { opacity: 1; cursor: default; background: #ffffff; color: #3a3a3c; border: 1px dashed #86868b; }
 .qr-menu-l { flex: 1; }
 .qr-menu-k { color: var(--mrt-text-muted); font-size: 0.75rem; }
 .qr-tab-dirty { font-size: 0.6rem; margin-inline-start: 0.4rem; }
