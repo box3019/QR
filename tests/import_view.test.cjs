@@ -14,6 +14,15 @@ test('statuses: waiting -> reading -> done / needs check; e-mail subject and sen
   assert.deepStrictEqual(m.importProgress(v), { d: 2, n: 3, frac: 2 / 3 });
   v = m.finishImport(v); assert.deepStrictEqual(v.files.map((f) => f.status), ['done', 'check', 'done']); assert.strictEqual(v.active, false);
   assert.strictEqual(m.reduceImport(v, { type: 'error', file: 'C:\\t\\c.step', text: 'x' }).files[2].status, 'check'); });
+test('archive files show source as archive > inner path with full-path tooltip', async () => { const m = await load('importView.mjs');
+  let v = m.reduceImport(m.startImport(null), { type: 'status', stage: 'unpack', i: 1, n: 4, text: 'Unpacking pack.ZIP' });
+  assert.deepStrictEqual(m.importProgress(v), { d: 1, n: 4, frac: 1 / 4 });
+  v = m.reduceImport(v, { type: 'files', files: [{ path: 'C:\\cache\\a.pdf', name: 'a.pdf', label: 'pack.ZIP > data\\files\\a.pdf', title: 'pack.ZIP > data\\files\\a.pdf\nC:\\cache\\a.pdf' }] });
+  assert.strictEqual(v.files[0].name, 'pack.ZIP > data\\files\\a.pdf'); assert.ok(v.files[0].title.includes('C:\\cache\\a.pdf'));
+  v = m.reduceImport(v, { type: 'status', stage: 'read', i: 1, n: 1, text: 'Reading a.pdf' }); assert.strictEqual(v.files[0].status, 'reading');
+  const ui = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'components', 'wizard', 'ImportView.tsx'), 'utf8');
+  assert.match(ui, /title=\{f\.title \|\| f\.name\}/);
+});
 test('a later drop is added to the view, a fresh run replaces it', async () => { const m = await load('importView.mjs');
   let v = m.reduceImport(m.startImport(null), { type: 'files', files: [{ name: 'a.pdf' }] }); v = m.finishImport(v);
   const more = m.reduceImport(m.startImport(v, true), { type: 'files', files: [{ name: 'a.pdf' }, { name: 'd.pdf' }] });

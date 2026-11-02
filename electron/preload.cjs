@@ -12,7 +12,7 @@ contextBridge.exposeInMainWorld('qr', {
   questionSample: (lang) => ipcRenderer.invoke('qr:questionSample', lang),
   newCustomer: (from, ids) => ipcRenderer.invoke('qr:newCustomer', from, ids),
   pickFiles: () => ipcRenderer.invoke('qr:pickFiles'),
-  pickFolder: () => ipcRenderer.invoke('qr:pickFolder'),
+  pickFolder: (opts) => ipcRenderer.invoke('qr:pickFolder', opts),
   pathForFile: (f) => { try { return webUtils.getPathForFile(f); } catch { return f.path || ''; } },
   process: (paths, job) => ipcRenderer.invoke('qr:process', paths, job),
   listProjects: () => ipcRenderer.invoke('qr:projects:list'), saveProject: (id, data) => ipcRenderer.invoke('qr:projects:save', id, data),

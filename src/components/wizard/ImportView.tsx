@@ -13,7 +13,7 @@ export function ImportView({ view }: any) {
     <div className="qr-import-prog" data-testid="import-progress"><span>{t('imp.progress', { d: pr.d, n: pr.n })}</span>
       <div className="qr-bar" data-testid="import-bar"><div style={{ width: Math.round(pr.frac * 100) + '%' }} /></div></div>
     <div className="qr-panel-h">{t('imp.files', { n: view.files.length })}</div>
-    <ul className="qr-import-files" data-testid="import-files">{view.files.map((f: any) => <li key={f.name} data-status={f.status}>
+    <ul className="qr-import-files" data-testid="import-files">{view.files.map((f: any) => <li key={f.path || f.name} data-status={f.status} title={f.title || f.name}>
       <bdi className="qr-ltr">{f.name}</bdi><span className="qr-import-st" data-status={f.status}>{t('imp.st.' + f.status)}</span></li>)}</ul>
   </div>;
 }

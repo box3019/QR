@@ -66,9 +66,9 @@ const { ocrChart, mergeChartTokens, rawWithChart } = require('./ocr/chart.cjs');
 async function runPipeline(paths, settings, emit = () => {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-'));
   const errors = [];
-  const { files, rfqs } = await expand(paths, tmp, { sevenZip: settings.sevenZip, readEmail: (f, out) => readEmail(f, out, { customers: settings.customers }), onStatus: (text) => emit({ type: 'status', text }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
+  const { files, rfqs, sources } = await expand(paths, tmp, { sevenZip: settings.sevenZip, importCache: settings.importCache, readEmail: (f, out) => readEmail(f, out, { customers: settings.customers }), onStatus: (text, extra) => emit({ type: 'status', text, ...(extra || {}) }), onError: (f, e) => { errors.push({ file: path.basename(f), text: String((e && e.message) || e) }); emit({ type: 'error', file: f, text: String((e && e.message) || e) }); } });
   for (const r of rfqs) emit({ type: 'rfq', rfq: r });
-  emit({ type: 'files', files: files.map((f) => ({ path: f, name: path.basename(f) })) });
+  emit({ type: 'files', files: files.map((f) => { const s = sources && sources.get(f); return { path: f, name: path.basename(f), label: s ? s.label : path.basename(f), title: s ? s.title : f }; }) });
   const docs = [];
   const nPdf = files.filter((f) => fileKind(f) === 'drawing').length; let iPdf = 0;
   for (const f of files) {
