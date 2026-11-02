@@ -183,22 +183,47 @@ ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
 });
 ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
-const { launchElectronHtmlPrintDialog, partsForPrint, EMPTY_PRINT_ERROR } = require('./qrPrint.cjs');
+const { launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, partsForPrint, EMPTY_PRINT_ERROR, reportPdfFileName, defaultPdfDir } = require('./qrPrint.cjs');
+async function reportHtmlFromPayload(payload) {
+  const p = payload || {};
+  const all = Array.isArray(p.parts) ? p.parts : [];
+  const parts = partsForPrint(all, p.step, p.sel);
+  if (!parts.length) return { ok: false, error: EMPTY_PRINT_ERROR };
+  await attachChecklist(parts);
+  const { reportHtml } = require('../core/report.cjs');
+  const lang = p.lang || loadSettings().questionsLanguage || 'he';
+  return { ok: true, html: reportHtml(parts, lang, p.meta || {}), payload: p };
+}
 ipcMain.handle('qr:print', async (_e, payload) => {
   try {
-    const p = payload || {};
-    const all = Array.isArray(p.parts) ? p.parts : [];
-    const parts = partsForPrint(all, p.step, p.sel);
-    if (!parts.length) return { ok: false, error: EMPTY_PRINT_ERROR };
-    await attachChecklist(parts);
-    const { reportHtml } = require('../core/report.cjs');
-    const lang = p.lang || loadSettings().questionsLanguage || 'he';
-    const html = reportHtml(parts, lang, p.meta || {});
-    const r = await launchElectronHtmlPrintDialog({ html, BrowserWindow, shell, log: mainLog });
-    return r;
+    const prep = await reportHtmlFromPayload(payload);
+    if (!prep.ok) return prep;
+    return await launchElectronHtmlPrintDialog({ html: prep.html, BrowserWindow, shell, log: mainLog });
   } catch (e) {
     const error = (e && e.message) || String(e);
     mainLog('print failed: ' + error);
+    return { ok: false, error };
+  }
+});
+ipcMain.handle('qr:savePdf', async (_e, payload, target) => {
+  try {
+    const prep = await reportHtmlFromPayload(payload);
+    if (!prep.ok) return prep;
+    const s = loadSettings();
+    let dest = target;
+    if (!dest) {
+      const dir = defaultPdfDir(s.lastPdfFolder, app.getPath('documents'));
+      const r = await dialog.showSaveDialog(win, { defaultPath: path.join(dir, reportPdfFileName(prep.payload)), filters: [{ name: 'PDF', extensions: ['pdf'] }] });
+      if (r.canceled || !r.filePath) return { ok: false, canceled: true };
+      dest = r.filePath;
+    }
+    if (!/\.pdf$/i.test(dest)) dest += '.pdf';
+    const saved = await saveElectronHtmlReportPdf({ html: prep.html, dest, BrowserWindow, log: mainLog });
+    saveSettings(normalizeSettings({ ...s, lastPdfFolder: path.dirname(saved.path) }));
+    return saved;
+  } catch (e) {
+    const error = (e && e.message) || String(e);
+    mainLog('savePdf failed: ' + error);
     return { ok: false, error };
   }
 });

@@ -38,6 +38,7 @@ contextBridge.exposeInMainWorld('qr', {
   stdUpload: (s, c, o) => ipcRenderer.invoke('qr:std:upload', s, c, o),
   stdOpen: (f) => ipcRenderer.invoke('qr:std:open', f),
   print: (payload) => ipcRenderer.invoke('qr:print', payload),
+  savePdf: (payload, target) => ipcRenderer.invoke('qr:savePdf', payload, target),
   releaseUpdate: (action, payload) => ipcRenderer.invoke('qr:release-update', action, payload),
   onReleaseUpdate: (cb) => { const h = (_e, ev) => cb(ev); ipcRenderer.on('qr:release-update', h); return () => ipcRenderer.removeListener('qr:release-update', h); },
 });

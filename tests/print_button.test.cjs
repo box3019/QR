@@ -12,8 +12,24 @@ test('Print button is in the topbar next to FileMenu', () => {
   const fileMenuPos = bar.indexOf('<FileMenu');
   const printPos = bar.indexOf('btn-print');
   assert.ok(fileMenuPos < printPos, 'Print button should come after FileMenu');
+  const savePdfPos = bar.indexOf('btn-save-pdf');
   const historyPos = bar.indexOf('btn-history');
   assert.ok(printPos < historyPos, 'Print button should come before History button');
+  assert.ok(printPos < savePdfPos && savePdfPos < historyPos, 'Save PDF button should be next to Print, before History');
+  assert.ok(/top\.savePdf/.test(bar), 'top.savePdf translation key should be used');
+  assert.ok(/tip\.savePdf/.test(bar), 'tip.savePdf tooltip key should be used');
+});
+
+test('Save PDF button is disabled when no parts are loaded', () => {
+  const a = src('src/App.tsx');
+  const chunk = a.slice(a.indexOf('btn-save-pdf') - 200, a.indexOf('btn-save-pdf') + 400);
+  assert.ok(/disabled=\{!\(m\.nParts > 0\)\}/.test(chunk) || /disabled=\{!m\.nParts/.test(chunk), 'Save PDF should be disabled when nParts is 0');
+});
+
+test('Save PDF button triggers qr.savePdf IPC with the same payload as Print', () => {
+  const a = src('src/App.tsx');
+  assert.ok(/qr\(\)\.savePdf\?\.?\(payload\)/.test(a), 'Save PDF should call qr().savePdf with the report payload');
+  assert.ok(/pdf\.openFolder/.test(a) && /openPath/.test(a), 'success notice offers Open folder');
 });
 
 test('Print button is disabled when no parts are loaded', () => {
@@ -31,17 +47,22 @@ test('print IPC handler exists in main process', () => {
   const m = src('electron/main.cjs');
   assert.ok(/ipcMain\.handle\('qr:print'/.test(m), 'qr:print handler should exist');
   assert.ok(/launchElectronHtmlPrintDialog/.test(m), 'print handler should print report HTML in a hidden window');
-  assert.ok(/reportHtml/.test(m), 'print handler should use the existing report');
+  assert.ok(/reportHtmlFromPayload/.test(m) && /reportHtml/.test(m), 'print handler should use the existing report');
+  assert.ok(/ipcMain\.handle\('qr:savePdf'/.test(m), 'qr:savePdf handler should exist');
+  assert.ok(/saveElectronHtmlReportPdf/.test(m), 'savePdf uses the shared report PDF renderer');
+  assert.ok(/showSaveDialog/.test(m) && /lastPdfFolder/.test(m), 'savePdf uses a native save dialog and remembers the folder');
 });
 
 test('print method is exposed in preload', () => {
   const p = src('electron/preload.cjs');
   assert.ok(/print:\s*\(payload\)\s*=>\s*ipcRenderer\.invoke\('qr:print',\s*payload\)/.test(p), 'print method should be exposed');
+  assert.ok(/savePdf:\s*\(payload,\s*target\)\s*=>\s*ipcRenderer\.invoke\('qr:savePdf',\s*payload,\s*target\)/.test(p), 'savePdf method should be exposed');
 });
 
 test('Print icon is defined', () => {
   const i = src('src/components/Ico.tsx');
   assert.ok(/print:\s*'M/.test(i), 'print icon should be defined');
+  assert.ok(/pdf:\s*'M/.test(i), 'pdf icon should be defined');
 });
 
 test('Print translations exist in EN and HE', () => {
@@ -50,7 +71,13 @@ test('Print translations exist in EN and HE', () => {
     assert.ok(j['top.print'], l + ' top.print');
     assert.ok(j['tip.print'], l + ' tip.print');
     assert.ok(j['dis.nothingToPrint'], l + ' dis.nothingToPrint');
+    assert.ok(j['top.savePdf'], l + ' top.savePdf');
+    assert.ok(!/\n/.test(j['top.savePdf']), l + ' Save PDF label is one line');
+    assert.ok(j['tip.savePdf'] && j['pdf.saved'] && j['pdf.openFolder'] && j['pdf.failed'], l + ' pdf strings');
   }
+  const en = JSON.parse(src('src/i18n/en.json'));
+  assert.strictEqual(en['top.savePdf'], 'Save PDF');
+  assert.ok(!/abbr|PDF file|Save as/i.test(en['top.savePdf']));
 });
 
 test('Print stylesheet exists with proper rules', () => {

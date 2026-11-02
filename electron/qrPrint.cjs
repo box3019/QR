@@ -8,6 +8,7 @@ const { spawn, execFileSync } = require('child_process');
 
 const EMPTY_PRINT_ERROR = 'Print document rendered empty';
 const LOAD_TIMEOUT_MS = 20000;
+const PDF_PRINT_OPTS = { pageSize: 'A4', printBackground: true, preferCSSPageSize: true, margins: { marginType: 'default' } };
 
 /** Steps 2/3: the selected part card. Step 4 (and others): the full summary. */
 function partsForPrint(parts, step, sel) {
@@ -98,28 +99,78 @@ function waitDidFinishLoad(webContents, ms) {
   });
 }
 
-async function launchElectronHtmlPrintDialog({ html, BrowserWindow, shell, spawnFn, resolvePdf, log, timeoutMs }) {
+/** Windows file name: strip reserved characters, trailing dots/spaces, and cap length. */
+function sanitizeWinFileName(s) {
+  const t = String(s || '').trim().replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').replace(/[. ]+$/g, '').replace(/_+/g, '_').replace(/^_+|_+$/g, '').slice(0, 80);
+  return t || 'QR';
+}
+
+function reportPdfStem(parts, step, sel, meta) {
+  const list = partsForPrint(parts, step, sel);
+  if ((step === 2 || step === 3) && list[0]) return String(list[0].partNo || list[0].title || '').trim();
+  const m = meta || {};
+  return String(m.rfq || m.label || m.key || (list[0] && (list[0].partNo || list[0].title)) || '').trim();
+}
+
+function ymdLocal(d) {
+  const x = d instanceof Date ? d : new Date(d || Date.now());
+  return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
+}
+
+function reportPdfFileName(payload, now) {
+  const p = payload || {};
+  return sanitizeWinFileName(reportPdfStem(p.parts, p.step, p.sel, p.meta)) + '_QR_report_' + ymdLocal(now) + '.pdf';
+}
+
+function defaultPdfDir(last, documents, existsFn) {
+  const exists = existsFn || ((p) => { try { return fs.existsSync(p) && fs.statSync(p).isDirectory(); } catch { return false; } });
+  if (last && exists(last)) return last;
+  return documents || '';
+}
+
+/** Hidden BrowserWindow + empty-render guard + printToPDF. Used by Print and Save PDF. */
+async function renderReportPdfInHiddenWindow({ html, BrowserWindow, log, timeoutMs }) {
   if (!html || !String(html).trim()) throw new Error(EMPTY_PRINT_ERROR);
   const stamp = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
   const htmlPath = path.join(os.tmpdir(), 'qr-print-' + stamp + '.html');
-  const pdfPath = path.join(os.tmpdir(), 'qr-print-' + stamp + '.pdf');
   fs.writeFileSync(htmlPath, html, 'utf8');
   const w = new BrowserWindow({ show: false, width: 794, height: 1123, webPreferences: { sandbox: false } });
-  let openedWithPdfApp = false;
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    try { fs.unlinkSync(htmlPath); } catch {}
+    try { if (w && !w.isDestroyed()) w.destroy(); } catch {}
+  };
   try {
     const loaded = waitDidFinishLoad(w.webContents, timeoutMs || LOAD_TIMEOUT_MS);
     w.loadFile(htmlPath);
     await loaded;
     const stats = await w.webContents.executeJavaScript(printDocumentStatsJs(), true);
     if (!isPrintDocumentReady(stats)) throw new Error(EMPTY_PRINT_ERROR);
-    const buf = await w.webContents.printToPDF({ pageSize: 'A4', printBackground: true, preferCSSPageSize: true, margins: { marginType: 'default' } });
+    const buf = await w.webContents.printToPDF(PDF_PRINT_OPTS);
     if (!buf || buf.length < 2048) throw new Error(EMPTY_PRINT_ERROR);
-    fs.writeFileSync(pdfPath, buf);
+    return { buf, bytes: buf.length, window: w, cleanup };
+  } catch (e) {
+    log && log('report pdf: ' + ((e && e.message) || e));
+    cleanup();
+    throw e;
+  }
+}
+
+async function launchElectronHtmlPrintDialog({ html, BrowserWindow, shell, spawnFn, resolvePdf, log, timeoutMs }) {
+  const rendered = await renderReportPdfInHiddenWindow({ html, BrowserWindow, log, timeoutMs });
+  const stamp = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  const pdfPath = path.join(os.tmpdir(), 'qr-print-' + stamp + '.pdf');
+  let openedWithPdfApp = false;
+  try {
+    fs.writeFileSync(pdfPath, rendered.buf);
     try {
       const r = await openPdfForPrint({ pdfPath, shell, spawnFn, resolve: resolvePdf, log });
       openedWithPdfApp = r.method === 'acrobat' || r.method === 'openPath';
     } catch (e) { log && log('pdf open: ' + ((e && e.message) || e)); }
     if (!openedWithPdfApp) {
+      const w = rendered.window;
       await new Promise((resolve, reject) => {
         w.webContents.print({ silent: false, printBackground: true, pageSize: 'A4' }, (ok, reason) => {
           if (!ok && reason !== 'cancelled') reject(new Error(reason || 'print failed'));
@@ -127,15 +178,27 @@ async function launchElectronHtmlPrintDialog({ html, BrowserWindow, shell, spawn
         });
       });
     }
-    return { ok: true, pdfPath, bytes: buf.length };
+    return { ok: true, pdfPath, bytes: rendered.bytes };
   } finally {
-    try { fs.unlinkSync(htmlPath); } catch {}
-    try { if (w && !w.isDestroyed()) w.destroy(); } catch {}
+    rendered.cleanup();
+  }
+}
+
+async function saveElectronHtmlReportPdf({ html, dest, BrowserWindow, log, timeoutMs }) {
+  if (!dest) throw new Error('No save path');
+  const rendered = await renderReportPdfInHiddenWindow({ html, BrowserWindow, log, timeoutMs });
+  try {
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.writeFileSync(dest, rendered.buf);
+    return { ok: true, path: dest, bytes: rendered.bytes };
+  } finally {
+    rendered.cleanup();
   }
 }
 
 module.exports = {
-  EMPTY_PRINT_ERROR, LOAD_TIMEOUT_MS, partsForPrint, printDocumentStatsJs, isPrintDocumentReady,
+  EMPTY_PRINT_ERROR, LOAD_TIMEOUT_MS, PDF_PRINT_OPTS, partsForPrint, printDocumentStatsJs, isPrintDocumentReady,
   parseRegValue, parseOpenCommand, isAcrobatExe, resolvePdfOpenCommand, openPdfForPrint,
-  launchElectronHtmlPrintDialog, waitDidFinishLoad,
+  launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, renderReportPdfInHiddenWindow, waitDidFinishLoad,
+  sanitizeWinFileName, reportPdfStem, reportPdfFileName, defaultPdfDir, ymdLocal,
 };

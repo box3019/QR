@@ -32,6 +32,7 @@ const DEFAULTS = {
   updateFeedFolder: 'Y:\\Alex\\QR\\v0.1.5\\',
   updateCheckOnStartup: true,
   updateCheckInterval: 'daily', // hourly | daily
+  lastPdfFolder: '',
 };
 /** Pure: stored object -> full settings with the capability catalog merged over the defaults. */
 function normalizeSettings(stored) {
@@ -60,6 +61,7 @@ function normalizeSettings(stored) {
   s.updateFeedFolder = typeof s.updateFeedFolder === 'string' ? s.updateFeedFolder : DEFAULTS.updateFeedFolder;
   s.updateCheckOnStartup = s.updateCheckOnStartup !== false;
   s.updateCheckInterval = s.updateCheckInterval === 'hourly' ? 'hourly' : 'daily';
+  s.lastPdfFolder = typeof s.lastPdfFolder === 'string' ? s.lastPdfFolder : '';
   return s;
 }
 /** Pure: settings -> the catalog object the checks use. */

@@ -44,8 +44,13 @@ export default function App() {
   if (settings) { setLang(settings.uiLanguage); setAssistantLang(resolveAssistantLang(settings)); setTextSize(settings.textSize); }
   (window as any).__qrSetSettings = (patch: any) => setSettings((o: any) => ({ ...o, ...patch }));
   const [notice, setNotice] = useState('');
-  const [undoBox, setUndo] = useState(null as null | { fn: () => void });
-  const notify = (n: any) => { setUndo(n && n.undo ? { fn: n.undo } : null); setNotice(typeof n === 'string' ? n : t('notice.' + n.code, n.vars || n)); };
+  const [noticeAction, setNoticeAction] = useState(null as null | { label: string; run: () => void });
+  const notify = (n: any) => {
+    if (typeof n === 'string') { setNoticeAction(null); setNotice(n); return; }
+    if (n && n.undo) { setNoticeAction({ label: t('notice.undo'), run: n.undo }); setNotice(t('notice.' + n.code, n.vars || n)); return; }
+    if (n && n.action) { setNoticeAction(n.action); setNotice(n.text || t('notice.' + n.code, n.vars || n)); return; }
+    setNoticeAction(null); setNotice(t('notice.' + n.code, n.vars || n));
+  };
   useEffect(() => qr().onNotify ? qr().onNotify((n: any) => notify(n)) : undefined, []);
   const P = useProjects(notify);
   useEffect(() => qr().onImport ? qr().onImport((files: string[]) => P.importOutlook(files)) : undefined, []); // Outlook 'Send to QR': new tab, or the tab of the same RFQ
@@ -75,6 +80,13 @@ export default function App() {
           const r = await qr().print?.(payload);
           if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed')));
         }} />
+        <TopButton icon={<Ico name="pdf" />} label={t('top.savePdf')} tip={t('tip.savePdf')} testid="btn-save-pdf" disabled={!(m.nParts > 0)} onClick={async () => {
+          const payload = (window as any).__qrPrintPayload?.();
+          const r = await qr().savePdf?.(payload);
+          if (!r || r.canceled) return;
+          if (r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : t('pdf.failed', { text: r.error || '' }));
+          else notify({ text: t('pdf.saved', { path: r.path }), action: { label: t('pdf.openFolder'), run: () => { qr().openPath(r.path); } } });
+        }} />
         <TopButton icon={<Ico name="history" />} label={t('top.history')} tip={t('tip.history')} testid="btn-history" onClick={() => setDialog('history')} />
         <TopButton icon={<Ico name="settings" />} label={t('top.settings')} tip={t('tip.settings')} testid="btn-settings" onClick={() => setDialog('settings')} />
         <TopButton icon={<Ico name="help" />} label={t('top.help')} tip={t('tip.help')} testid="btn-help" onClick={() => { setTourStage(0); setDialog('tutorial'); }} />
@@ -86,7 +98,7 @@ export default function App() {
           details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
       </div>
       <div className="qr-statusbar" data-testid="status-bar" role="status">{saveStatus(m) === 'saved' && <span data-testid="saved-at" title={t('tip.savedAt', { time: hhmm(m.savedAt) })}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}{saveStatus(m) === 'unsaved' && <span data-testid="unsaved-note" title={t('tab.unsaved')}>{t('top.unsaved')}</span>}</div>
-      {notice && <Notice text={notice} action={undoBox ? { label: t('notice.undo'), run: () => { undoBox.fn(); setUndo(null); setNotice(''); } } : null} onClose={() => { setNotice(''); setUndo(null); }} />}
+      {notice && <Notice text={notice} action={noticeAction ? { label: noticeAction.label, run: () => { noticeAction.run(); setNotice(''); setNoticeAction(null); } } : null} onClose={() => { setNotice(''); setNoticeAction(null); }} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} />}
       {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={resolveAssistantLang(settings)} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
       {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}

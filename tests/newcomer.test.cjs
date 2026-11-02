@@ -27,4 +27,4 @@ test('one primary action per screen', () => { const s = src('src/components/wiza
   assert.strictEqual(prim, 1); // only the conditional Excel one assert.ok(/nq > 0 \? MRT_BTN_PRIMARY : MRT_BTN/.test(s) && /nq > 0 \? MRT_BTN : MRT_BTN_PRIMARY/.test(s) && !/className=\{MRT_BTN_PRIMARY\} data-testid="btn-export-pdf"/.test(s));
   assert.ok(/!partOpen \? MRT_BTN_PRIMARY/.test(src('src/components/wizard/WizardFooter.tsx'))); });
 test('Cancel clears with Undo instead of a question; nothing is deleted', () => { const v = src('src/ProjectView.tsx');
-  assert.ok(/onCancel=\{clearAll\}/.test(v) && /undo: \(\) =>/.test(v) && !/confirm\(t\('wz\.cancelAsk'\)\)/.test(v)); assert.ok(/notice-action/.test(src('src/ui/Notice.tsx')) && /undoBox/.test(src('src/App.tsx'))); });
+  assert.ok(/onCancel=\{clearAll\}/.test(v) && /undo: \(\) =>/.test(v) && !/confirm\(t\('wz\.cancelAsk'\)\)/.test(v)); assert.ok(/notice-action/.test(src('src/ui/Notice.tsx')) && /n\.undo/.test(src('src/App.tsx'))); });

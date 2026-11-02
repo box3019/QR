@@ -56,15 +56,28 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     const dx = Math.min(a.right, b.right) - Math.max(a.left, b.left), dy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top); /* sub-pixel rounding at fractional display scales is not an overlap */ if (dx > 2 && dy > 2 && a.width > 0 && b.width > 0) {
       const same = rects[i].el.closest('tr') === rects[j].el.closest('tr'); if (same) overlaps.push(rects[i].text + ' overlaps ' + rects[j].text); } } }
   res.overlaps = overlaps.slice(0, 5); overlaps.slice(0, 3).forEach((x) => res.issues.push('overlap: ' + x));
-  // Check for Print button visibility
+  // Check for Print / Save PDF button visibility (labels must stay on one line when shown)
   const printBtn = document.querySelector('[data-testid=btn-print]'); res.printButton = !!printBtn;
   if (!printBtn) res.issues.push('Print button not found');
+  const savePdfBtn = document.querySelector('[data-testid=btn-save-pdf]'); res.savePdfButton = !!savePdfBtn;
+  if (!savePdfBtn) res.issues.push('Save PDF button not found');
+  if (savePdfBtn) {
+    const lab = [...savePdfBtn.querySelectorAll('span')].find((s) => !s.classList.contains('ico'));
+    const cs = lab && getComputedStyle(lab);
+    if (cs && cs.display !== 'none' && cs.visibility !== 'hidden') {
+      const t = (lab.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!/Save PDF|שמור PDF/i.test(t)) res.issues.push('Save PDF label missing full words: ' + t);
+      const rg = document.createRange(); rg.selectNodeContents(lab);
+      const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3)));
+      if (rows.size > 1) res.issues.push('Save PDF label wraps: ' + t);
+    }
+  }
   // Check header height (should be <=56px)
   const header = document.querySelector('.qr-wiz-head');
   if (header) {
     const hRect = header.getBoundingClientRect();
     res.headerHeight = Math.round(hRect.height);
-    if (hRect.height > 56) res.issues.push('header too tall: ' + Math.round(hRect.height) + 'px > 56px');
+    if (res.headerHeight > 56) res.issues.push('header too tall: ' + res.headerHeight + 'px > 56px');
   }
   // Check for large empty vertical regions in the top area (>24px unused band between header and content)
   const topbar = document.querySelector('.qr-topbar');
@@ -84,7 +97,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (railContext && header) {
       const rcRect = railContext.getBoundingClientRect();
       res.railContextHeight = Math.round(rcRect.height);
-      if (rcRect.height > 56) res.issues.push('rail context too tall: ' + Math.round(rcRect.height) + 'px > 56px');
+      if (res.railContextHeight > 56) res.issues.push('rail context too tall: ' + res.railContextHeight + 'px > 56px');
     }
   }
   return res;
@@ -147,10 +160,11 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     for (const st of [2, 3, 4]) {
       await win.evaluate((s) => { window.__qrStep(s); if (s === 2) window.__qrSelect && window.__qrSelect(0, 'drawing'); }, st); await sleep(900);
       const m = await win.evaluate(MEASURE);
-      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, printButton: m.printButton });
+      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, printButton: m.printButton, savePdfButton: m.savePdfButton });
       if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length)) fail++;
-      // Check Print button is visible on each step
+      // Check Print / Save PDF buttons are visible on each step
       if (!m.printButton) { report.scan[report.scan.length - 1].issues = ['Print button not visible']; fail++; }
+      if (!m.savePdfButton) { (report.scan[report.scan.length - 1].issues || (report.scan[report.scan.length - 1].issues = [])).push('Save PDF button not visible'); fail++; }
     }
   }
   // busy state (re-analysis running on Summary), once per palette at 1280x800 EN, plus HE
@@ -169,7 +183,8 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     bad: bad.slice(0, 12).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, pal: r.palette, hasTable: r.hasTable, issues: r.issues.slice(0, 5) })),
     minContrast: Math.min(...report.idle.concat(report.busy).filter((r) => r.minContrast).map((r) => r.minContrast)),
     scanBad: scanBad.slice(0, 8).map((s) => ({ lang: s.lang, size: s.size, step: s.step, issues: s.issues, hscroll: s.hscroll.length, wraps: s.wraps.length, overlaps: (s.overlaps || []).length })),
-    printButtonVisible: report.scan.every((s) => s.printButton)
+    printButtonVisible: report.scan.every((s) => s.printButton),
+    savePdfButtonVisible: report.scan.every((s) => s.savePdfButton)
   }, null, 1));
   await app.close().catch(() => {}); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });

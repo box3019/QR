@@ -226,6 +226,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-menu-k { color: var(--mrt-text-muted); font-size: 0.75rem; }
 .qr-tab-dirty { font-size: 0.6rem; margin-inline-start: 0.4rem; }
 @media (min-width: 1001px) { .qr-topbar .mrt-topbar-cmd { width: 72px !important; min-width: 72px !important; padding-inline: 2px !important; } .qr-topbar .mrt-topbar-cmd > span:not(.ico) { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
+.qr-topbar .mrt-topbar-cmd[data-testid='btn-save-pdf'] { width: auto !important; min-width: 88px !important; padding-inline: 6px !important; flex-shrink: 0; }
+.qr-topbar .mrt-topbar-cmd[data-testid='btn-save-pdf'] > span:not(.ico) { max-width: none; overflow: visible; text-overflow: clip; white-space: nowrap; }
 /* App version next to the app name: quiet, small, always left-to-right */
 .qr-root .qr-brand { display: inline-flex; align-items: center; gap: 0.4rem; }
 .qr-root .qr-ver { font-size: var(--qr-fs-xs); line-height: 1; color: var(--mrt-text-muted); white-space: nowrap; unicode-bidi: isolate; direction: ltr; }
@@ -357,7 +359,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
   /* Hide app chrome */
   .qr-topbar, .qr-statusbar, .qr-rail, .qr-rail-context, .qr-wiz-footer, .qr-ptabs,
   .qr-busy, .qr-notice, .qr-modal-bg, .qr-modal-back, .qr-pnav, .qr-card-nav,
-  .qr-drop-btns, .qr-warnbar button, .qr-next-line, button[data-testid="btn-print"],
+  .qr-drop-btns, .qr-warnbar button, .qr-next-line, button[data-testid="btn-print"], button[data-testid="btn-save-pdf"],
   .qr-upd-banner, .qr-upd-progress,
   .qr-ai-hint, [data-testid="btn-details"], [data-testid="btn-history"], [data-testid="btn-settings"],
   [data-testid="btn-help"], [data-testid="btn-file"] { display: none !important; }

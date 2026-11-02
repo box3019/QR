@@ -9,7 +9,7 @@ test('saveStatus: none without parts, unsaved after a change, saved otherwise', 
   assert.strictEqual(s.tabMeta({ parts: [{}], unsaved: true }).unsaved, true); assert.strictEqual(s.tabMeta({ parts: [] }).unsaved, false); });
 test('toolbar: no loose Saved text between buttons; Save, Save as, Open only inside the File menu', () => { const a = src('src/App.tsx'); const f = src('src/components/FileMenu.tsx');
   const bar = a.slice(a.indexOf('qr-topbar mrt-workspace-topbar-chrome'), a.indexOf('className="qr-projs"'));
-  assert.ok(!/saved-at|top\.saved|qr-saved/.test(bar)); assert.ok(!/btn-save|btn-open-project/.test(bar) && /<FileMenu/.test(bar));
+  assert.ok(!/saved-at|top\.saved|qr-saved/.test(bar)); assert.ok(!/btn-save"|btn-save-as|btn-open-project/.test(bar) && /<FileMenu/.test(bar));
   for (const id of ['btn-file', 'btn-save', 'btn-save-as', 'btn-open-project']) assert.ok(f.includes(id), id);
   assert.ok(/role="menu"/.test(f) && /role="menuitem"/.test(f) && /Escape/.test(f) && /title=\{tip\}/.test(f) && /title=\{saved \? t\('tip\.fileSaved'/.test(f)); assert.ok(/why \? t\(why\)/.test(f)); });
 test('status bar shows Saved hh:mm quietly, unsaved note; tab dot clears on save', () => { const a = src('src/App.tsx'); const bar = a.slice(a.indexOf('className="qr-statusbar"'));

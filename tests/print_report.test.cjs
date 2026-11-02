@@ -126,10 +126,101 @@ app.whenReady().then(async () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
+test('saveElectronHtmlReportPdf via Electron writes a real PDF with text', async () => {
+  const html = reportHtml([part({})], 'en', { rfq: 'RFQ-77', customer: 'ACME' });
+  const electron = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', process.platform === 'win32' ? 'electron.exe' : 'electron');
+  assert.ok(fs.existsSync(electron), 'Electron binary is required for Save PDF');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-savepdf-'));
+  const htmlFile = path.join(dir, 'report.html');
+  const out = path.join(dir, 'saved.pdf');
+  const script = path.join(dir, 'save.cjs');
+  fs.writeFileSync(htmlFile, html);
+  fs.writeFileSync(script, `'use strict';
+const { app, BrowserWindow } = require('electron');
+const fs = require('fs');
+const P = require(process.env.QR_PRINT_MOD);
+app.whenReady().then(async () => {
+  const html = fs.readFileSync(process.env.QR_PDF_HTML, 'utf8');
+  const r = await P.saveElectronHtmlReportPdf({ html, dest: process.env.QR_PDF_OUT, BrowserWindow });
+  if (!r.ok || r.bytes < 3000) throw new Error('save too small ' + (r && r.bytes));
+  app.quit();
+}).catch((e) => { console.error(e); app.exit(1); });
+`);
+  const { spawnSync } = require('child_process');
+  const r = spawnSync(electron, [script], { timeout: 60000, encoding: 'utf8', env: { ...process.env, ELECTRON_DISABLE_SANDBOX: '1', QR_PDF_HTML: htmlFile, QR_PDF_OUT: out, QR_PRINT_MOD: require.resolve('../electron/qrPrint.cjs') } });
+  assert.ok(fs.existsSync(out) && r.status === 0, 'Save PDF failed: ' + (r.status) + ' ' + String(r.stderr || r.stdout || '').slice(-400));
+  const pdf = fs.readFileSync(out);
+  assert.ok(pdf.length > 3000, 'PDF size ' + pdf.length);
+  assert.ok(pdf.slice(0, 5).toString() === '%PDF-');
+  assert.ok(/RFQ|ACME|QR|Fits|Aluminium/.test(pdf.toString('latin1')), 'saved PDF contains report text');
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
 test('print payload comes from the current step, not window.print of the live UI', () => {
   const app = src('src/App.tsx'); const main = src('electron/main.cjs'); const proj = src('src/ProjectView.tsx');
   assert.ok(/__qrPrintPayload/.test(proj) && /step/.test(proj));
   assert.ok(/partsForPrint/.test(main));
   assert.ok(!/win\.webContents\.print\(/.test(main));
   assert.ok(!/window\.print/.test(app));
+});
+
+test('Print and Save PDF share one hidden-window printToPDF function', () => {
+  const p = src('electron/qrPrint.cjs'); const m = src('electron/main.cjs');
+  assert.ok(/function renderReportPdfInHiddenWindow/.test(p));
+  assert.ok(/async function launchElectronHtmlPrintDialog[\s\S]*renderReportPdfInHiddenWindow/.test(p));
+  assert.ok(/async function saveElectronHtmlReportPdf[\s\S]*renderReportPdfInHiddenWindow/.test(p));
+  assert.ok(/reportHtmlFromPayload/.test(m));
+  const printH = m.slice(m.indexOf("ipcMain.handle('qr:print'"), m.indexOf("ipcMain.handle('qr:savePdf'"));
+  const saveH = m.slice(m.indexOf("ipcMain.handle('qr:savePdf'"));
+  assert.ok(/reportHtmlFromPayload/.test(printH) && /reportHtmlFromPayload/.test(saveH));
+  assert.doesNotMatch(printH, /printToPDF/);
+  assert.doesNotMatch(saveH, /printToPDF/);
+});
+
+test('report PDF file name uses part or quote, date, and sanitizes Windows characters', () => {
+  const now = new Date(2026, 10, 2);
+  const parts = [part({ partNo: 'P1:A/B' }), part({ partNo: 'P2' })];
+  assert.strictEqual(P.reportPdfFileName({ parts, step: 2, sel: 0, meta: { label: 'RFQ-77' } }, now), 'P1_A_B_QR_report_2026-11-02.pdf');
+  assert.strictEqual(P.reportPdfFileName({ parts, step: 4, sel: 0, meta: { label: 'RFQ 77?*' } }, now), 'RFQ 77_QR_report_2026-11-02.pdf');
+  assert.strictEqual(P.sanitizeWinFileName('  con<>:"/\\|?*x  '), 'con_x');
+  assert.strictEqual(P.defaultPdfDir('C:\\gone', 'D:\\Docs', () => false), 'D:\\Docs');
+  assert.strictEqual(P.defaultPdfDir('C:\\keep', 'D:\\Docs', (p) => p === 'C:\\keep'), 'C:\\keep');
+});
+
+test('saveElectronHtmlReportPdf writes a non-empty PDF with text', async () => {
+  const html = reportHtml([part({})], 'en', { rfq: 'RFQ-77' });
+  const pdf = Buffer.concat([Buffer.from('%PDF-1.4\n'), Buffer.alloc(4000, 65), Buffer.from('\nQR RFQ-77 Aluminium\n%%EOF')]);
+  const wc = {
+    once(ev, cb) { if (ev === 'did-finish-load') setImmediate(cb); },
+    executeJavaScript: async () => ({ bodyHeight: 500, rowCount: 8 }),
+    printToPDF: async (opts) => { assert.strictEqual(opts.pageSize, 'A4'); assert.strictEqual(opts.printBackground, true); return pdf; },
+    print() { throw new Error('Save PDF must not open the print dialog'); },
+  };
+  const w = { webContents: wc, loadFile() {}, isDestroyed: () => false, destroy() {} };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-save-pdf-'));
+  const dest = path.join(dir, 'out.pdf');
+  const r = await P.saveElectronHtmlReportPdf({ html, dest, BrowserWindow: function () { return w; } });
+  assert.ok(r.ok); assert.strictEqual(r.path, dest); assert.ok(r.bytes > 2048);
+  assert.ok(fs.existsSync(dest));
+  const disk = fs.readFileSync(dest);
+  assert.ok(disk.length > 2048);
+  assert.ok(disk.slice(0, 5).toString() === '%PDF-');
+  assert.ok(disk.includes(Buffer.from('QR RFQ-77')));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('last PDF folder is kept in settings', () => {
+  const S = require('../core/settings.cjs');
+  assert.strictEqual(S.normalizeSettings({}).lastPdfFolder, '');
+  assert.strictEqual(S.normalizeSettings({ lastPdfFolder: 'D:/Reports' }).lastPdfFolder, 'D:/Reports');
+  const m = src('electron/main.cjs');
+  assert.ok(/lastPdfFolder:\s*path\.dirname/.test(m));
+  assert.ok(/qr-notice/.test(src('src/App.tsx')) || /<Notice /.test(src('src/App.tsx')));
+  assert.ok(!/qr-modal-bg/.test(src('src/App.tsx').slice(src('src/App.tsx').indexOf('btn-save-pdf'))));
+});
+
+test('save PDF CSS keeps the label on one line', () => {
+  const css = src('src/styles/wizard.css') + src('src/styles/qr.css');
+  assert.ok(/btn-save-pdf/.test(css));
+  assert.ok(/btn-save-pdf[^}]*white-space:\s*nowrap/.test(css) || /btn-save-pdf'\] > span[\s\S]*white-space:\s*nowrap/.test(css));
 });
