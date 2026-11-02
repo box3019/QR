@@ -101,7 +101,7 @@ function reportCss() {
   h1{font-size:17pt;margin:0} .meta{color:#475569;display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:2px}
   h2{font-size:13pt;color:#1e3a8a;margin:16px 0 6px;border-bottom:1px solid #cbd5e1;padding-bottom:3px}
   h3{font-size:12.5pt;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap} h4{font-size:11pt;margin:8px 0 3px;color:#334155}
-  table{border-collapse:collapse;width:100%} th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:start;vertical-align:top;font-size:10.5pt;white-space:nowrap}
+  table{border-collapse:collapse;width:100%} th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:start;vertical-align:top;font-size:10.5pt;overflow-wrap:anywhere}
   th{background:#f1f5f9;font-weight:600} table.kv th{width:22%} .muted{color:#64748b;font-weight:400}
   .st{display:inline-block;border:1px solid;border-radius:4px;padding:1px 7px;font-size:10.5pt;font-weight:600}
   .sev{display:inline-block;min-width:52px;border:1px solid #cbd5e1;border-radius:4px;padding:0 4px;font-size:10.5pt;color:#334155;margin-inline-end:4px}
