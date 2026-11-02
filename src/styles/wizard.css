@@ -79,7 +79,7 @@
 
 /* ===== v0.1.4 wizard shell: MRT "Create CMM Program" layout (cmm-pr3 src/mrtLiquidGlass.css .mrt-wizard-*, QR's own copy, px/16 -> rem) ===== */
 .qr-wiz { grid-template-columns: min(17.5rem, 34vw) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; line-height: 1.35; }
-.qr-rail-context { grid-column: 1; grid-row: 1; min-width: 0; max-height: 56px; border-bottom: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); border-inline-end: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.4rem 0.5rem; display: flex; align-items: center; }
+.qr-rail-context { grid-column: 1; grid-row: 1; min-width: 0; max-height: 56px; overflow: hidden; border-bottom: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); border-inline-end: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.4rem 0.5rem; display: flex; align-items: center; }
 .qr-wsum { overflow: hidden; border: 1px solid var(--mrt-ui-border, var(--mrt-border)); border-radius: var(--mrt-radius, 6px); background: var(--mrt-surface, #fff); width: 100%; }
 .qr-wsum-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
 .qr-wsum-table th, .qr-wsum-table td { border-bottom: 1px solid var(--mrt-ui-border, var(--mrt-border)); padding: 0.15rem 0.35rem; vertical-align: middle; text-align: start; line-height: 1.2; }

@@ -90,6 +90,7 @@ test('publish writes qr-release.json last, archives older files, then verifies',
   fs.mkdirSync(feed); fs.mkdirSync(release);
   fs.writeFileSync(path.join(feed, 'QR_v0.1.6_Setup.exe'), 'old');
   fs.writeFileSync(path.join(feed, 'QR_v0.1.6_source.zip'), 'oldz');
+  fs.writeFileSync(path.join(feed, 'README.txt'), 'keep me');
   const inst = path.join(release, 'QR_v0.1.8_Setup.exe'); const zip = path.join(release, 'QR_v0.1.8_source.zip');
   fs.writeFileSync(inst, 'new-installer'); fs.writeFileSync(zip, 'new-zip');
   const ops = [];
@@ -104,6 +105,7 @@ test('publish writes qr-release.json last, archives older files, then verifies',
   assert.ok(r.ops.indexOf('copy-zip') < r.ops.indexOf('write-manifest'));
   assert.strictEqual(ops.filter((x) => x.startsWith('write:')).pop(), 'write:qr-release.json');
   assert.ok(fs.existsSync(path.join(feed, '_Archive', 'QR_v0.1.6_Setup.exe')));
+  assert.ok(fs.existsSync(path.join(feed, 'README.txt')) && !fs.existsSync(path.join(feed, '_Archive', 'README.txt')), 'README.txt stays in the feed folder');
   const man = JSON.parse(fs.readFileSync(path.join(feed, 'qr-release.json'), 'utf8'));
   assert.strictEqual(man.latestVersion, '0.1.8');
   assert.strictEqual(man.installerSizeBytes, fs.statSync(path.join(feed, 'QR_v0.1.8_Setup.exe')).size);
@@ -126,4 +128,12 @@ test('IPC, settings tab, banner and i18n exist; no electron-updater', () => {
   assert.strictEqual(en['upd.available'], 'Version {version} is available');
   assert.strictEqual(en['print.empty'], 'Print document rendered empty');
   assert.ok(!/Later/.test(src('src/update/UpdateBanner.tsx').split('mandatory')[1]?.slice(0, 200) || '') || /!mandatory/.test(src('src/update/UpdateBanner.tsx')));
+});
+
+test('readManifest accepts a list saved with a byte-order mark', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-bom-'));
+  fs.writeFileSync(path.join(dir, 'qr-release.json'), '\uFEFF' + JSON.stringify({ latestVersion: '0.2.0', installerFile: 'QR_v0.2.0_Setup.exe', installerSizeBytes: 5, installerSha256: 'a'.repeat(64) }));
+  const r = require('../electron/qrUpdate.cjs').readManifest(dir);
+  assert.ok(r.ok, JSON.stringify(r));
+  fs.rmSync(dir, { recursive: true, force: true });
 });

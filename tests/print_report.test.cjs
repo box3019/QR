@@ -95,7 +95,7 @@ test('launchElectronHtmlPrintDialog printToPDF is non-empty then opens the PDF',
 
 test('printToPDF of the report is non-empty and has text', async () => {
   const html = reportHtml([part({}), part({ partNo: 'P2', problems: [{ severity: 'Question', message: 'Range 1.5 - 1.2: min is larger than max.', status: 'open' }] })], 'en', { rfq: 'RFQ-77', customer: 'ACME' });
-  const electron = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', 'electron');
+  const electron = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', process.platform === 'win32' ? 'electron.exe' : 'electron');
   assert.ok(fs.existsSync(electron), 'Electron binary is required for printToPDF');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qr-pdf-'));
   const htmlFile = path.join(dir, 'report.html');

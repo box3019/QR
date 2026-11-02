@@ -75,7 +75,7 @@ function readManifest(feedFolder, io) {
   if (!folder) return { ok: false, code: 'updNoFeed', error: 'No update folder is set.' };
   const file = path.join(folder, MANIFEST_NAME);
   let raw;
-  try { raw = JSON.parse(fsio.readFileSync(file, 'utf8')); }
+  try { raw = JSON.parse(String(fsio.readFileSync(file, 'utf8')).replace(/^\uFEFF/, '')); } // a list saved by Notepad or PowerShell may start with a byte-order mark
   catch { return { ok: false, code: 'updNoList', error: 'Could not read the update list in the update folder.' }; }
   return validateManifest(raw);
 }

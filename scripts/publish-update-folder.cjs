@@ -19,7 +19,7 @@ function listFeedFiles(feed, io) {
   const fsio = io || fs;
   let names = [];
   try { names = fsio.readdirSync(feed); } catch { names = []; }
-  return names.filter((n) => n !== ARCHIVE && n !== MANIFEST);
+  return names.filter((n) => n !== ARCHIVE && n !== MANIFEST && /^QR_v.*\.(exe|zip)$/i.test(n)); // only QR installers and source zips are archived: README.txt and anything else stays in place
 }
 
 function archiveOlder(feed, keep, io) {
