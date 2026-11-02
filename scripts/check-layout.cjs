@@ -38,7 +38,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   }
   // one line per item: no header / label / chip / tag / button / summary-table item may wrap inside itself (height <= 1 line + 2px)
   const wraps = []; const nm = (e) => e.tagName + (typeof e.className === 'string' && e.className ? '.' + e.className.split(' ')[0] : '');
-  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-items li, .qr-ck-where, .qr-ck-tab th, .qr-ck-l, .qr-ck-s, .qr-cks-x').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
+  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-items li, .qr-ck-where, .qr-ck-tab th, .qr-ck-l, .qr-ck-s, .qr-cks-x').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
   res.wraps = wraps; wraps.slice(0, 8).forEach((x) => res.issues.push('item wraps: ' + x));
   const extra = [...document.querySelectorAll('.qr-provisional,[data-testid=busy],.qr-stat')]; res.extraContrast = []; extra.forEach((root) => { root.querySelectorAll('*').forEach((c) => { if (![...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); res.extraContrast.push(Math.round(cr * 100) / 100); if (cr < 4.5) res.issues.push('contrast ' + (Math.round(cr * 100) / 100) + ' in ' + (root.className || root.dataset.testid).toString().slice(0, 20) + ':' + (c.textContent || '').trim().slice(0, 16)); }); });
   // full-page overlays / dimming
@@ -83,10 +83,39 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     const id = b.getAttribute('data-testid') || '';
     if ((id === 'btn-next' || id === 'btn-print' || id === 'btn-save-pdf') && !(b.getAttribute('title') || '').trim()) res.issues.push('disabled ' + id + ' missing tooltip');
   });
-  const tabClose = document.querySelector('[data-testid=tab-close]');
-  if (!tabClose) res.issues.push('tab close missing');
+  const tabCloses = [...document.querySelectorAll('[data-testid=tab-close]')].filter((e) => { const cs = getComputedStyle(e); return !e.closest('.qr-proj-off') && cs.display !== 'none'; });
+  if (!tabCloses.length) res.issues.push('tab close missing');
+  res.tabCloses = tabCloses.length;
+  tabCloses.forEach((b) => {
+    const cs = getComputedStyle(b);
+    if (cs.visibility === 'hidden') res.issues.push('tab close visibility hidden');
+    const o = opac(b);
+    if (o < 1 || Number(cs.opacity) < 1) res.issues.push('tab close opacity ' + o);
+    const chip = b.closest('.mrt-workspace-tab') || b.parentElement || b;
+    const fg = rgba(cs.color); const bg = bgOf(chip);
+    if (fg) { const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+      if (cr < 4.5) res.issues.push('tab close contrast ' + (Math.round(cr * 100) / 100)); }
+    const rg = document.createRange(); rg.selectNodeContents(b);
+    const gr = rg.getBoundingClientRect();
+    const svg = b.querySelector('svg');
+    const gw = Math.max(gr.width, svg ? svg.getBoundingClientRect().width : 0, b.scrollWidth);
+    const gh = Math.max(gr.height, svg ? svg.getBoundingClientRect().height : 0, b.scrollHeight);
+    if (gw < 4 || gh < 4) res.issues.push('tab close glyph size ' + Math.round(gw) + 'x' + Math.round(gh));
+  });
   const ptabs = document.querySelector('.qr-ptabs');
   if (ptabs) { const cs = getComputedStyle(ptabs); if (cs.overflowX === 'auto' || cs.overflowX === 'scroll') res.issues.push('job tabs must not scroll horizontally'); }
+  const topbar = document.querySelector('.qr-topbar');
+  if (topbar) {
+    const tb = topbar.getBoundingClientRect();
+    res.topbarHeight = Math.round(tb.height);
+    if (tb.height > 64) res.issues.push('topbar wraps: ' + Math.round(tb.height) + 'px');
+    ['btn-settings', 'btn-help'].forEach((id) => {
+      const b = document.querySelector('[data-testid=' + id + ']');
+      if (!b) { res.issues.push(id + ' missing'); return; }
+      const r = b.getBoundingClientRect();
+      if (r.top > tb.top + 16) res.issues.push(id + ' dropped below topbar row');
+    });
+  }
   // Check header height (should be <=56px)
   const header = document.querySelector('.qr-wiz-head');
   if (header) {
@@ -95,7 +124,6 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (res.headerHeight > 56) res.issues.push('header too tall: ' + res.headerHeight + 'px > 56px');
   }
   // Check for large empty vertical regions in the top area (>24px unused band between header and content)
-  const topbar = document.querySelector('.qr-topbar');
   const mainContent = document.querySelector('.qr-wiz-main');
   if (topbar && mainContent) {
     const topbarRect = topbar.getBoundingClientRect();
@@ -217,6 +245,49 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       if (!m.savePdfButton) { (report.scan[report.scan.length - 1].issues || (report.scan[report.scan.length - 1].issues = [])).push('Save PDF button not visible'); fail++; }
     }
   }
+  // job tabs: 4 / 8 / 15 chips at 1366×768 @100% and 1920×1080 @200% — one-row header, visible ×, overflow to More
+  report.tabs = [];
+  await set('industrial-steel', 'en');
+  const TAB_SIZES = [[1366, 768, 1], [1920, 1080, 2]];
+  const tabCount = () => win.evaluate(() => ((window.__qrTabs && window.__qrTabs()) || []).length);
+  for (const n of [4, 8, 15]) {
+    for (let i = await tabCount(); i < n; i++) { await win.evaluate(() => window.__qrAddTab()); await sleep(80); }
+    for (let i = await tabCount(); i > n; i--) {
+      await win.evaluate(() => { const tabs = (window.__qrTabs && window.__qrTabs()) || []; if (tabs.length) window.__qrCloseTab(tabs[tabs.length - 1].id); });
+      await sleep(80);
+    }
+    await sleep(400);
+    for (const [w, h, dpi] of TAB_SIZES) {
+      await size(w, h, dpi); await sleep(500);
+      const m = await win.evaluate(MEASURE);
+      const extra = await win.evaluate(() => {
+        const issues = [];
+        const more = document.querySelector('[data-testid=tab-more]');
+        const nShown = document.querySelectorAll('.qr-ptabs [data-testid=tab]').length;
+        const nAll = (window.__qrTabs && window.__qrTabs().length) || nShown;
+        if (nAll > nShown && !more) issues.push('More jobs missing with ' + nAll + ' tabs, ' + nShown + ' shown');
+        if (more) {
+          more.click();
+          const items = [...document.querySelectorAll('[data-testid=tab-more-item]')];
+          const xs = [...document.querySelectorAll('[data-testid=tab-more-close]')];
+          if (!items.length) issues.push('More jobs menu empty');
+          if (xs.length !== items.length) issues.push('More jobs close × count ' + xs.length + ' != items ' + items.length);
+          xs.forEach((b) => {
+            const cs = getComputedStyle(b);
+            if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) < 1) issues.push('More jobs × not visible');
+            const rg = document.createRange(); rg.selectNodeContents(b);
+            const gr = rg.getBoundingClientRect();
+            if (gr.width < 4 || gr.height < 4) issues.push('More jobs × glyph size ' + Math.round(gr.width) + 'x' + Math.round(gr.height));
+          });
+          document.body.click();
+        }
+        return { issues, nShown, nAll, more: !!more };
+      });
+      const r = { n, size: w + 'x' + h, dpi, topbarHeight: m.topbarHeight, tabCloses: m.tabCloses, ...extra, issues: [...new Set([...(m.issues || []), ...(extra.issues || [])])] };
+      report.tabs.push(r); if (r.issues.length) fail++;
+    }
+  }
+
   // busy state (re-analysis running on Summary), once per palette at 1280x800 EN, plus HE
   await size(1280, 800);
   for (const [lang, pals] of (QUICK ? [] : [['en', PALETTES], ['he', ['industrial-steel']]])) for (const pal of pals) { await set(pal, lang); await win.evaluate(() => window.__qrStep(4)); await sleep(400);
@@ -225,10 +296,10 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (pal === 'industrial-steel' || lang === 'en') await win.screenshot({ path: path.join(out, `busy_${lang}_${pal}.png`) });
     await win.waitForFunction(() => !document.querySelector('[data-testid=busy]'), null, { timeout: 240000 }).catch(() => {}); await sleep(600); }
   report.fail = fail; fs.writeFileSync(path.join(out, 'layout_report.json'), JSON.stringify(report, null, 1));
-  const bad = [...report.idle, ...report.busy].filter((r) => r.issues.length || (r.hasTable === false));
+  const bad = [...report.idle, ...report.busy, ...(report.tabs || [])].filter((r) => r.issues.length || (r.hasTable === false));
   const scanBad = report.scan.filter((s) => s.hscroll.length || s.wraps.length || (s.overlaps && s.overlaps.length) || s.issues);
   console.log(JSON.stringify({
-    idleChecked: report.idle.length, busyChecked: report.busy.length, scanChecked: report.scan.length, triageChecked: report.triage.length, fail,
+    idleChecked: report.idle.length, busyChecked: report.busy.length, scanChecked: report.scan.length, triageChecked: report.triage.length, tabsChecked: (report.tabs || []).length, fail,
     sizes: SIZES.map((s) => s.join('x')), dpiScales: DPI_SCALES,
     bad: bad.slice(0, 12).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, pal: r.palette, hasTable: r.hasTable, issues: r.issues.slice(0, 5) })),
     minContrast: Math.min(...report.idle.concat(report.busy).filter((r) => r.minContrast).map((r) => r.minContrast)),

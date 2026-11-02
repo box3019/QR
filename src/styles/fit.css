@@ -1,6 +1,6 @@
 /* fit.css — loaded last. Controls size to their text: no fixed px heights/widths on buttons, chips, tabs, selects.
    Buttons wrap and grow; chips/badges stay on one line with an ellipsis (full text in the title tooltip). */
-button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
+button:not(.mrt-workspace-tab__close):not(.mrt-workspace-tab__add):not(.qr-tab-more):not(.mrt-workspace-tab__label), .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
   height: auto !important; min-height: 2.1em !important; min-width: 0 !important; max-width: 100%;
   line-height: normal !important; font-size: var(--qr-fs-sm) !important;
   padding-block: 0.3em !important; padding-inline: 0.75em !important;
@@ -17,7 +17,8 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 .qr-root .qr-tri-open {
   white-space: nowrap !important; overflow-wrap: normal !important; max-width: 5.5rem;
 }
-.qr-topbar { height: auto !important; min-height: 0 !important; flex-wrap: wrap; }
+.qr-topbar { height: auto !important; min-height: 0 !important; flex-wrap: nowrap !important; overflow: hidden; align-items: center !important; }
+.qr-topbar > :not(.qr-ptabs) { flex-shrink: 0 !important; }
 .qr-topbar .mrt-topbar-cmd .ico { font-size: 1.15em; line-height: 1; }
 .qr-brand-badge { width: 1.75em; height: 1.75em; }
 .qr-chip, .qr-status, .qr-badge {

@@ -37,6 +37,7 @@ test('tab overflow: all fit, then More jobs; active tab stays visible', async ()
   const s = await load('projects/store.mjs');
   assert.strictEqual(s.tabFitCount(800, 140, 32, 100, 3), 3);
   assert.ok(s.tabFitCount(200, 140, 32, 100, 5) < 5);
+  assert.ok(s.tabFitCount(560, 140, 32, 100, 4) < 4, '4 wide tabs overflow a short strip');
   const v = s.visibleTabIds(['a', 'b', 'c', 'd', 'e'], 'e', 2);
   assert.ok(v.shown.includes('e') && v.shown.length === 2 && v.rest.includes('b') && !v.rest.includes('e'));
   const all = s.visibleTabIds(['a', 'b'], 'a', 8);
@@ -69,7 +70,8 @@ test('ImportCache is per-job and releaseJobCache deletes only that job; History 
 test('UI: close × on every tab, middle click, More jobs, close-all in Settings and context menu', () => {
   const tb = src('src/components/tabs/TabsBar.tsx');
   assert.ok(!/tabs\.length\s*>\s*1/.test(tb));
-  assert.ok(/tab-close/.test(tb) && /onAuxClick/.test(tb) && /onContextMenu/.test(tb));
+  assert.ok(/tab-close/.test(tb) && /tab-more-close/.test(tb) && /onAuxClick/.test(tb) && /onContextMenu/.test(tb));
+  assert.ok(/\\u00d7/.test(tb) && /closest\('\.qr-topbar'\)/.test(tb));
   assert.ok(/tab\.closeOthers/.test(tb) && /tab\.closeAll/.test(tb) && /tab\.more/.test(tb));
   assert.ok(/visibleTabIds/.test(tb) && /tabFitCount/.test(tb));
   const app = src('src/App.tsx');
@@ -84,6 +86,17 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   const css = src('src/styles/wizard.css');
   assert.ok(/\.qr-ptabs \{[^}]*overflow:\s*hidden/.test(css));
   assert.ok(!/\.qr-ptabs \{[^}]*overflow-x:\s*auto/.test(css));
+  const layers = src('src/styles/layers.css');
+  assert.ok(/#3a3a3c/.test(layers) && /#dc2626/.test(layers) && /opacity:\s*1 !important/.test(layers));
+  assert.ok(/flex-wrap:\s*nowrap !important/.test(layers));
+  const fit = src('src/styles/fit.css');
+  assert.ok(/flex-wrap:\s*nowrap !important/.test(fit));
+  const qr = src('src/styles/qr.css');
+  assert.ok(/\.qr-topbar \{ flex-wrap: nowrap/.test(qr));
+  const lay = src('scripts/check-layout.cjs');
+  assert.ok(/tab close contrast/.test(lay) && /tab close glyph size/.test(lay) && /topbar wraps/.test(lay));
+  assert.ok(/\[4, 8, 15\]/.test(lay) && /1366, 768, 1/.test(lay) && /1920, 1080, 2/.test(lay));
+  assert.ok(/tab-more-close/.test(lay));
   const main = src('electron/main.cjs') + src('electron/preload.cjs');
   assert.ok(/qr:importCache:release/.test(main) && /releaseImportCache/.test(main) && /jobId: job/.test(main));
 });

@@ -3,8 +3,8 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
 import { tabFitCount, visibleTabIds } from '../../projects/store.mjs';
 
-/** MRT's tab close icon (lucide X, 12 px, stroke 2.25), drawn inline. */
-const CloseX = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>;
+/** Text × so the glyph paints on Windows (SVG currentColor was in the DOM but not drawn). */
+const CloseX = () => <span className="qr-tab-x" aria-hidden="true">{'\u00d7'}</span>;
 
 function TabChip({ tb, on, onSelect, onClose, onMenu, onMove, from }: any) {
   const label = tb.label || t('tab.new');
@@ -33,15 +33,35 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
   const ids = tabs.map((tb: any) => tb.id);
   const fit = () => {
     const el = strip.current; if (!el) return;
+    const bar = el.closest('.qr-topbar') as HTMLElement | null;
     const addW = addRef.current ? addRef.current.getBoundingClientRect().width + 8 : 32;
-    const moreW = 120;
+    const moreW = moreRef.current ? moreRef.current.getBoundingClientRect().width + 8 : 120;
     const sample = el.querySelector('.mrt-workspace-tab') as HTMLElement | null;
     const tabW = sample ? Math.max(96, sample.getBoundingClientRect().width) : 160;
-    setMaxN(tabFitCount(el.clientWidth, tabW, addW, moreW, tabs.length));
+    let width = el.clientWidth;
+    if (bar) {
+      const gap = parseFloat(getComputedStyle(bar).columnGap || getComputedStyle(bar).gap) || 8;
+      let used = 0, nVis = 0;
+      for (const child of Array.from(bar.children) as HTMLElement[]) {
+        const cs = getComputedStyle(child);
+        if (cs.display === 'none' || cs.position === 'fixed' || cs.position === 'absolute') continue;
+        nVis++;
+        if (child === el || child.classList.contains('qr-ptabs')) continue;
+        used += child.getBoundingClientRect().width;
+      }
+      width = Math.max(0, Math.min(el.clientWidth || bar.clientWidth, bar.clientWidth - used - gap * Math.max(0, nVis - 1)));
+    }
+    setMaxN(tabFitCount(width, tabW, addW, moreW, tabs.length));
   };
   useLayoutEffect(fit, [tabs.length, tabs.map((tb: any) => tb.label + tb.customer).join('|')]);
-  useEffect(() => { const el = strip.current; if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(fit); ro.observe(el); return () => ro.disconnect(); }, [tabs.length]);
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return;
+    const el = strip.current; const bar = el && el.closest('.qr-topbar');
+    const ro = new ResizeObserver(fit);
+    if (el) ro.observe(el); if (bar) ro.observe(bar);
+    window.addEventListener('resize', fit);
+    return () => { ro.disconnect(); window.removeEventListener('resize', fit); };
+  }, [tabs.length]);
   const { shown, rest } = visibleTabIds(ids, active, maxN);
   const byId = Object.fromEntries(tabs.map((tb: any, i: number) => [tb.id, { ...tb, _i: i }]));
   const shownTabs = shown.map((id: string) => byId[id]).filter(Boolean);

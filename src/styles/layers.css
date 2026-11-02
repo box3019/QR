@@ -13,8 +13,27 @@
 .qr-root .qr-table th, .qr-root .qr-table td, .qr-root .qr-catalog td, .qr-root .qr-hist-t th, .qr-root .qr-hist-t td { padding-block: var(--qr-row-py); }
 .qr-root .qr-import-files li { padding-block: calc(var(--qr-row-py) + 0.2rem); }
 
-/* bars */
-.qr-root .qr-topbar { background: var(--mrt-chrome-surface); border-bottom: 1px solid var(--mrt-chrome-border); box-shadow: var(--qr-bar-shadow); position: relative; z-index: 3; }
+/* bars: one row at every res×DPI — extra jobs go under More, Settings/Help never drop */
+.qr-root .qr-topbar { background: var(--mrt-chrome-surface); border-bottom: 1px solid var(--mrt-chrome-border); box-shadow: var(--qr-bar-shadow); position: relative; z-index: 3; flex-wrap: nowrap !important; overflow: hidden; align-items: center; }
+.qr-root .qr-topbar > :not(.qr-ptabs) { flex-shrink: 0; }
+.qr-root .qr-ptabs { min-width: 0; flex: 1 1 auto; }
+.qr-root .qr-ptabs .mrt-workspace-tab { flex: 0 0 auto; background: #ffffff !important; }
+/* Close × always painted (never hover-only / never same colour as the chip). */
+.qr-root .mrt-workspace-tab__close, .qr-root .qr-more-job .mrt-workspace-tab__close {
+  display: inline-flex !important; align-items: center; justify-content: center;
+  visibility: visible !important; opacity: 1 !important;
+  width: 18px !important; min-width: 18px !important; max-width: 18px !important;
+  height: 18px !important; min-height: 18px !important; padding: 0 !important;
+  margin-inline-end: 4px; flex: 0 0 18px !important;
+  color: #3a3a3c !important; -webkit-text-fill-color: #3a3a3c; background: transparent !important;
+  border: 0 !important; box-shadow: none !important; overflow: visible !important;
+  font-size: 16px !important; font-weight: 700 !important; line-height: 1 !important;
+  white-space: nowrap !important;
+}
+.qr-root .mrt-workspace-tab__close .qr-tab-x { display: inline-block; font-size: 16px; line-height: 1; color: inherit; -webkit-text-fill-color: inherit; }
+.qr-root .mrt-workspace-tab__close:hover, .qr-root .qr-more-job .mrt-workspace-tab__close:hover {
+  color: #dc2626 !important; -webkit-text-fill-color: #dc2626; background: transparent !important;
+}
 .qr-root .qr-wiz > .qr-wiz-head { box-shadow: var(--qr-bar-shadow); position: relative; z-index: 2; }
 .qr-root .qr-wiz-footer { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
 /* side column: its own tone, a 1px edge, the job table as a small card */
