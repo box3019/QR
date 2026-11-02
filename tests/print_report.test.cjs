@@ -14,12 +14,15 @@ test('print CSS does not hide the whole page with mrt-print-root', () => {
   assert.ok(!/visibility:\s*hidden\s*!important/.test(print.split('.mrt-print-root table')[0] || print), 'no visibility-hidden print trap');
 });
 
-test('partsForPrint: part card on steps 2/3, summary on step 4', () => {
+test('partsForPrint: part card on steps 2/3, summary on step 4, package mode lists all', () => {
   const parts = [part({}), part({ partNo: 'P2' })];
   assert.deepStrictEqual(P.partsForPrint(parts, 2, 1).map((x) => x.partNo), ['P2']);
   assert.deepStrictEqual(P.partsForPrint(parts, 3, 0).map((x) => x.partNo), ['P1']);
   assert.deepStrictEqual(P.partsForPrint(parts, 4, 0).map((x) => x.partNo), ['P1', 'P2']);
   assert.deepStrictEqual(P.partsForPrint(parts, 1, 0).map((x) => x.partNo), ['P1', 'P2']);
+  assert.deepStrictEqual(P.partsForPrint(parts, 2, 1, { mode: 'package' }).map((x) => x.partNo), ['P1', 'P2']);
+  assert.deepStrictEqual(P.partsForPrint(parts, 2, 0, { mode: 'part', partOpen: true }).map((x) => x.partNo), ['P1']);
+  assert.deepStrictEqual(P.partsForPrint(parts, 4, 0, { partOpen: false }).map((x) => x.partNo), ['P1', 'P2']);
 });
 
 test('empty-guard: body height and rows', () => {

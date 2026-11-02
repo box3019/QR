@@ -57,6 +57,7 @@ test('print method is exposed in preload', () => {
   const p = src('electron/preload.cjs');
   assert.ok(/print:\s*\(payload\)\s*=>\s*ipcRenderer\.invoke\('qr:print',\s*payload\)/.test(p), 'print method should be exposed');
   assert.ok(/savePdf:\s*\(payload,\s*target\)\s*=>\s*ipcRenderer\.invoke\('qr:savePdf',\s*payload,\s*target\)/.test(p), 'savePdf method should be exposed');
+  assert.ok(/savePdfEach:\s*\(payload,\s*targetDir\)\s*=>\s*ipcRenderer\.invoke\('qr:savePdfEach',\s*payload,\s*targetDir\)/.test(p), 'savePdfEach method should be exposed');
 });
 
 test('Print icon is defined', () => {

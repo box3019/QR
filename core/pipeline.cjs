@@ -8,6 +8,7 @@ const os = require('os');
 const { extractPdf, ocrPage } = require('./pdf.cjs');
 const { analyzePart } = require('./analyze.cjs');
 const { expand } = require('./intake/expand.cjs');
+const { attachPackageFiles } = require('./intake/package.cjs');
 const { fileKind, modelRank } = require('./intake/classify.cjs');
 const { readEmail } = require('./email/index.cjs');
 const { analyzeFile } = require('./requirements/index.cjs');
@@ -120,6 +121,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
       emit({ type: 'part', part: parts[parts.length - 1] });
     } catch (e) { emit({ type: 'error', file: d.path, text: String(e.stack || e) }); }
   }
+  attachPackageFiles(parts, files);
   const unknown = docs.filter((d) => d.kind === 'spec').map((d) => d.name);
   const rfqOut = attachRfqs(parts, rfqs);
   const other = files.filter((f) => !['drawing', 'model'].includes(fileKind(f))).map((f) => path.basename(f));

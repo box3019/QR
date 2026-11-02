@@ -5,7 +5,7 @@ const base = (s) => String(s || '').split(/[\\/]/).pop();
 export function loadedSummary(parts = [], files = [], unknown = []) {
   const groups = (parts || []).map((p, i) => {
     const dn = base(p.drawing && p.drawing.name); const mn = p.model && p.model.path ? base(p.model.path) : '';
-    return { index: i, partNo: p.partNo || dn || '', rev: p.rev || '', files: [...new Set([dn, mn, ...(p.duplicates || []).map(base)].filter(Boolean))], drawings: [dn, ...(p.duplicates || []).map(base)].filter(Boolean), model: mn };
+    return { index: i, partNo: p.partNo || dn || '', rev: p.rev || '', files: [...new Set([dn, mn, ...(p.duplicates || []).map(base), ...(p.packageFiles || []).map(base)].filter(Boolean))], drawings: [dn, ...(p.duplicates || []).map(base)].filter(Boolean), model: mn };
   });
   const used = new Set(groups.flatMap((g) => g.files));
   const listed = [...new Set((files || []).map(base).filter(Boolean))];

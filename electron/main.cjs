@@ -62,7 +62,7 @@ ipcMain.handle('qr:pickFiles', async () => {
 ipcMain.handle('qr:pickFolder', async (_e, opts) => {
   const zip = opts && opts.zip;
   const r = await dialog.showOpenDialog(win, zip
-    ? { properties: ['openFile', 'openDirectory'], filters: [{ name: 'Folders and ZIP packages', extensions: ['zip'] }, { name: 'All files', extensions: ['*'] }] }
+    ? { properties: ['openFile', 'openDirectory'], filters: [{ name: 'Folders and ZIP or RAR packages', extensions: ['zip', 'rar'] }, { name: 'All files', extensions: ['*'] }] }
     : { properties: ['openDirectory'] });
   return r.canceled ? '' : r.filePaths[0];
 });
@@ -190,16 +190,17 @@ ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
 });
 ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
-const { launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, partsForPrint, EMPTY_PRINT_ERROR, reportPdfFileName, defaultPdfDir } = require('./qrPrint.cjs');
+const { launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, partsForPrint, EMPTY_PRINT_ERROR, reportPdfFileName, partPdfFileName, defaultPdfDir } = require('./qrPrint.cjs');
 async function reportHtmlFromPayload(payload) {
   const p = payload || {};
   const all = Array.isArray(p.parts) ? p.parts : [];
-  const parts = partsForPrint(all, p.step, p.sel);
+  const parts = partsForPrint(all, p.step, p.sel, p);
   if (!parts.length) return { ok: false, error: EMPTY_PRINT_ERROR };
-  await attachChecklist(parts);
+  await attachChecklist(p.mode === 'package' ? all : parts);
   const { reportHtml } = require('../core/report.cjs');
   const lang = p.lang || loadSettings().questionsLanguage || 'he';
-  return { ok: true, html: reportHtml(parts, lang, p.meta || {}), payload: p };
+  const meta = { ...(p.meta || {}), package: p.mode === 'package' };
+  return { ok: true, html: reportHtml(p.mode === 'package' ? all : parts, lang, meta), payload: p };
 }
 ipcMain.handle('qr:print', async (_e, payload) => {
   try {
@@ -209,6 +210,46 @@ ipcMain.handle('qr:print', async (_e, payload) => {
   } catch (e) {
     const error = (e && e.message) || String(e);
     mainLog('print failed: ' + error);
+    return { ok: false, error };
+  }
+});
+ipcMain.handle('qr:savePdfEach', async (_e, payload, targetDir) => {
+  try {
+    const p = payload || {};
+    const all = Array.isArray(p.parts) ? p.parts : [];
+    const idxs = Array.isArray(p.indexes) ? p.indexes : all.map((_, i) => i);
+    const list = idxs.map((i) => all[i]).filter(Boolean);
+    if (!list.length) return { ok: false, error: EMPTY_PRINT_ERROR };
+    const s = loadSettings();
+    let dir = targetDir;
+    if (!dir) {
+      const start = defaultPdfDir(s.lastPdfFolder, app.getPath('documents'));
+      const r = await dialog.showOpenDialog(win, { properties: ['openDirectory', 'createDirectory'], defaultPath: start || undefined });
+      if (r.canceled || !r.filePaths || !r.filePaths[0]) return { ok: false, canceled: true };
+      dir = r.filePaths[0];
+    }
+    fs.mkdirSync(dir, { recursive: true });
+    const { reportHtml } = require('../core/report.cjs');
+    const lang = p.lang || s.questionsLanguage || 'he';
+    const files = [];
+    const used = new Set();
+    for (const part of list) {
+      await attachChecklist([part]);
+      let dest = path.join(dir, partPdfFileName(part));
+      if (used.has(dest.toLowerCase()) || fs.existsSync(dest)) {
+        const ext = path.extname(dest), stem = dest.slice(0, -ext.length);
+        let n = 2; while (fs.existsSync(stem + '_' + n + ext) || used.has((stem + '_' + n + ext).toLowerCase())) n++;
+        dest = stem + '_' + n + ext;
+      }
+      used.add(dest.toLowerCase());
+      await saveElectronHtmlReportPdf({ html: reportHtml([part], lang, p.meta || {}), dest, BrowserWindow, log: mainLog });
+      files.push(dest);
+    }
+    saveSettings(normalizeSettings({ ...s, lastPdfFolder: dir }));
+    return { ok: true, dir, files };
+  } catch (e) {
+    const error = (e && e.message) || String(e);
+    mainLog('savePdfEach failed: ' + error);
     return { ok: false, error };
   }
 });

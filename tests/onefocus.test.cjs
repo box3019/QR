@@ -25,7 +25,7 @@ test('arrow keys: Right = next in English, mirrored in Hebrew; other keys ignore
   assert.ok(m.typing({ tagName: 'INPUT' })); assert.ok(m.typing({ tagName: 'DIV', isContentEditable: true })); assert.ok(!m.typing({ tagName: 'DIV' })); assert.ok(!m.typing(null)); });
 test('layout: Step 2 and 3 are list or part view, no list beside the part, buttons carry tooltips, keys in en and he', () => {
   const c = src('src/components/wizard/StepCheckParts.tsx'), d = src('src/components/wizard/StepDocsQuestions.tsx'), nav = src('src/components/wizard/PartNav.tsx'), pl = src('src/views/Parts.tsx');
-  assert.ok(/open \|\| !part/.test(c) && /open \|\| !part/.test(d)); assert.ok(/PartsList/.test(c) && /PartsList/.test(d)); assert.ok(!/<PartsList[^>]*\/>[\s\S]*<PartCard/.test(c.split('return <div className="qr-body qr-onefocus qr-pview"')[1] || ''));
+  assert.ok(/open \|\| !part/.test(c) && /open \|\| !part/.test(d)); assert.ok(/TriageView/.test(c) && /PartsList/.test(d)); assert.ok(!/<TriageView[^>]*\/>[\s\S]*<PartCard/.test(c.split('return <div className="qr-body qr-onefocus qr-pview"')[1] || ''));
   assert.ok(/title=\{t\('pv\.tipBack'\)\}/.test(nav) && /btn-prev-part/.test(nav) && /btn-next-part/.test(nav)); assert.ok(/title=\{t\('pl\.open'/.test(pl));
   assert.ok(!/qr-card-nav/.test(src('src/components/partcard/PartCard.tsx')));
   for (const l of ['en', 'he']) { const j = JSON.parse(src('src/i18n/' + l + '.json')); for (const k of ['pv.back', 'pv.tipBack', 'pv.next', 'pv.tipNext', 'pv.prev', 'pv.tipPrev', 'pv.toDocs', 'pv.toSummary', 'pv.of', 'pl.open', 'rsn.ready', 'rsn.needsDoc', 'rsn.needsDocN', 'rsn.pending', 'rsn.notOurs']) assert.ok(j[k], l + ' ' + k); }

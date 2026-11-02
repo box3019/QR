@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('qr', {
   stdOpen: (f) => ipcRenderer.invoke('qr:std:open', f),
   print: (payload) => ipcRenderer.invoke('qr:print', payload),
   savePdf: (payload, target) => ipcRenderer.invoke('qr:savePdf', payload, target),
+  savePdfEach: (payload, targetDir) => ipcRenderer.invoke('qr:savePdfEach', payload, targetDir),
   releaseUpdate: (action, payload) => ipcRenderer.invoke('qr:release-update', action, payload),
   onReleaseUpdate: (cb) => { const h = (_e, ev) => cb(ev); ipcRenderer.on('qr:release-update', h); return () => ipcRenderer.removeListener('qr:release-update', h); },
 });
