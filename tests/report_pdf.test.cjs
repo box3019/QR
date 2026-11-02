@@ -17,6 +17,16 @@ test('report groups use the same rule as the Parts list', async () => {
   const g = await import(pathToFileURL(path.join(__dirname, '..', 'src', 'parts', 'groups.mjs')).href);
   for (const p of [...parts, part({ status: 'rejected' }), part({ status: 'pending' }), part({ problems: [{ internal: true, status: 'open' }] })]) assert.strictEqual(plainStatus(p), g.plainStatus(p));
 });
+test('report CSS base font is at least 10.5pt; page margins unchanged', () => {
+  const h = reportHtml(parts, 'en', { rfq: 'RFQ-77' });
+  const body = h.match(/body\{[^}]*font-size:([^;}]+)/); assert.ok(body, 'body font-size');
+  assert.match(body[1], /pt/i); assert.ok(parseFloat(body[1]) >= 10.5, 'body ' + body[1]);
+  const cell = h.match(/th,td\{[^}]*font-size:([^;}]+)/); assert.ok(cell, 'cell font-size');
+  assert.ok(parseFloat(cell[1]) >= 10.5, 'cells ' + cell[1]);
+  assert.match(h, /@page\{size:A4;margin:14mm 12mm\}/);
+  assert.match(h, /th,td\{[^}]*padding:4px 6px/);
+  assert.match(h, /th,td\{[^}]*white-space:nowrap/);
+});
 test('Summary has Export PDF with tooltip, EN/HE keys', () => {
   const s = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'components', 'wizard', 'StepSummary.tsx'), 'utf8'); assert.match(s, /btn-export-pdf" title=\{t\('tip.exportPdf'\)\}/);
   const he = require('../src/i18n/he.json'), en = require('../src/i18n/en.json'); for (const k of ['wz.secPdf', 'wz.pdfBtn', 'wz.pdfText', 'tip.exportPdf']) { assert.ok(en[k] && he[k], k); assert.doesNotMatch(he[k], /[A-Za-z]/); }

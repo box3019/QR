@@ -32,6 +32,7 @@ const settingsFile = () => path.join(app.getPath('userData'), 'qr-settings.json'
 function loadSettings() { let raw = null; try { raw = JSON.parse(fs.readFileSync(settingsFile(), 'utf8')); } catch {} return normalizeSettings(raw); }
 function saveSettings(s) { fs.mkdirSync(path.dirname(settingsFile()), { recursive: true }); fs.writeFileSync(settingsFile(), JSON.stringify(s, null, 2)); }
 const sevenZipPath = () => (app.isPackaged ? path.join(process.resourcesPath, '7zip', '7z.exe') : path.join(__dirname, '..', 'vendor', '7zip', '7z.exe'));
+const importCachePath = () => (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'QR', 'ImportCache') : path.join(app.getPath('userData'), 'ImportCache'));
 const langPath = () => (app.isPackaged ? path.join(process.resourcesPath, 'ocr') : path.join(__dirname, '..', 'ocr'));
 
 let win = null;
@@ -58,12 +59,18 @@ ipcMain.handle('qr:pickFiles', async () => {
   const r = await dialog.showOpenDialog(win, { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Drawings, models, ZIP/RAR/7z, e-mails', extensions: ['pdf', 'zip', 'rar', '7z', 'msg', 'eml', 'step', 'stp', 'igs', 'iges', 'sldprt', 'x_t', 'x_b'] }, { name: 'All files', extensions: ['*'] }] });
   return r.canceled ? [] : r.filePaths;
 });
-ipcMain.handle('qr:pickFolder', async () => { const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] }); return r.canceled ? '' : r.filePaths[0]; });
+ipcMain.handle('qr:pickFolder', async (_e, opts) => {
+  const zip = opts && opts.zip;
+  const r = await dialog.showOpenDialog(win, zip
+    ? { properties: ['openFile', 'openDirectory'], filters: [{ name: 'Folders and ZIP packages', extensions: ['zip'] }, { name: 'All files', extensions: ['*'] }] }
+    : { properties: ['openDirectory'] });
+  return r.canceled ? '' : r.filePaths[0];
+});
 ipcMain.handle('qr:process', async (e, paths, job) => {
   const s = loadSettings();
   const emit = (ev) => { try { e.sender.send('qr:event', { ...(ev.type === 'part' ? { ...ev, part: slim(ev.part) } : ev), job: job || null }); } catch {} };
   const t0 = Date.now();
-  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), libraryBase: app.getPath('userData'), sevenZip: sevenZipPath(), catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
+  const res = await runPipeline(paths, { ...s, langPath: langPath(), ocrCachePath: path.join(app.getPath('userData'), 'ocr-cache'), libraryBase: app.getPath('userData'), sevenZip: sevenZipPath(), importCache: importCachePath(), catalog: catalogOf(s), customers: s.customers }, (ev) => { if (ev && ev.part) localizePart(ev.part); emit(ev); });
   (res.parts || []).forEach(localizePart);
   res.seconds = Math.round((Date.now() - t0) / 1000);
   lastResult = res;

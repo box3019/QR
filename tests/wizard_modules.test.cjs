@@ -15,7 +15,7 @@ test('progress: plain localized key with i of n, bar fraction, tech line kept', 
   const v = p.progressView(b); assert.strictEqual(v.key, 'busy.ocr'); assert.deepStrictEqual(v.vars, { i: 2, n: 7 }); assert.ok(Math.abs(v.frac - 1 / 7) < 1e-9); assert.match(v.tech, /DPI/);
   assert.strictEqual(p.progressView(p.reduceBusy(b, { type: 'progress', value: 0.5 })).frac, 0.5);
   assert.strictEqual(p.progressView(p.startBusy()).key, 'busy.starting'); assert.strictEqual(p.reduceBusy(null, { type: 'status' }), null);
-  const en = require('../src/i18n/en.json'), he = require('../src/i18n/he.json'); for (const k of ['busy.read', 'busy.ocr']) { assert.match(en[k], /\{i\}.*\{n\}/); assert.match(he[k], /\{i\}.*\{n\}/); } });
+  const en = require('../src/i18n/en.json'), he = require('../src/i18n/he.json'); for (const k of ['busy.read', 'busy.ocr', 'busy.unpack']) { assert.match(en[k], /\{i\}.*\{n\}/); assert.match(he[k], /\{i\}.*\{n\}/); } });
 test('summary counts', async () => { const s = await load('wizard', 'summary.mjs');
   const parts = [{ problems: [{ severity: 'Question', status: 'open' }] }, { problems: [{ severity: 'Warning', status: 'open' }] }, { problems: [{ severity: 'Blocker', status: 'resolved' }] }];
   assert.deepStrictEqual(s.summaryCounts(parts), { nq: 1, np: 1, flagged: [0] }); });

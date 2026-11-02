@@ -75,16 +75,16 @@ function reportHtml(parts, lang = 'he', meta = {}) {
   const docs = parts.flatMap((p) => (p.tasks || []).filter(isOpenDoc).map((t) => ({ pn: p.partNo, ref: t.refNumber })));
   return `<!doctype html><html lang="${he ? 'he' : 'en'}" dir="${he ? 'rtl' : 'ltr'}"><head><meta charset="utf-8"><title>${esc(T.title)}</title><style>
   @page{size:A4;margin:14mm 12mm} *{box-sizing:border-box}
-  body{font-family:'Segoe UI',Arial,'Noto Sans Hebrew',sans-serif;font-size:11.5px;color:#0f172a;margin:0}
+  body{font-family:'Segoe UI',Arial,'Noto Sans Hebrew',sans-serif;font-size:11pt;color:#0f172a;margin:0}
   header{display:flex;align-items:center;gap:12px;border-bottom:3px solid #1e3a8a;padding-bottom:8px;margin-bottom:12px}
-  .logo{width:40px;height:40px;border-radius:6px;background:#1e3a8a;color:#fff;display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
-  h1{font-size:18px;margin:0} .meta{color:#475569;display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:2px}
-  h2{font-size:14px;color:#1e3a8a;margin:16px 0 6px;border-bottom:1px solid #cbd5e1;padding-bottom:3px}
-  h3{font-size:13px;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap} h4{font-size:11.5px;margin:8px 0 3px;color:#334155}
-  table{border-collapse:collapse;width:100%} th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:start;vertical-align:top}
+  .logo{width:40px;height:40px;border-radius:6px;background:#1e3a8a;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15pt;flex:none}
+  h1{font-size:17pt;margin:0} .meta{color:#475569;display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:2px}
+  h2{font-size:13pt;color:#1e3a8a;margin:16px 0 6px;border-bottom:1px solid #cbd5e1;padding-bottom:3px}
+  h3{font-size:12.5pt;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap} h4{font-size:11pt;margin:8px 0 3px;color:#334155}
+  table{border-collapse:collapse;width:100%} th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:start;vertical-align:top;font-size:10.5pt;white-space:nowrap}
   th{background:#f1f5f9;font-weight:600} table.kv th{width:22%} .muted{color:#64748b;font-weight:400}
-  .st{display:inline-block;border:1px solid;border-radius:4px;padding:1px 7px;font-size:10.5px;font-weight:600}
-  .sev{display:inline-block;min-width:52px;border:1px solid #cbd5e1;border-radius:4px;padding:0 4px;font-size:10px;color:#334155;margin-inline-end:4px}
+  .st{display:inline-block;border:1px solid;border-radius:4px;padding:1px 7px;font-size:10.5pt;font-weight:600}
+  .sev{display:inline-block;min-width:52px;border:1px solid #cbd5e1;border-radius:4px;padding:0 4px;font-size:10.5pt;color:#334155;margin-inline-end:4px}
   section.part{border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 0 10px} section.part h3,table.kv tr,ol.seq li,ul.flags li{break-inside:avoid} h2,h3,h4{break-after:avoid}
   ul.rc{margin:0;padding-inline-start:18px;color:#475569} ul.rc li{margin:1px 0}
   ol.seq,ul.flags{margin:0;padding-inline-start:18px} ol.seq li,ul.flags li{margin:1px 0}

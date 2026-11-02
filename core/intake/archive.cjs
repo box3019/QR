@@ -1,24 +1,179 @@
 'use strict';
-// intake/archive: unpack ZIP (yauzl, in-process) and RAR/7z (bundled 7-Zip 7z.exe). Returns extracted file paths.
+// intake/archive: unpack ZIP in-process (yauzl; never 7z/WinRAR) and RAR/7z with bundled 7-Zip.
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const os = require('os');
 const { execFile } = require('child_process');
 
-const safeJoin = (root, rel) => { const d = path.resolve(root, rel.replace(/^[\\/]+/, '')); if (!d.startsWith(path.resolve(root))) throw new Error('Unsafe path in archive: ' + rel); return d; };
+const MAX_UNCOMPRESSED = 2 * 1024 * 1024 * 1024;
+const MAX_FILES = 20000;
+const ZIP_NEST_DEPTH = 3;
+const CACHE_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
+const CACHE_MAX_DIRS = 40;
+const CACHE_MARKER = '.qr-ok';
 
-function unzip(file, outDir) {
+// CP437 0x80-0xFF (IBM PC), then CP862 replaces 0x80-0x9A with Hebrew letters.
+const CP437_HI = 'ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■\u00A0';
+const CP862_HEB = 'אבגדהוזחטיךכלםמןנסעףפץצקרשת';
+
+const defaultImportCache = () => {
+  if (process.env.LOCALAPPDATA) return path.join(process.env.LOCALAPPDATA, 'QR', 'ImportCache');
+  return path.join(os.homedir(), 'AppData', 'Local', 'QR', 'ImportCache');
+};
+
+const sha256File = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+
+function winLong(p) {
+  if (process.platform !== 'win32') return p;
+  const abs = path.resolve(p);
+  if (abs.startsWith('\\\\?\\')) return abs;
+  if (abs.length < 248) return abs;
+  return abs.startsWith('\\\\') ? '\\\\?\\UNC\\' + abs.slice(2) : '\\\\?\\' + abs;
+}
+
+function decodeCp(buf, hi) {
+  let s = '';
+  for (const b of buf) s += b < 128 ? String.fromCharCode(b) : hi[b - 128];
+  return s;
+}
+function isUtf8(buf) {
+  try { return Buffer.from(buf.toString('utf8'), 'utf8').equals(buf); } catch { return false; }
+}
+function unicodePath(extraFields) {
+  const f = (extraFields || []).find((x) => x.id === 0x7075);
+  if (!f || !f.data || f.data.length < 5) return '';
+  try { return f.data.slice(5).toString('utf8'); } catch { return ''; }
+}
+/** Decode a ZIP entry name: UTF-8 (EFS / Info-ZIP extra), else Hebrew CP862, else CP437. */
+function decodeZipName(name, flags, extraFields) {
+  const uni = unicodePath(extraFields);
+  if (uni) return uni;
+  const buf = Buffer.isBuffer(name) ? name : Buffer.from(String(name), 'binary');
+  if ((flags & 0x800) !== 0) return buf.toString('utf8');
+  if (isUtf8(buf) && [...buf].some((b) => b >= 0x80)) return buf.toString('utf8');
+  if ([...buf].some((b) => b >= 0x80 && b <= 0x9A)) return decodeCp(buf, CP862_HEB + CP437_HI.slice(CP862_HEB.length));
+  return decodeCp(buf, CP437_HI);
+}
+
+function safeRel(rel) {
+  const raw = String(rel).replace(/\\/g, '/');
+  if (!raw || raw.startsWith('/') || raw.startsWith('//') || /^[a-zA-Z]:/.test(raw)) throw new Error('Unsafe path in archive: ' + rel);
+  const n = raw.replace(/^\/+/, '');
+  const parts = n.split('/').filter((p) => p && p !== '.');
+  if (!parts.length || parts.some((p) => p === '..' || p.includes('\0'))) throw new Error('Unsafe path in archive: ' + rel);
+  return parts.join(path.sep);
+}
+const safeJoin = (root, rel) => {
+  const base = path.resolve(root);
+  const dest = path.resolve(base, safeRel(rel));
+  const prefix = base.endsWith(path.sep) ? base : base + path.sep;
+  if (dest !== base && !dest.startsWith(prefix)) throw new Error('Unsafe path in archive: ' + rel);
+  return dest;
+};
+
+function uniquePath(dest) {
+  if (!fs.existsSync(dest)) return dest;
+  const dir = path.dirname(dest), ext = path.extname(dest), stem = path.basename(dest, ext);
+  let i = 2, p;
+  do { p = path.join(dir, stem + '_' + i + ext); i++; } while (fs.existsSync(p));
+  return p;
+}
+
+function zipError(file, e) {
+  const m = String((e && e.message) || e);
+  const name = path.basename(file);
+  if (/encrypted|password/i.test(m)) return new Error('Cannot open ' + name + ': the ZIP is password-protected. Remove the password and try again.');
+  if (/Unsafe path/i.test(m) || /too large|too many files/i.test(m)) return e instanceof Error ? e : new Error(m);
+  return new Error('Cannot open ' + name + ': the ZIP is damaged or unreadable.');
+}
+
+function pruneImportCache(root, keepDir) {
+  if (!root || !fs.existsSync(root)) return;
+  let entries = [];
+  try { entries = fs.readdirSync(root).map((n) => { const p = path.join(root, n); let st; try { st = fs.statSync(p); } catch { return null; } return { p, mtime: st.mtimeMs }; }).filter(Boolean); } catch { return; }
+  const now = Date.now();
+  const keep = keepDir ? path.resolve(keepDir) : '';
+  for (const e of entries) {
+    if (keep && path.resolve(e.p) === keep) continue;
+    if (now - e.mtime > CACHE_MAX_AGE_MS) try { fs.rmSync(e.p, { recursive: true, force: true }); } catch {}
+  }
+  try { entries = fs.readdirSync(root).map((n) => { const p = path.join(root, n); let st; try { st = fs.statSync(p); } catch { return null; } return { p, mtime: st.mtimeMs }; }).filter(Boolean).sort((a, b) => a.mtime - b.mtime); } catch { return; }
+  while (entries.length > CACHE_MAX_DIRS) {
+    const e = entries.shift();
+    if (keep && path.resolve(e.p) === keep) continue;
+    try { fs.rmSync(e.p, { recursive: true, force: true }); } catch {}
+  }
+}
+
+function cacheDirFor(file, root) {
+  const base = root || defaultImportCache();
+  const dir = path.join(base, sha256File(file));
+  pruneImportCache(base, dir);
+  return dir;
+}
+
+function walk(d) {
+  const out = [];
+  if (!fs.existsSync(d)) return out;
+  for (const n of fs.readdirSync(d)) {
+    if (n === CACHE_MARKER) continue;
+    const p = path.join(d, n);
+    let st; try { st = fs.statSync(p); } catch { continue; }
+    if (st.isDirectory()) out.push(...walk(p)); else out.push(p);
+  }
+  return out;
+}
+
+function unzip(file, outDir, opts = {}) {
   const yauzl = require('yauzl');
-  return new Promise((res, rej) => yauzl.open(file, { lazyEntries: true, decodeStrings: true }, (err, z) => {
-    if (err) return rej(err);
+  const names = opts.names;
+  return new Promise((res, rej) => yauzl.open(file, { lazyEntries: true, decodeStrings: false, strictFileNames: false }, (err, z) => {
+    if (err) return rej(zipError(file, err));
     const out = [];
+    let written = 0;
+    let files = 0;
+    const nTotal = z.entryCount || 0;
+    if (nTotal > MAX_FILES) { z.close(); return rej(new Error('Archive has too many files (' + nTotal + ').')); }
+    let done = false;
+    const fail = (e) => {
+      if (done) return; done = true;
+      try { z.close(); } catch {}
+      rej(e instanceof Error && /Cannot open |Unsafe path|too many|too large/i.test(e.message) ? e : zipError(file, e));
+    };
     z.readEntry();
     z.on('entry', (e) => {
-      if (/\/$/.test(e.fileName)) return z.readEntry();
-      let dest; try { dest = safeJoin(outDir, e.fileName); } catch (x) { return rej(x); }
-      fs.mkdirSync(path.dirname(dest), { recursive: true });
-      z.openReadStream(e, (er, s) => { if (er) return rej(er); s.pipe(fs.createWriteStream(dest)).on('finish', () => { out.push(dest); z.readEntry(); }); });
+      const flags = e.generalPurposeBitFlag || 0;
+      const inner = decodeZipName(e.fileName, flags, e.extraFields).replace(/\\/g, '/');
+      if (/\/$/.test(inner) || (e.uncompressedSize === 0 && /[\\/]$/.test(String(e.fileName)))) return z.readEntry();
+      if (flags & 1) return fail(new Error('encrypted'));
+      files++;
+      if (files > MAX_FILES) return fail(new Error('Archive has too many files.'));
+      const size = e.uncompressedSize || 0;
+      if (written + size > MAX_UNCOMPRESSED) return fail(new Error('Archive is too large to unpack (over 2 GB uncompressed).'));
+      let dest;
+      try { dest = uniquePath(winLong(safeJoin(outDir, inner))); } catch (x) { return fail(x); }
+      try { fs.mkdirSync(path.dirname(dest), { recursive: true }); } catch (x) { return fail(x); }
+      if (typeof opts.onProgress === 'function') try { opts.onProgress({ i: files, n: nTotal, name: inner }); } catch {}
+      z.openReadStream(e, (er, s) => {
+        if (er) return fail(er);
+        let chunk = 0;
+        const ws = fs.createWriteStream(dest);
+        s.on('data', (b) => {
+          chunk += b.length; written += b.length;
+          if (written > MAX_UNCOMPRESSED) { s.destroy(); ws.destroy(); fail(new Error('Archive is too large to unpack (over 2 GB uncompressed).')); }
+        });
+        s.on('error', fail);
+        ws.on('error', fail);
+        s.pipe(ws).on('finish', () => {
+          out.push(dest);
+          if (names) names.set(dest, inner.replace(/\//g, path.sep));
+          z.readEntry();
+        });
+      });
     });
-    z.on('end', () => res(out)); z.on('error', rej);
+    z.on('end', () => { if (!done) { done = true; res(out); } });
+    z.on('error', fail);
   }));
 }
 
@@ -35,11 +190,9 @@ function sevenZip(file, outDir, exe) {
   }));
 }
 
-function walk(d) { const out = []; for (const n of fs.readdirSync(d)) { const p = path.join(d, n); if (fs.statSync(p).isDirectory()) out.push(...walk(p)); else out.push(p); } return out; }
-
 /** If outDir holds exactly one folder and nothing else, move its contents up one level (e.g. X.rar -> X/X/...). */
 function flattenSingleFolder(outDir) {
-  const items = fs.readdirSync(outDir);
+  const items = fs.readdirSync(outDir).filter((n) => n !== CACHE_MARKER);
   if (items.length !== 1) return false;
   const inner = path.join(outDir, items[0]);
   if (!fs.statSync(inner).isDirectory()) return false;
@@ -48,12 +201,28 @@ function flattenSingleFolder(outDir) {
   return true;
 }
 
-/** Unpack any supported archive into outDir. @returns {Promise<string[]>} */
+/** Unpack any supported archive into outDir. ZIP is in-process only. @returns {Promise<string[]>} */
 async function extractArchive(file, outDir, opts = {}) {
   fs.mkdirSync(outDir, { recursive: true });
-  if (/\.zip$/i.test(file)) { try { await unzip(file, outDir); } catch (e) { if (!fs.existsSync(opts.sevenZip || defaultSevenZip())) throw e; await sevenZip(file, outDir, opts.sevenZip); } }
-  else await sevenZip(file, outDir, opts.sevenZip);
+  if (/\.zip$/i.test(file)) {
+    const marker = path.join(outDir, CACHE_MARKER);
+    if (fs.existsSync(marker)) return walk(outDir);
+    try {
+      await unzip(file, outDir, opts);
+      fs.writeFileSync(marker, 'ok');
+    } catch (e) {
+      try { fs.rmSync(outDir, { recursive: true, force: true }); } catch {}
+      throw e instanceof Error ? e : zipError(file, e);
+    }
+    return walk(outDir);
+  }
+  await sevenZip(file, outDir, opts.sevenZip);
   flattenSingleFolder(outDir);
   return walk(outDir);
 }
-module.exports = { extractArchive, flattenSingleFolder, defaultSevenZip, walk };
+
+module.exports = {
+  extractArchive, flattenSingleFolder, defaultSevenZip, walk, unzip, decodeZipName, safeJoin,
+  cacheDirFor, pruneImportCache, defaultImportCache, sha256File, zipError,
+  MAX_UNCOMPRESSED, MAX_FILES, ZIP_NEST_DEPTH, CACHE_MARKER,
+};
