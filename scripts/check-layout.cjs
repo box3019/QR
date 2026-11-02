@@ -100,7 +100,29 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     const svg = b.querySelector('svg');
     const gw = Math.max(gr.width, svg ? svg.getBoundingClientRect().width : 0, b.scrollWidth);
     const gh = Math.max(gr.height, svg ? svg.getBoundingClientRect().height : 0, b.scrollHeight);
-    if (gw < 4 || gh < 4) res.issues.push('tab close glyph size ' + Math.round(gw) + 'x' + Math.round(gh));
+    const br = b.getBoundingClientRect();
+    if (br.width < 24 || br.height < 24) res.issues.push('tab close hit area ' + Math.round(br.width) + 'x' + Math.round(br.height));
+    if (gw < 14 || gh < 14) res.issues.push('tab close glyph size ' + Math.round(gw) + 'x' + Math.round(gh));
+  });
+  document.querySelectorAll('.qr-ptabs .mrt-workspace-tab__label').forEach((e) => {
+    if (e.closest('.qr-proj-off')) return;
+    const px = parseFloat(getComputedStyle(e).fontSize);
+    if (px < 12) res.issues.push('tab chip font ' + px + 'px < 12px');
+  });
+  document.querySelectorAll('.qr-topbar .mrt-topbar-cmd').forEach((b) => {
+    const cs = getComputedStyle(b); if (cs.display === 'none' || b.closest('.qr-proj-off')) return;
+    const h = b.getBoundingClientRect().height;
+    if (h > 46 || h < 40) res.issues.push('command button height ' + Math.round(h) + 'px (want 44)');
+    const lab = [...b.querySelectorAll('span')].find((s) => !s.classList.contains('ico'));
+    if (!lab) return;
+    const lcs = getComputedStyle(lab);
+    if (lcs.display === 'none' || lcs.visibility === 'hidden') return;
+    if (lab.scrollWidth > lab.clientWidth + 1) res.issues.push('command label truncated: ' + (lab.textContent || '').trim().slice(0, 24));
+  });
+  document.querySelectorAll('.qr-rail .mrt-wizard-step-label, .qr-rail .mrt-wizard-step-text').forEach((e) => {
+    const cs = getComputedStyle(e); if (cs.display === 'none' || e.closest('.qr-proj-off')) return;
+    const ta = cs.textAlign;
+    if (ta === 'center') res.issues.push('step menu centred: ' + (e.textContent || '').trim().slice(0, 24));
   });
   const ptabs = document.querySelector('.qr-ptabs');
   if (ptabs) { const cs = getComputedStyle(ptabs); if (cs.overflowX === 'auto' || cs.overflowX === 'scroll') res.issues.push('job tabs must not scroll horizontally'); }
@@ -108,7 +130,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   if (topbar) {
     const tb = topbar.getBoundingClientRect();
     res.topbarHeight = Math.round(tb.height);
-    if (tb.height > 64) res.issues.push('topbar wraps: ' + Math.round(tb.height) + 'px');
+    if (tb.height > 58) res.issues.push('topbar wraps: ' + Math.round(tb.height) + 'px');
     ['btn-settings', 'btn-help'].forEach((id) => {
       const b = document.querySelector('[data-testid=' + id + ']');
       if (!b) { res.issues.push(id + ' missing'); return; }

@@ -91,10 +91,14 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   assert.ok(/flex-wrap:\s*nowrap !important/.test(layers));
   const fit = src('src/styles/fit.css');
   assert.ok(/flex-wrap:\s*nowrap !important/.test(fit));
+  assert.ok(/^button, \.mrt-btn/m.test(fit) && !/button:not\(/.test(fit));
+  assert.ok(/\.mrt-workspace-tab__close/.test(fit) && /24px/.test(fit));
   const qr = src('src/styles/qr.css');
   assert.ok(/\.qr-topbar \{ flex-wrap: nowrap/.test(qr));
   const lay = src('scripts/check-layout.cjs');
   assert.ok(/tab close contrast/.test(lay) && /tab close glyph size/.test(lay) && /topbar wraps/.test(lay));
+  assert.ok(/command label truncated/.test(lay) && /command button height/.test(lay));
+  assert.ok(/step menu centred/.test(lay) && /tab chip font/.test(lay) && /tab close hit area/.test(lay));
   assert.ok(/\[4, 8, 15\]/.test(lay) && /1366, 768, 1/.test(lay) && /1920, 1080, 2/.test(lay));
   assert.ok(/tab-more-close/.test(lay));
   const main = src('electron/main.cjs') + src('electron/preload.cjs');

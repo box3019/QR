@@ -1,6 +1,6 @@
 /* fit.css — loaded last. Controls size to their text: no fixed px heights/widths on buttons, chips, tabs, selects.
    Buttons wrap and grow; chips/badges stay on one line with an ellipsis (full text in the title tooltip). */
-button:not(.mrt-workspace-tab__close):not(.mrt-workspace-tab__add):not(.qr-tab-more):not(.mrt-workspace-tab__label), .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
+button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
   height: auto !important; min-height: 2.1em !important; min-width: 0 !important; max-width: 100%;
   line-height: normal !important; font-size: var(--qr-fs-sm) !important;
   padding-block: 0.3em !important; padding-inline: 0.75em !important;
@@ -8,9 +8,27 @@ button:not(.mrt-workspace-tab__close):not(.mrt-workspace-tab__add):not(.qr-tab-m
 }
 .qr-settings-tab { text-align: start; font-size: var(--qr-fs-sm) !important; }
 .qr-tab { font-size: 0.875rem !important; }
-.qr-topbar .mrt-topbar-cmd { height: auto !important; min-height: 44px !important; max-height: 48px; min-width: 64px !important; padding: 3px 8px !important; font-size: 11px !important; } /* px: toolbar does not grow with text size */
-.qr-topbar .mrt-topbar-cmd > span:not(.ico) { white-space: nowrap !important; overflow-wrap: normal !important; }
+.qr-topbar .mrt-topbar-cmd { height: 44px !important; min-height: 44px !important; max-height: 44px !important; min-width: 72px !important; padding: 3px 8px !important; font-size: 11px !important; flex-shrink: 0 !important; } /* px: toolbar does not grow with text size */
+.qr-topbar .mrt-topbar-cmd > span:not(.ico) { white-space: nowrap !important; overflow: visible !important; overflow-wrap: normal !important; text-overflow: clip !important; max-width: none !important; }
 .qr-topbar .mrt-topbar-cmd[data-testid='btn-save-pdf'] { width: auto !important; min-width: 88px !important; max-width: none !important; flex-shrink: 0 !important; }
+/* Tab strip only — scoped after toolbar caps so the global button rule stays low-specificity. */
+.mrt-workspace-tab__close, .qr-more-job .mrt-workspace-tab__close {
+  height: 24px !important; min-height: 24px !important; max-height: 24px !important;
+  width: 24px !important; min-width: 24px !important; max-width: 24px !important;
+  padding: 0 !important; font-size: 16px !important; line-height: 1 !important;
+  white-space: nowrap !important; overflow-wrap: normal; text-align: center;
+}
+.mrt-workspace-tab__label {
+  height: auto !important; min-height: 0 !important; min-width: 0 !important; max-width: none;
+  padding-block: 4px !important; padding-inline: 8px !important;
+  font-size: 12px !important; line-height: 1.2 !important;
+  white-space: nowrap !important; overflow-wrap: normal; text-align: start;
+}
+.mrt-workspace-tab__add, .qr-tab-more {
+  height: auto !important; min-height: 26px !important; min-width: auto !important; max-width: none;
+  padding-block: 0 !important; padding-inline: 0.55rem !important;
+  font-size: 12px !important; white-space: nowrap !important; overflow-wrap: normal;
+}
 .qr-root .qr-tri-acts button, .qr-root .qr-tri-bar button {
   white-space: nowrap !important; overflow-wrap: normal !important; max-width: none;
 }
