@@ -101,11 +101,14 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
     fsx.writeFileSync(cached + '.tmp', buf); fsx.renameSync(cached + '.tmp', cached);
   }
   let workerError = null;
-  const worker = await createWorker('eng', 1, { langPath: cacheDir, cachePath: cacheDir, cacheMethod: 'readOnly', gzip: false, logger: () => {}, errorHandler: (e) => { workerError = e; } });
+  // Tiles are independent, so Tesseract runs on a small pool of workers (recognition is the slow part). Tiles are
+  // rendered one at a time (one pdf.js page), results are kept per tile and merged in tile order, so the output is
+  // identical to the sequential run.
+  const poolSize = Math.max(1, Math.min(opts.workers || 4, Math.max(1, (require('os').cpus() || []).length - 1)));
+  const workers = [];
   const words = [];
   let tiles = [];
   try {
-  await worker.setParameters({ tessedit_pageseg_mode: '11', preserve_interword_spaces: '1' });
   const { createCanvas } = require('@napi-rs/canvas');
   const doc = await openPdf(file);
   const page = await doc.getPage(pageNo);
@@ -113,10 +116,17 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
   const vp = page.getViewport({ scale });
   const W = Math.ceil(vp.width), H = Math.ceil(vp.height);
   for (let ty = 0; ty < H; ty += tile - overlap) for (let tx = 0; tx < W; tx += tile - overlap) tiles.push([tx, ty]);
-  let done = 0;
-  for (const [tx, ty] of tiles) {
+  const nWorkers = Math.max(1, Math.min(poolSize, tiles.length));
+  for (let i = 0; i < nWorkers; i++) {
+    const wk = await createWorker('eng', 1, { langPath: cacheDir, cachePath: cacheDir, cacheMethod: 'readOnly', gzip: false, logger: () => {}, errorHandler: (e) => { workerError = e; } });
+    workers.push(wk);
+    await wk.setParameters({ tessedit_pageseg_mode: '11', preserve_interword_spaces: '1' });
+  }
+  const results = new Array(tiles.length);
+  let done = 0, next = 0;
+  let renderChain = Promise.resolve();
+  const renderTile = async (tx, ty) => {
     const w = Math.min(tile, W - tx), h = Math.min(tile, H - ty);
-    if (w < 50 || h < 50) { done++; continue; }
     const canvas = createCanvas(w, h);
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
@@ -129,27 +139,45 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
       for (let dx = -k; dx <= k; dx++) for (let dy = -k; dy <= k; dy++) if (dx || dy) ctx.drawImage(src, dx, dy);
       ctx.globalCompositeOperation = 'source-over';
     }
-    // pass 1: horizontal text; pass 2: tile rotated 90Â° clockwise for vertical dimension text
+    // pass 1: horizontal text; pass 2: tile rotated 90 degrees clockwise for vertical dimension text
     const rc = createCanvas(h, w);
     const rctx = rc.getContext('2d');
     rctx.translate(h, 0); rctx.rotate(Math.PI / 2); rctx.drawImage(canvas, 0, 0);
-    for (const [img, rot] of [[canvas, false], [rc, true]]) {
-      const { data } = await worker.recognize(img.toBuffer('image/png'), {}, { blocks: true });
-      for (const b of data.blocks || []) for (const p of b.paragraphs) for (const l of p.lines) for (const wd of l.words) {
-        const t = wd.text.trim();
-        if (!t || wd.confidence < 30 || !/[A-Z0-9]/i.test(t)) continue;
-        const bb = wd.bbox;
-        let x0 = bb.x0, y0 = bb.y0, x1 = bb.x1, y1 = bb.y1;
-        if (rot) { x0 = bb.y0; x1 = bb.y1; y0 = h - bb.x1; y1 = h - bb.x0; }
-        words.push({ text: t, x: (x0 + tx) / scale, y: (y0 + ty) / scale, w: (x1 - x0) / scale, h: (y1 - y0) / scale, source: 'ocr', conf: +(wd.confidence / 100).toFixed(2), rot });
+    return { w, h, imgs: [[canvas.toBuffer('image/png'), false], [rc.toBuffer('image/png'), true]] };
+  };
+  const runWorker = async (worker) => {
+    for (;;) {
+      if (workerError) return;
+      const idx = next++;
+      if (idx >= tiles.length) return;
+      const [tx, ty] = tiles[idx];
+      const w = Math.min(tile, W - tx), h = Math.min(tile, H - ty);
+      if (w < 50 || h < 50) { results[idx] = []; done++; continue; }
+      const job = renderChain.then(() => renderTile(tx, ty));
+      renderChain = job.catch(() => {});
+      const { imgs } = await job;
+      const out = [];
+      for (const [buf, rot] of imgs) {
+        const { data } = await worker.recognize(buf, {}, { blocks: true });
+        for (const b of data.blocks || []) for (const p of b.paragraphs) for (const l of p.lines) for (const wd of l.words) {
+          const t = wd.text.trim();
+          if (!t || wd.confidence < 30 || !/[A-Z0-9]/i.test(t)) continue;
+          const bb = wd.bbox;
+          let x0 = bb.x0, y0 = bb.y0, x1 = bb.x1, y1 = bb.y1;
+          if (rot) { x0 = bb.y0; x1 = bb.y1; y0 = h - bb.x1; y1 = h - bb.x0; }
+          out.push({ text: t, x: (x0 + tx) / scale, y: (y0 + ty) / scale, w: (x1 - x0) / scale, h: (y1 - y0) / scale, source: 'ocr', conf: +(wd.confidence / 100).toFixed(2), rot });
+        }
       }
+      results[idx] = out;
+      done++;
+      opts.onProgress && opts.onProgress(done / tiles.length);
     }
-    done++;
-    opts.onProgress && opts.onProgress(done / tiles.length);
-  }
+  };
+  await Promise.all(workers.map((wk) => runWorker(wk)));
+  for (const r of results) if (r) words.push(...r);
   if (workerError) throw workerError;
   await doc.destroy();
-  } finally { await worker.terminate().catch(() => {}); }
+  } finally { await Promise.all(workers.map((wk) => wk.terminate().catch(() => {}))); }
   // dedupe tile overlaps, then drop OCR words covered by real text
   const out = [];
   for (const w of words) {
