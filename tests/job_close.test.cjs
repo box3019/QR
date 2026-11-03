@@ -111,7 +111,8 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   assert.ok(/headingSize/.test(lay) && /headingWeight/.test(lay) && /qr-ck-gh/.test(lay));
   assert.ok(/checklist is not a table/.test(lay) && /checklist columns/.test(lay) && /table\.qr-ck-tab/.test(lay));
   assert.ok(/item list outside MRT table/.test(lay) && /listWidgets/.test(lay) && /data-mrt/.test(lay));
-  assert.ok(/CK_EXPAND_ALLOW/.test(lay) && /expanderHidden/.test(lay) && /rail context clipped/.test(lay));
+  assert.ok(/expanderHidden/.test(lay) && /rail context clipped/.test(lay) && /rail row height/.test(lay));
+  assert.ok(/step label truncated/.test(lay) && /table header clipped/.test(lay) && /value 45-char/.test(lay) && /source 40-char/.test(lay));
   assert.ok(/cell font not uniform/.test(lay) && /locate overflows cell/.test(lay) && /route card is not MrtTable/.test(lay));
   assert.ok(/want 4/.test(lay));
   const main = src('electron/main.cjs') + src('electron/preload.cjs');

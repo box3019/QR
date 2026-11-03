@@ -863,6 +863,7 @@
   "tri.toSuit": "העברה למתאימים",
   "tri.toNot": "העברה ללא מתאימים",
   "tri.include": "כלול בדוח החבילה",
+  "tri.includeCol": "כלול",
   "tri.processed": "טופלו {d} מתוך {n}",
   "tri.empty": "אין חלקים ברשימה הזו",
   "tri.noMat": "החומר לא זוהה",

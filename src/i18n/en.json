@@ -863,6 +863,7 @@
   "tri.toSuit": "Move to suitable",
   "tri.toNot": "Move to not suitable",
   "tri.include": "Include in the package report",
+  "tri.includeCol": "Include",
   "tri.processed": "Processed {d} of {n}",
   "tri.empty": "No parts in this list",
   "tri.noMat": "Material not detected",

@@ -1,4 +1,4 @@
-﻿// Part card: the Alex checklist as an MRT table — Item | Status | Value | locate. Source is a second sub-line in Value.
+﻿// Part card: the Alex checklist as an MRT table — Item | Status | Value | locate. Source is a full-width sub-row.
 import React, { useEffect, useMemo, useRef } from 'react';
 import { t } from '../i18n';
 import { evaluate, ROWS } from '../../core/checklist/live.mjs';
@@ -18,8 +18,16 @@ function LocateBtn({ f, onFocus }: { f: any; onFocus?: (x: any) => void }) {
   return <button type="button" className="qr-ck-loc" data-testid="ck-locate" title={t('ck.show')} onClick={(e) => { e.stopPropagation(); onFocus && onFocus(f); }}>{'\u2316'}</button>;
 }
 
-function valueText(i: any, row: any) {
-  return itemWhat(i) + (i.derived ? ' (' + t('ck.derived', { x: t('ck.r.' + (i.derived === 'fit' ? 'tight' : 'threads')) }) + ')' : '') + (row.excluded ? ' (' + t('ck.excluded') + ')' : '');
+function valueText(i: any) {
+  return itemWhat(i);
+}
+function sourceBits(i: any, row: any) {
+  const bits: string[] = [];
+  if (row.excluded) bits.push(t('ck.excluded'));
+  if (i.derived) bits.push(t('ck.derived', { x: t('ck.r.' + (i.derived === 'fit' ? 'tight' : 'threads')) }));
+  const w = whereText(i);
+  if (w) bits.push(w);
+  return bits.join(' \u00B7 ');
 }
 
 function SourceLine({ w }: { w: string }) {
@@ -43,18 +51,21 @@ function ItemRows({ row, onFocus, pid, focusId, r }: any) {
   return <>{rows.map((i: any, n: number) => {
     const id = 'ck-' + pid + '-' + row.id + n;
     const f = onFocus ? focusOf(i, id, row) : null;
-    const w = whereText(i);
-    const bodyText = valueText(i, row);
+    const w = sourceBits(i, row);
+    const bodyText = valueText(i);
     const full = bodyText + (w ? ' \u2014 ' + w : '');
     const locTip = f ? t('ck.show') : t('ck.locateMissing');
     const click = () => { if (!f || !onFocus) return; onFocus(f); };
     const itemName = t('ck.r.' + r.id);
-    return <MrtRow key={n} className={'qr-ck-item' + (r.sub ? ' qr-ck-sub' : '')} data-testid={n === 0 ? 'ck-row-' + r.id : 'ck-item'} data-ck="item" data-zone={i.zone ? i.zone.label : ''} data-id={id} active={focusId === id} data-loc={f ? '1' : '0'} data-s={row.state} title={f ? full : locTip} onClick={click}>
+    return <React.Fragment key={n}>
+    <MrtRow className={'qr-ck-item' + (r.sub ? ' qr-ck-sub' : '')} data-testid={n === 0 ? 'ck-row-' + r.id : 'ck-item'} data-ck="item" data-zone={i.zone ? i.zone.label : ''} data-id={id} active={focusId === id} data-loc={f ? '1' : '0'} data-s={row.state} title={f ? full : locTip} onClick={click}>
       <td className="qr-ck-l">{n === 0 ? <OverflowLine className="qr-ck-lab" text={itemName}>{itemName}</OverflowLine> : ''}</td>
       <td className="qr-ck-st">{n === 0 ? <State s={row.state} /> : null}</td>
-      <td className="qr-ck-val"><OverflowLine className="qr-ck-body" testid="ck-what" text={bodyText}>{bodyText}</OverflowLine><SourceLine w={w} /></td>
+      <td className="qr-ck-val"><OverflowLine className="qr-ck-body" testid="ck-what" text={bodyText}>{bodyText}</OverflowLine>{w ? null : <span data-testid="ck-where" />}</td>
       <td className="qr-ck-locc"><LocateBtn f={f} onFocus={onFocus} /></td>
-    </MrtRow>;
+    </MrtRow>
+    {w ? <MrtRow className="qr-ck-src-row" data-id={id} active={focusId === id} title={f ? full : locTip} onClick={click}><td colSpan={COLS} className="qr-ck-src-cell"><SourceLine w={w} /></td></MrtRow> : null}
+    </React.Fragment>;
   })}
   {items.length > MAXI && <MrtRow className="qr-ck-more-r"><td colSpan={COLS} className="qr-muted">{t('ck.more', { n: items.length - MAXI })}</td></MrtRow>}</>;
 }

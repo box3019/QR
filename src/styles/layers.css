@@ -32,7 +32,11 @@
 }
 .qr-root .qr-rail .mrt-wizard-step, .qr-root .qr-rail .mrt-wizard-step-label, .qr-root .qr-rail .mrt-wizard-step-text, .qr-root .qr-rail .mrt-wizard-step-caption {
   text-align: start !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
 }
+.qr-root .qr-rail .mrt-wizard-step-label, .qr-root .qr-rail .mrt-wizard-step-text { min-width: max-content; }
 .qr-root .qr-rail .mrt-wizard-step { justify-content: flex-start; }
 /* Close × always painted (never hover-only / never same colour as the chip). Tab-strip only. */
 .qr-root .mrt-workspace-tab__close, .qr-root .qr-more-job .mrt-workspace-tab__close {
@@ -166,7 +170,7 @@
 .qr-root .qr-tour-dot { background: var(--mrt-surface) !important; border-color: var(--mrt-border-strong) !important; }
 
 /* Check parts at 1280-1500px: narrower side column, a wider card pane, buttons never wrap letter by letter */
-@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: min(13.5rem, 216px) minmax(0, 1fr); } }
+@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: 16rem minmax(0, 1fr); } }
 @media (min-width: 1101px) { .qr-root .qr-body:not([data-cols='2']) { grid-template-columns: minmax(230px, 21%) minmax(240px, 1fr) minmax(350px, 34%); } }
 .qr-root .qr-body button:not(.qr-sec-main):not(.qr-tab):not(.qr-pgroup-h), .qr-root .qr-warnbar button { white-space: nowrap !important; overflow-wrap: normal; flex: 0 0 auto; }
 .qr-root .qr-pgroup-h { white-space: nowrap !important; } .qr-root .qr-pgroup-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -230,9 +234,9 @@
 .qr-mock .qm-st i[data-s='bad'] { background: var(--mrt-danger); } .qr-mock .qm-st i[data-s='ok'] { background: var(--mrt-success); }
 .qr-root .qr-pres-bar { position: sticky; bottom: -1px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px var(--qr-card-pad); background: var(--mrt-surface); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r); box-shadow: var(--qr-card-shadow); color: var(--mrt-text); }
 
-/* layers.css loads after wizard.css, so the 960 CSS-px Full HD @200% padding cuts live here. */
+/* layers.css loads after wizard.css. Keep the rail at full label width at every DPI; only trim table padding. */
 @media (max-width: 1300px) {
-  .qr-root .qr-wiz { grid-template-columns: 2.75rem minmax(0, 1fr) !important; }
+  .qr-root .qr-wiz { grid-template-columns: 16rem minmax(0, 1fr); }
   .qr-root[data-step="1"] .qr-wiz-main, .qr-root[data-step="4"] .qr-wiz-main { padding-inline: 0; }
   .qr-root .qr-sum-wrap { padding-inline: 0; }
   .qr-root .qr-cks-card { padding-inline: 4px; }
@@ -355,7 +359,7 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 
 /* Checklist: real MRT table (do not flatten to stacked blocks). */
 .qr-root .qr-ck-tab, .qr-root .qr-bd-tab, .qr-root table.qr-mrt { display: table; width: 100%; max-width: 100%; table-layout: fixed; }
-.qr-root table.qr-mrt.qr-cks-tab, .qr-root table.qr-mrt.qr-hist-t, .qr-root table.qr-mrt.qr-catalog { table-layout: auto; }
+.qr-root table.qr-mrt.qr-cks-tab, .qr-root table.qr-mrt.qr-hist-t, .qr-root table.qr-mrt.qr-catalog, .qr-root table.qr-mrt.qr-wsum-table { table-layout: auto; }
 .qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding: 3px 2px; }
 @media (max-width: 1100px) {
   .qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding-inline: 1px; }
@@ -368,10 +372,14 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root table.qr-mrt tr.qr-prow, .qr-root table.qr-mrt tr.qr-tri-row, .qr-root table.qr-mrt tr.qr-prob, .qr-root table.qr-mrt tr.qr-cust-item, .qr-root table.qr-mrt tr.qr-recent-row {
   display: table-row !important; grid-template-columns: none; width: auto; padding: 0; border: 0; background: transparent;
 }
-.qr-root .qr-ck-body, .qr-root .qr-ck-where, .qr-root .qr-ck-lab {
+.qr-root .qr-ck-body, .qr-root .qr-ck-where {
   overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%;
 }
-.qr-root .qr-ck-tab td.qr-ck-val { white-space: normal !important; }
+.qr-root .qr-ck-lab {
+  overflow: visible !important; text-overflow: clip !important; white-space: normal !important; overflow-wrap: normal; word-break: keep-all; max-width: 100%;
+}
+.qr-root .qr-ck-tab td.qr-ck-val { white-space: nowrap !important; }
+.qr-root .qr-ck-tab td.qr-ck-src-cell { white-space: nowrap !important; overflow: hidden; }
 .qr-root .qr-ck-locc { overflow: visible !important; }
 .qr-root .qr-ck-full { overflow: visible !important; max-width: none !important; min-width: min-content !important; white-space: nowrap !important; }
 .qr-root .qr-ck-ind, .qr-root .qr-ck-ind > div { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; max-width: 100%; }

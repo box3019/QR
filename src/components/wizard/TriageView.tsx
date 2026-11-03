@@ -36,8 +36,8 @@ export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPri
       <button type="button" className={MRT_BTN} data-testid="tri-save-pack" title={t('tip.savePack')} onClick={onSavePack}>{t('tri.savePack')}</button>
       <button type="button" className={MRT_BTN_PRIMARY} data-testid="tri-save-each" title={t('tip.saveEach')} onClick={() => setAsk(true)}>{t('tri.saveEach')}</button>
     </div>
-    <MrtTable className="qr-tri-tab" cols={<colgroup><col style={{ width: '2.2rem' }} /><col style={{ width: '22%' }} /><col /><col style={{ width: '7rem' }} /><col style={{ width: '28%' }} /></colgroup>}>
-      <MrtHead cells={[t('tri.include'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), '']} />
+    <MrtTable className="qr-tri-tab" cols={<colgroup><col style={{ width: '5.2rem' }} /><col style={{ width: '22%' }} /><col /><col style={{ width: '7rem' }} /><col style={{ width: '28%' }} /></colgroup>}>
+      <MrtHead cells={[t('tri.includeCol'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), '']} />
       <tbody>
         {(['suitable', 'notSuitable', 'unknown'] as const).map((k) => <React.Fragment key={k}>
           <MrtGroup colSpan={COLS} testid={'tri-' + k}>{t('tri.' + k)} · {lists[k].length}</MrtGroup>

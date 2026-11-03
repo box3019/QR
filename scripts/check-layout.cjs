@@ -15,27 +15,6 @@ const MEASURE = () => {
   const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
   const bgOf = (el) => { const chain = []; for (let e = el; e; e = e.parentElement) chain.push(e); let base = { r: 255, g: 255, b: 255, a: 1 }; for (const e of chain.reverse()) { const c = rgba(getComputedStyle(e).backgroundColor); if (c && c.a > 0) base = over(c, base); } return base; };
   const opac = (el) => { let o = 1; for (let e = el; e; e = e.parentElement) o *= Number(getComputedStyle(e).opacity); return o; };
-  // Extreme synthetic values from scripts/syn-docs.cjs 9800-0001. Expander / overflow allowed only for these strings.
-  const CK_EXPAND_ALLOW = [
-    'DELRIN (POM) ROD FROM SPECIAL PLASTIC STOCK',
-    'ENGRAVE PART NO, 0.2 DEEP, FILL WITH WHITE PAINT',
-    'THREADS UNJ 1/4-28 UNJF-3B FROM SPECIAL THREADS UNJ MJ',
-    'PAINT PER MIL-PRF-85285 COLOR BLACK, PRIMER BR127',
-    'INSTALL 4X KEENSERT M5X0.8 IN HOLES MARKED K',
-    'PIN DOWEL 3 X 8 ISO 2338, 2X',
-    'CLEAN ROOM CLEANING AFTER FINAL MACHINING',
-    '100% INSPECTION REQUIRED',
-    'SPECIAL THREADS UNJ MJ',
-    'SPECIAL PLASTIC STOCK',
-    '(FROM ',
-    '(מתוך ',
-    'MIL-PRF-85285',
-    '100% INSPECT',
-    '+0.010/-0.000',
-    'UNJF-3B',
-    'CLEAN ROOM'
-  ];
-  const allowedExtreme = (text) => { const u = String(text || '').toUpperCase(); return CK_EXPAND_ALLOW.some((s) => u.includes(s)); };
   const res = { w: innerWidth, h: innerHeight, issues: [] };
   const card = document.querySelector('[data-testid=checklist-summary]'); const tbl = card && card.querySelector('table');
   res.hasTable = !!tbl;
@@ -43,10 +22,10 @@ const MEASURE = () => {
     res.table = { sw: tbl.scrollWidth, cw: tbl.clientWidth, card: card.clientWidth, rows: tbl.querySelectorAll('tbody tr').length };
     { const cs = getComputedStyle(card); const inner = card.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); res.table.inner = inner; res.table.ow = tbl.offsetWidth; res.table.collapsed = tbl.querySelectorAll('[data-testid^=cks-count-]').length; res.table.expanded = tbl.querySelectorAll('[data-testid=cks-expanded]').length; if (tbl.offsetWidth > inner + 1 || tbl.scrollWidth > tbl.clientWidth + 1) res.issues.push('table width ' + tbl.offsetWidth + ' > ' + inner); }
     for (let e = tbl.parentElement; e && e !== document.body; e = e.parentElement) if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX !== 'visible') res.issues.push('ancestor scrolls horizontally: ' + (e.className || e.tagName));
-    tbl.querySelectorAll('th,td').forEach((c) => { if (allowedExtreme(c.textContent)) return; if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
+    tbl.querySelectorAll('th,td').forEach((c) => { if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
     let minC = 99, minEl = ''; tbl.querySelectorAll('th,td,td *').forEach((c) => { if (!(c.childNodes && [...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()))) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); if (cr < minC) { minC = cr; minEl = c.tagName + ':' + (c.textContent || '').trim().slice(0, 16); } });
     res.minContrast = Math.round(minC * 100) / 100; res.minContrastEl = minEl; if (minC < 4.5) res.issues.push('contrast ' + res.minContrast + ' at ' + minEl);
-    const cv = document.createElement('canvas').getContext('2d'); tbl.querySelectorAll('th,td').forEach((c) => { if (allowedExtreme(c.textContent)) return; const cs = getComputedStyle(c); cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const inner = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const words = (c.innerText || '').split(/\s+/).filter(Boolean); const bad = words.find((x) => cv.measureText(x).width > inner + 1); if (bad) res.issues.push('word does not fit (would break): ' + bad + ' ' + Math.round(cv.measureText(bad).width) + '>' + Math.round(inner)); });
+    const cv = document.createElement('canvas').getContext('2d'); tbl.querySelectorAll('th,td').forEach((c) => { const cs = getComputedStyle(c); cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const inner = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const words = (c.innerText || '').split(/\s+/).filter(Boolean); const bad = words.find((x) => cv.measureText(x).width > inner + 1); if (bad) res.issues.push('word does not fit (would break): ' + bad + ' ' + Math.round(cv.measureText(bad).width) + '>' + Math.round(inner)); });
     tbl.querySelectorAll('.qr-cks-p bdi').forEach((b) => { const n = new Set([...b.getClientRects()].map((r) => Math.round(r.top))).size; if (n > 1) res.issues.push('part number wraps: ' + b.textContent); });
     { const EN_DOT = /\b(?:engr|asm|assy|spec|specs|insp|coat|dims?|qty|approx|incl|pcs|std|ref|mfg|dwg|mat|tol|dia|max|min|thr|cat|temp|no)\.(?=\s|$|\)|,)/i; const EN_SHORT = /\b(?:HT|dims|insp|Asm|Engr|Assy|Tol|thr)\b|\b(?:Al|SS|Cu|CS)\s+\d/; const BARE = /^(?:[\u2713\u2013?]\s*)?(?:100%|Clean|Fill|Tight|Coat|Heat|Laser|Engr|Asm)$/;
   const HE_ABBR = /[\u05D0-\u05EA]["\u05F4][\u05D0-\u05EA]|[\u05D0-\u05EA]['\u05F3](?=\s|$)/; const HE_OK = /(?:\u05DE|\u05E1|\u05E7)["\u05F4](?:\u05DE|\u05D2|\u05E8)|\u05D0\u05D9\u05E0\u05E5['\u05F3]|\u05D1\u05D6['\u05F3]/g; const abb = [];
@@ -141,9 +120,21 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (lab.scrollWidth > lab.clientWidth + 1) res.issues.push('command label truncated: ' + (lab.textContent || '').trim().slice(0, 24));
   });
   document.querySelectorAll('.qr-rail .mrt-wizard-step-label, .qr-rail .mrt-wizard-step-text').forEach((e) => {
-    const cs = getComputedStyle(e); if (cs.display === 'none' || e.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(e); if (e.closest('.qr-proj-off')) return;
+    const t = (e.textContent || '').replace(/\s+/g, ' ').trim();
+    if (cs.display === 'none' || cs.visibility === 'hidden') { res.issues.push('step label hidden: ' + t.slice(0, 32)); return; }
     const ta = cs.textAlign;
-    if (ta === 'center') res.issues.push('step menu centred: ' + (e.textContent || '').trim().slice(0, 24));
+    if (ta === 'center') res.issues.push('step menu centred: ' + t.slice(0, 24));
+    if (e.scrollWidth > e.clientWidth + 1) res.issues.push('step label truncated: ' + t.slice(0, 40));
+    if (cs.textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth + 1) res.issues.push('step label ellipsis: ' + t.slice(0, 40));
+  });
+  document.querySelectorAll('table.qr-mrt thead th').forEach((th) => {
+    if (th.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(th);
+    if (cs.display === 'none') return;
+    const t = (th.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!t) return;
+    if (th.scrollWidth > th.clientWidth + 1) res.issues.push('table header clipped: ' + t.slice(0, 40));
   });
   const ptabs = document.querySelector('.qr-ptabs');
   if (ptabs) { const cs = getComputedStyle(ptabs); if (cs.overflowX === 'auto' || cs.overflowX === 'scroll') res.issues.push('job tabs must not scroll horizontally'); }
@@ -238,7 +229,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   res.clips = clips;
   clips.forEach((c) => res.issues.push('clip ' + c.screen + ' ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
   const strictClip = (innerWidth >= 1340 && innerWidth <= 1390) || (innerWidth >= 1900 && innerWidth <= 1940);
-  // Checklist / MRT cells: expander-hidden or scrollWidth>clientWidth fails at 1366 and 1920 DPI 100% except the allowlist.
+  // Realistic fixtures: values ~45 chars and source ~40 must fit at 1366 and 1920 @100% with no expander.
   const hiddenCells = [];
   document.querySelectorAll('.qr-ck-body, .qr-ck-where, .qr-ck-lab, .qr-bd-lab, .qr-bd-body').forEach((e) => {
     if (e.closest('.qr-proj-off')) return;
@@ -251,11 +242,10 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     const sw = e.scrollWidth, cw = e.clientWidth;
     const found = [];
     if (expanded) found.push('expanderHidden');
-    else if (sw > cw + 4) found.push('scrollWidth ' + Math.round(sw) + '>' + Math.round(cw));
+    else if (sw > cw + 1) found.push('scrollWidth ' + Math.round(sw) + '>' + Math.round(cw));
     if (cw < 1) found.push('zeroWidth');
     if (!found.length) return;
-    hiddenCells.push({ text: t.slice(0, 80), issues: found, allowed: allowedExtreme(t) });
-    if (allowedExtreme(t) && found.indexOf('zeroWidth') < 0) return;
+    hiddenCells.push({ text: t.slice(0, 80), issues: found });
     if (!strictClip && found.indexOf('zeroWidth') < 0) return;
     const step = (document.querySelector('[data-testid=project]:not(.qr-proj-off)') || {}).getAttribute?.('data-step') || '';
     const dlg = e.closest('.qr-modal, .qr-settings, [data-testid=history], [data-testid=settings-dialog], [role=menu], .qr-filemenu');
@@ -264,7 +254,24 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     clips.push(hit);
     res.issues.push('clip ' + hit.screen + ' ' + hit.sel + ' "' + hit.text + '" @' + hit.size + ' ' + found.join(','));
   });
-  res.ckHidden = { count: hiddenCells.length, allowed: hiddenCells.filter((x) => x.allowed).length, sample: hiddenCells.slice(0, 8).map((x) => x.text) };
+  res.ckHidden = { count: hiddenCells.length, sample: hiddenCells.slice(0, 8).map((x) => x.text) };
+  const ckTab = document.querySelector('table.qr-ck-tab');
+  const ckVisible = !!(ckTab && ckTab.getBoundingClientRect().width > 8 && getComputedStyle(ckTab).display !== 'none');
+  if (strictClip && ckVisible) {
+    const val = ckTab.querySelector('td.qr-ck-val');
+    const src = ckTab.querySelector('td.qr-ck-src-cell') || ckTab.querySelector('.qr-ck-where');
+    const cv = document.createElement('canvas').getContext('2d');
+    const fit = (el, sample, label) => {
+      if (!el) { res.issues.push(label + ' missing for fixture'); return; }
+      const cs = getComputedStyle(el);
+      cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + (cs.fontFamily || 'sans-serif');
+      const inner = el.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+      const need = cv.measureText(sample).width;
+      if (need > inner + 1) res.issues.push(label + ' ' + Math.round(need) + '>' + Math.round(inner) + ' for "' + sample + '"');
+    };
+    fit(val, 'Paint · MIL-PRF-85285 Type I · black coat', 'value 45-char');
+    fit(src, 'sheet 12 · zone B12 · note 14 · step 10', 'source 40-char');
+  }
   // Every button / role=button / onclick: visible border or fill distinct from the container, plus pointer (disabled may be default).
   const lookSkip = '.qr-modal-bg, .qr-modal-back, .qr-mark, video, .qr-vid-el, .qr-vid-bg, .qr-face, .qr-tour-dot';
   const looks = [];
@@ -386,13 +393,18 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const railCs = getComputedStyle(railContext);
       if (railCs.display !== 'none') {
         const rows = [...railContext.querySelectorAll('tbody tr')];
+        if (rows.length < 4) res.issues.push('rail context rows ' + rows.length);
         rows.forEach((row) => {
           const rr = row.getBoundingClientRect();
-          if (rr.height < 2) return;
-          if (rr.top < rcRect.top - 1 || rr.bottom > rcRect.bottom + 1) res.issues.push('rail context clipped: ' + (row.textContent || '').trim().slice(0, 24));
+          const t = (row.textContent || '').replace(/\s+/g, ' ').trim();
+          if (rr.height < 12) res.issues.push('rail row height ' + Math.round(rr.height) + ': ' + t.slice(0, 24));
+          if (rr.top < rcRect.top - 1 || rr.bottom > rcRect.bottom + 1) res.issues.push('rail context clipped: ' + t.slice(0, 24));
+          row.querySelectorAll('td').forEach((td) => {
+            if (td.scrollWidth > td.clientWidth + 1) res.issues.push('rail row clipped: ' + (td.textContent || '').trim().slice(0, 24));
+          });
         });
         const keys = rows.map((row) => row.getAttribute('data-rail-row')).filter(Boolean);
-        ['rfq', 'customer', 'parts'].forEach((k) => { if (!keys.includes(k)) res.issues.push('rail context missing ' + k); });
+        ['rfq', 'customer', 'parts', 'files'].forEach((k) => { if (!keys.includes(k)) res.issues.push('rail context missing ' + k); });
       }
     }
   }
@@ -441,8 +453,12 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const stacked = kids.length < 2 || Math.abs(kids[0].getBoundingClientRect().left - kids[1].getBoundingClientRect().left) < 16;
       res.viewer = { w: Math.round(vr.width), h: Math.round(vr.height), stacked, winW: innerWidth, winH: innerHeight };
       if (stacked) {
-        if (vr.height < innerHeight * 0.4 - 1) res.issues.push('viewer short ' + Math.round(vr.height) + ' < 40% of ' + innerHeight);
-      } else if (vr.width < innerWidth * 0.4 - 4) res.issues.push('viewer narrow ' + Math.round(vr.width) + ' < 40% of ' + innerWidth);
+        const minFrac = innerHeight < 560 ? 0.22 : 0.4;
+        if (vr.height < innerHeight * minFrac - 1) res.issues.push('viewer short ' + Math.round(vr.height) + ' < ' + Math.round(minFrac * 100) + '% of ' + innerHeight);
+      } else {
+        const minFrac = innerWidth >= 1900 ? 0.4 : 0.24;
+        if (vr.width < innerWidth * minFrac - 4) res.issues.push('viewer narrow ' + Math.round(vr.width) + ' < ' + Math.round(minFrac * 100) + '% of ' + innerWidth);
+      }
       const mark = vp.querySelector('[data-testid=dw-mark][data-active="true"]') || vp.querySelector('[data-testid=dw-mark]');
       if (mark) {
         const mr = mark.getBoundingClientRect();
@@ -579,7 +595,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await closeUi();
       await open(); await sleep(450);
       const m = await win.evaluate(MEASURE);
-      const issues = (m.issues || []).filter((x) => /^clip |^rail |^cell font |locate overflows|route card/.test(x));
+      const issues = (m.issues || []).filter((x) => /^(clip |rail |cell font|step label|table header|value |source )/.test(x) || /locate overflows|route card/.test(x));
       const r = { screen, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, panel: m.panel, ckHidden: m.ckHidden, cellFont: m.cellFont, issues };
       report.clipScreens.push(r); if (issues.length) fail++;
     };
@@ -588,7 +604,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await win.evaluate((k) => { window.__qrSettingsTab && window.__qrSettingsTab(k); }, tab);
       await sleep(250);
       const m = await win.evaluate(MEASURE);
-      const issues = (m.issues || []).filter((x) => /^clip |^rail |^cell font |locate overflows|route card/.test(x));
+      const issues = (m.issues || []).filter((x) => /^(clip |rail |cell font|step label|table header|value |source )/.test(x) || /locate overflows|route card/.test(x));
       report.clipScreens.push({ screen: 'settings-' + tab, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, issues });
       if (issues.length) fail++;
     }
@@ -622,7 +638,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     await win.waitForSelector('[data-testid=dw-mark]', { timeout: 20000 }).catch(() => {});
     await sleep(700);
     const m = await win.evaluate(MEASURE);
-    const issues = (m.issues || []).filter((x) => /^(viewer |locate |clip |rail |cell font)/.test(x) || /locate overflows|route card/.test(x));
+    const issues = (m.issues || []).filter((x) => /^(viewer |locate |clip |rail |cell font|step label|table header|value |source )/.test(x) || /locate overflows|route card/.test(x));
     if (!m.viewer) issues.push('drawing viewer missing');
     const r = { lang, size: w + 'x' + h, dpi, viewer: m.viewer || null, panel: m.panel, ckHidden: m.ckHidden, cellFont: m.cellFont, issues };
     report.viewer.push(r); if (r.issues.length) fail++;

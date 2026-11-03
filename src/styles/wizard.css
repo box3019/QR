@@ -52,8 +52,8 @@
 .qr-busy { font-size: var(--qr-fs-md); min-width: 22rem; }
 .qr-busy-tech { font-size: var(--qr-fs-xs); opacity: 0.75; margin-top: 0.3rem; direction: ltr; overflow-wrap: anywhere; }
 
-/* Vertical wizard rail on the start side: cap width so the checklist pane stays readable at 1366. */
-.qr-wiz { flex: 1 1 auto; min-height: 0; min-width: 0; display: grid; grid-template-columns: min(13.5rem, 216px) minmax(0, 1fr); border-top: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); }
+/* Vertical wizard rail: wide enough for "Documents & questions" and RFQ/Customer/Parts/Files at every DPI. */
+.qr-wiz { flex: 1 1 auto; min-height: 0; min-width: 0; display: grid; grid-template-columns: 16rem minmax(0, 1fr); border-top: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); }
 .qr-rail { min-height: 0; min-width: 0; display: flex; flex-direction: column; font-size: 0.875rem; line-height: 1.35; }
 .qr-rail .mrt-wizard-steps { flex: 1 1 auto; }
 .qr-rail .mrt-wizard-step-label { font-size: 1rem; }
@@ -78,21 +78,22 @@
 @container (max-width: 24rem) { .qr-root .qr-bsec button.qr-sec-main { grid-template-columns: minmax(0, 1fr); flex-basis: 100%; } .qr-root .qr-bsec button.qr-sec-main > :nth-child(n+3) { grid-column: 1; } }
 
 /* ===== v0.1.4 wizard shell: MRT "Create CMM Program" layout (cmm-pr3 src/mrtLiquidGlass.css .mrt-wizard-*, QR's own copy, px/16 -> rem) ===== */
-.qr-wiz { grid-template-columns: min(13.5rem, 216px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; line-height: 1.35; }
+.qr-wiz { grid-template-columns: 16rem minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; line-height: 1.35; }
 .qr-rail-context { grid-column: 1; grid-row: 1; min-width: 0; max-height: none; overflow: visible; border-bottom: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); border-inline-end: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.25rem 0.35rem; display: flex; align-items: stretch; }
 .qr-wsum { overflow: visible; border: 1px solid var(--mrt-ui-border, var(--mrt-border)); border-radius: var(--mrt-radius, 6px); background: var(--mrt-surface, #fff); width: 100%; }
-.qr-wsum-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.qr-wsum-table { width: 100%; table-layout: auto; border-collapse: collapse; }
 .qr-wsum-table th, .qr-wsum-table td { border-bottom: 1px solid var(--mrt-ui-border, var(--mrt-border)); padding: 0.12rem 0.3rem; vertical-align: middle; text-align: start; line-height: 1.2; font-size: var(--qr-fs-sm); }
+.qr-wsum-table tr { min-height: 1.15rem; }
 .qr-wsum-table tr:last-child th, .qr-wsum-table tr:last-child td { border-bottom: 0; }
-.qr-wsum-table td:first-child { width: 42%; border-inline-end: 1px solid var(--mrt-ui-border, var(--mrt-border)); background: var(--mrt-surface-muted, #fafafb); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: clip; color: var(--mrt-text); }
-.qr-wsum-table td { overflow: hidden; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; text-overflow: clip; color: var(--mrt-text); }
+.qr-wsum-table td:first-child { width: max-content; border-inline-end: 1px solid var(--mrt-ui-border, var(--mrt-border)); background: var(--mrt-surface-muted, #fafafb); font-weight: 600; white-space: nowrap; overflow: visible; text-overflow: clip; color: var(--mrt-text); }
+.qr-wsum-table td { overflow: visible; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; text-overflow: clip; color: var(--mrt-text); }
 .qr-wiz > .qr-wiz-head { grid-column: 2; grid-row: 1; min-width: 0; max-height: 56px; background: var(--mrt-header-bg, #f4f4f5); padding: 0.5rem 1rem; gap: 0.5rem 0.75rem; flex-wrap: nowrap; align-items: center; }
 .qr-wiz-title { flex: 0 0 auto; font-size: 1rem; font-weight: 600; white-space: nowrap; margin: 0; }
 .qr-rail { grid-column: 1; grid-row: 2; }
 .qr-rail .mrt-wizard-steps { background: var(--mrt-surface, #fff); padding: 0.75rem 0.75rem 0.75rem 1rem; gap: 0.15rem; }
 .qr-rail .mrt-wizard-step { padding: 0.55rem 0.6rem; }
 .qr-rail .mrt-wizard-step-marker { height: 1.375rem; width: 1.375rem; font-size: 0.6875rem; }
-.qr-rail .mrt-wizard-step-label { font-size: 1rem; font-weight: 600; }
+.qr-rail .mrt-wizard-step-label, .qr-rail .mrt-wizard-step-text { font-size: 1rem; font-weight: 600; overflow: visible; text-overflow: clip; white-space: nowrap; min-width: max-content; }
 .qr-rail .mrt-wizard-step[data-state='locked'] .mrt-wizard-step-label, .qr-rail .mrt-wizard-step[data-state='todo'] .mrt-wizard-step-label { color: var(--mrt-text-muted, #636366); }
 .qr-wiz > .qr-wiz-main { grid-column: 2; grid-row: 2; background: var(--mrt-surface, #fff); }
 .qr-wiz-footer { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.75rem 1rem; }
@@ -222,7 +223,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-pnav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .qr-pnav-title { font-weight: 600; }
 .qr-chev-back { margin-inline-start: 0; margin-inline-end: 0.35rem; }
-.qr-pview-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(40vw, 1fr) minmax(0, 1.15fr); gap: 0.5rem; }
+.qr-pview-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(20rem, 0.62fr) minmax(24rem, 1.38fr); gap: 0.5rem; }
 .qr-pview-cols.qr-pview-one { grid-template-columns: minmax(0, 1fr); }
 .qr-pview-cols > * { min-height: 0; min-width: 0; }
 .qr-pview-cols > :first-child { min-width: 0; }
@@ -316,6 +317,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root table.qr-mrt.qr-hist-t, .qr-root table.qr-mrt.qr-catalog { table-layout: auto; }
 .qr-root table.qr-mrt.qr-plist-tab { table-layout: auto; }
 .qr-root table.qr-mrt.qr-tri-tab { table-layout: fixed; width: 100%; max-width: 100%; }
+.qr-root table.qr-mrt.qr-tri-tab col:first-child { width: 5.2rem; }
 .qr-root table.qr-mrt .qr-tri-acts { white-space: nowrap; display: inline-flex; gap: 0.15rem; max-width: 100%; overflow: hidden; }
 .qr-root table.qr-mrt .qr-tri-acts .mrt-btn, .qr-root table.qr-mrt .qr-tri-acts button { min-width: 0 !important; padding-inline: 0.35rem !important; }
 .qr-root .qr-triage { max-width: 100%; overflow-x: hidden; }
@@ -327,13 +329,13 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-ck-lvl { font-weight: 600; } .qr-ck-lvl[data-lvl="veryTight"] { color: var(--qr-bad-text); text-decoration: underline; } .qr-ck-lvl[data-lvl="tight"] { color: var(--qr-warn-text); } .qr-ck-lvl[data-lvl="complex"] { text-decoration: underline; }
 .qr-ck-warn { font-size: var(--qr-fs-xs); margin: 2px 0 4px; } .qr-ck-zn { font-size: var(--qr-fs-xs); }
 .qr-ck-tab { table-layout: fixed; width: 100%; max-width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
-.qr-ck-tab col.qr-ck-c-item { width: 44%; } .qr-ck-tab col.qr-ck-c-st { width: 72px; } .qr-ck-tab col.qr-ck-c-val { width: auto; } .qr-ck-tab col.qr-ck-c-loc { width: 34px; }
+.qr-ck-tab col.qr-ck-c-item { width: 10.25rem; } .qr-ck-tab col.qr-ck-c-st { width: 4.25rem; } .qr-ck-tab col.qr-ck-c-val { width: auto; } .qr-ck-tab col.qr-ck-c-loc { width: 34px; }
 .qr-ck-tab thead th { font-size: var(--qr-fs-sm); font-weight: 600; background: var(--mrt-surface-muted); color: var(--mrt-text); border-bottom: 1px solid var(--mrt-grid-border, var(--qr-line, rgba(128,128,128,.35))); padding: 0.28em 0.35em; text-align: start; white-space: nowrap; }
 .qr-ck-tab td, .qr-ck-tab tbody th { padding: 0.12em 1px; vertical-align: middle; border-bottom: 1px solid var(--mrt-grid-border, var(--qr-line, rgba(128,128,128,.25))); text-align: start; }
 .qr-ck-gh th { font-size: var(--qr-fs-md); font-weight: 700; padding: 0.35em 0.4em 0.2em; color: var(--mrt-text); background: var(--mrt-surface-muted); box-shadow: inset 3px 0 0 var(--mrt-accent); }
 .qr-ck-sub .qr-ck-l { padding-inline-start: 12px; }
 .qr-ck-l, .qr-ck-st, .qr-ck-src, .qr-ck-locc { white-space: nowrap; overflow: hidden; text-overflow: clip; min-width: 0; }
-.qr-ck-val { white-space: normal; overflow: hidden; text-overflow: clip; min-width: 0; }
+.qr-ck-val { white-space: nowrap; overflow: hidden; text-overflow: clip; min-width: 0; }
 .qr-ck-locc { width: 34px; min-width: 34px; text-align: center; overflow: visible; padding-inline: 1px; }
 .qr-ck-gh th, .qr-ck-ind > div { white-space: nowrap; }
 .qr-ck-ind > div { overflow: visible; text-overflow: clip; }
@@ -351,27 +353,33 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 
 /* No horizontal scrollbars anywhere: tables fit their container and wrap text (tests/no_hscroll.test.cjs, scripts/check-layout.cjs). */
 .qr-root table { max-width: 100%; }
-.qr-root .qr-table, .qr-root .qr-hist-t, .qr-root .qr-wsum-table, .qr-root .qr-catalog { width: 100%; table-layout: fixed; }
-.qr-root .qr-table td, .qr-root .qr-table th, .qr-root .qr-hist-t td, .qr-root .qr-hist-t th, .qr-root .qr-wsum-table td, .qr-root .qr-wsum-table th, .qr-root .qr-catalog td, .qr-root .qr-catalog th { overflow-wrap: anywhere; word-break: normal; min-width: 0; }
+.qr-root .qr-table, .qr-root .qr-hist-t, .qr-root .qr-catalog { width: 100%; table-layout: fixed; }
+.qr-root .qr-wsum-table { width: 100%; table-layout: auto; }
+.qr-root .qr-table td, .qr-root .qr-table th, .qr-root .qr-hist-t td, .qr-root .qr-hist-t th, .qr-root .qr-catalog td, .qr-root .qr-catalog th { overflow-wrap: anywhere; word-break: normal; min-width: 0; }
 .qr-root .qr-hist-body, .qr-root .qr-modal-b, .qr-root .qr-settings-body, .qr-root .qr-summary-step, .qr-root .qr-wiz > .qr-wiz-main { overflow-x: hidden !important; }
 .qr-root .qr-ck-link, .qr-root .qr-cks-p .qr-ck-link { white-space: nowrap; max-width: 100%; text-align: start; }
-.qr-root .qr-ck-tab th, .qr-root .qr-ck-tab td:not(.qr-ck-val), .qr-root .qr-ck-body, .qr-root .qr-ck-where { white-space: nowrap; overflow-wrap: normal; min-width: 0; }
-.qr-root .qr-ck-tab td.qr-ck-val { white-space: normal; overflow-wrap: normal; min-width: 0; }
+.qr-root .qr-ck-tab th, .qr-root .qr-ck-tab td, .qr-root .qr-ck-body, .qr-root .qr-ck-where { white-space: nowrap; overflow-wrap: normal; min-width: 0; }
 .qr-root .qr-ck-link { padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; min-width: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; line-height: inherit; display: inline; }
 
 /* One line per item: headers, labels, chips, tags, badges, stat tiles and buttons never wrap inside themselves; a new line only between separate items
    (tests/no_wrap.test.cjs, scripts/check-layout.cjs). Long descriptive text may still wrap between words. */
 .qr-root .qr-cks-p .qr-ck-link > * { white-space: nowrap; }
 .qr-root th, .qr-root button, .qr-root summary, .qr-root .qr-stat-l, .qr-root .qr-stat-n, .qr-root .qr-chip, .qr-root .qr-pcard-tag, .qr-root .qr-pcard-badge, .qr-root .qr-brand-badge, .qr-root .qr-lbl, .qr-root .qr-warnbar button { white-space: nowrap; }
-/* Part card checklist: MRT table (Item | Status | Value | locate). Source is a second sub-line in Value. */
+/* Part card checklist: MRT table (Item | Status | Value | locate). Source is a full-width sub-row. */
 .qr-root .qr-ck-tab { table-layout: fixed; width: 100%; max-width: 100%; border-collapse: collapse; }
 .qr-root .qr-ck-tab thead th { background: var(--mrt-surface-muted); font-weight: 600; }
 .qr-root .qr-ck-tab tbody tr.qr-ck-item:nth-child(even of .qr-ck-item) { background: color-mix(in srgb, var(--mrt-text-muted) 6%, var(--mrt-surface)); }
 .qr-root .qr-ck-tab tbody tr.qr-ck-item:hover { background: color-mix(in srgb, var(--mrt-accent) 10%, var(--mrt-surface)); }
 .qr-root .qr-ck-tab tbody tr.qr-ck-item[data-active='true'] { background: color-mix(in srgb, var(--mrt-accent) 18%, var(--mrt-surface)); outline: 1px solid var(--mrt-accent); outline-offset: -1px; }
+.qr-root .qr-ck-tab tbody tr.qr-ck-src-row td { padding: 0 0.35em 0.2em; border-bottom: 1px solid var(--mrt-grid-border, var(--qr-line, rgba(128,128,128,.25))); }
+.qr-root .qr-ck-tab tbody tr.qr-ck-item + tr.qr-ck-src-row { background: inherit; }
+.qr-root .qr-ck-tab tbody tr.qr-ck-src-row .qr-ck-where { display: block; min-width: 0; }
 .qr-root .qr-ck-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 0; min-width: 0; position: relative; }
-.qr-root .qr-ck-body, .qr-root .qr-ck-where, .qr-root .qr-ck-lab {
+.qr-root .qr-ck-body, .qr-root .qr-ck-where {
   overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%; display: block; min-width: 0; letter-spacing: -0.02em;
+}
+.qr-root .qr-ck-lab {
+  overflow: visible !important; text-overflow: clip !important; white-space: normal !important; overflow-wrap: normal; word-break: keep-all; max-width: 100%; display: block; min-width: 0; letter-spacing: -0.02em;
 }
 .qr-root .qr-ck-more { width: 1.1rem !important; min-width: 1.1rem !important; max-width: 1.1rem !important; height: 1.1rem !important; min-height: 1.1rem !important; padding: 0 !important; }
 .qr-root .qr-ck-full { position: absolute; z-index: 8; inset-inline-start: 0; top: calc(100% + 2px); white-space: nowrap; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border-strong); border-radius: 4px; padding: 2px 6px; box-shadow: var(--qr-card-shadow); }
@@ -407,8 +415,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 
 /* Checklist part card table: auto layout with nowrap cells */
 .qr-root .qr-ck-tab { table-layout: fixed; }
-.qr-root .qr-ck-tab th, .qr-root .qr-ck-tab td:not(.qr-ck-val) { white-space: nowrap; }
-.qr-root .qr-ck-tab td.qr-ck-val { white-space: normal; }
+.qr-root .qr-ck-tab th, .qr-root .qr-ck-tab td { white-space: nowrap; }
 
 /* Indicators and levels: never wrap */
 .qr-root .qr-ck-lvl { white-space: nowrap; }
@@ -442,15 +449,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-cks-tab, .qr-root .qr-ck-tab, .qr-root table.qr-mrt, .qr-root table.qr-mrt th, .qr-root table.qr-mrt td { font-size: var(--qr-fs-sm); }
 .qr-root table.qr-mrt tr.qr-mrt-gh th, .qr-root table.qr-mrt tr.qr-ck-gh th { font-size: var(--qr-fs-md); }
 
-/* Narrow viewport (a Full HD screen at 200% scale is 960 CSS pixels wide): the step rail shrinks to its numbered markers so the
-   summary table keeps the whole width and never needs a horizontal scrollbar. Step names stay in the tooltip. */
-@media (max-width: 1100px) {
-  .qr-root .qr-wiz { grid-template-columns: 2.75rem minmax(0, 1fr) !important; }
-  .qr-root .qr-rail-context { overflow: hidden; padding: 0; }
-  .qr-root .qr-rail-context > * { display: none !important; }
-  .qr-root .qr-rail .mrt-wizard-steps { padding: 0.75rem 0.25rem; }
-  .qr-root .qr-rail .mrt-wizard-step { justify-content: center; padding: 0 !important; }
-  .qr-root .qr-rail .mrt-wizard-step-text, .qr-root .qr-rail .mrt-wizard-step-label, .qr-root .qr-rail .mrt-wizard-step-caption { display: none !important; }
+/* High-DPI Full HD (960–1280 CSS px) must keep the rail labels; only a truly narrow pane tightens padding. */
+@media (max-width: 800px) {
   .qr-root[data-step="4"] .qr-wiz-main { padding-inline: 0.25rem; }
   .qr-root .qr-sum-wrap { padding-inline: 0.25rem; }
 }
