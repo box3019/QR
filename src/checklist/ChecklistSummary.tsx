@@ -8,6 +8,7 @@ import { getCkSettings } from './store';
 import { itemWhat } from './format';
 import { materialShort } from '../../core/checklist/short.mjs';
 import { ChecklistBody } from './Checklist';
+import { MrtTable, MrtRow } from '../ui/MrtTable';
 
 const GLYPH: any = { yes: '\u2713', no: '\u2013', notfound: '?' };
 const LISTED = GROUPS.filter((g: string) => g !== 'material');
@@ -43,16 +44,16 @@ export function ChecklistSummary({ parts, goPart }: any) {
   };
   const ncol = 4 + LISTED.length;
   return <details className="qr-cks qr-cks-card" open data-testid="checklist-summary"><summary title={t('tip.checklistSum')}>{t('ck.sumTitle')}</summary>
-    <table className="qr-cks-tab" ref={tabRef}>
+    <MrtTable className="qr-cks-tab" tableRef={tabRef}>
       <thead><tr><th>{t('ck.col.part')}</th><th>{t('ck.prec.title')}</th><th>{t('ck.cx.title')}</th>{GROUPS.map((g: string) => <th key={g}>{g === 'material' ? t('ck.g.material') : t('ck.g.' + g)}</th>)}</tr></thead>
       <tbody>{list.map((p: any, i: number) => { const e = evs[i]; const rk = String(p.id || i) + ':' + i; const isOpen = !!open[rk]; const flip = () => setOpen((o) => ({ ...o, [rk]: !o[rk] }));
         return <React.Fragment key={rk}>
-          <tr data-testid="cks-row" data-open={isOpen ? '1' : '0'} className="qr-cks-r" onClick={(ev) => { if (!(ev.target as HTMLElement).closest('button')) flip(); }}>
+          <MrtRow data-testid="cks-row" data-open={isOpen ? '1' : '0'} className="qr-cks-r" onClick={(ev: any) => { if (!(ev.target as HTMLElement).closest('button')) flip(); }}>
             <td className="qr-cks-p"><button type="button" className="qr-cks-x" data-testid="cks-expand" aria-expanded={isOpen} title={isOpen ? t('ck.collapse') : t('ck.expand')} onClick={flip}>{isOpen ? '\u25BE' : '\u25B8'}</button><button type="button" className="qr-ck-link" title={t('tip.openPart')} onClick={() => goPart && goPart(parts.indexOf(p))}><bdi className="qr-ltr" title={p.partNo}>{p.partNo}</bdi></button></td>
             <td className="qr-cks-i" data-lvl={e.precision.level} title={t('ck.prec.why', { n: e.precision.count, x: e.precision.tightest ? itemWhat(e.precision.tightest) : '' })} data-testid="cks-prec">{t('ck.prec.' + e.precision.level)}</td>
             <td className="qr-cks-i" data-lvl={e.complexity.level} title={t('ck.cx.why', { steps: e.complexity.counts.steps || 0, coat: e.complexity.counts.coatings || 0, asm: e.complexity.counts.asmKinds || 0, thr: e.complexity.counts.threads || 0, tight: e.complexity.counts.tight || 0 })} data-testid="cks-cx">{t('ck.cx.' + e.complexity.level)}</td>
-            {GROUPS.map((g: string) => groupCell(e, g))}</tr>
+            {GROUPS.map((g: string) => groupCell(e, g))}</MrtRow>
           {isOpen && <tr className="qr-cks-xr" data-testid="cks-expanded"><td colSpan={ncol}><div className="qr-cks-xin"><ChecklistBody part={p} /></div></td></tr>}
         </React.Fragment>; })}</tbody>
-    </table></details>;
+    </MrtTable></details>;
 }

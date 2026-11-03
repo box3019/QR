@@ -108,7 +108,7 @@ export function RouteCard({ part }: any) {
       <div><b>{t('rc.part')}</b><span className="qr-ltr">{part.partNo}</span></div><div><b>{t('rc.rev')}</b>{part.rev || '-'}</div><div><b>{t('rc.customer')}</b>{part.customer}</div><div><b>{t('rc.material')}</b><span>{L(part.material, 'normalized') || '—'}</span></div>
       <div style={{ gridColumn: 'span 2' }}><b>{t('rc.title')}</b>{part.title}</div><div><b>{t('rc.source')}</b>{L(part, 'routeSource')}</div><div><b>{t('rc.status')}</b><PlainStatusBadge part={part} /> · {t('rc.readOnly')}</div>
     </div>
-    <table className="qr-table">
+    <table className="qr-mrt qr-table" data-mrt="1">
       <thead><tr><th style={{ width: 50 }}>{t('rc.step')}</th><th style={{ width: 120 }}>{t('rc.operation')}</th><th>{t('rc.instructions')}</th><th style={{ width: 170 }}>{t('rc.specs')}</th><th style={{ width: 110 }}>{t('rc.src')}</th><th className="qr-rc-flags">{t('rc.flags')}</th></tr></thead>
       <tbody>{part.route.map((s: any, i: number) => <tr key={i} style={s.blocked ? { background: '#fff7ed' } : {}}>
         <td>{s.seq}</td><td style={{ textTransform: 'capitalize' }}>{L(s, 'type')}{s.title ? <div className="qr-muted">{L(s, 'title')}</div> : null}</td>
@@ -125,7 +125,7 @@ export function ModelView({ part }: any) {
     <h3 style={{ marginTop: 0 }}>{t('mv.title')}</h3>
     {part.model ? <div className="qr-kv"><div>{t('mv.file')}</div><div className="qr-ltr">{part.model.path}</div><div>{t('mv.stepName')}</div><div className="qr-ltr">{part.model.fileName}</div><div>{t('mv.schema')}</div><div>{part.model.schema}</div><div>{t('mv.size')}</div><div>{Math.round(part.model.size / 1024)} KB</div></div>
       : <div><Chip t="attention">{t('mv.notFound')}</Chip></div>}
-    <h4>{t('mv.log')}</h4><ul dir="ltr">{(part.modelSearchLog || []).map((l: string, i: number) => <li key={i}>{l}</li>)}</ul>
+    <h4>{t('mv.log')}</h4><table className="qr-mrt qr-table" data-mrt="1" dir="ltr"><thead><tr><th>{t('ck.col.item')}</th></tr></thead><tbody>{(part.modelSearchLog || []).map((l: string, i: number) => <tr key={i} className="qr-mrt-row"><td>{l}</td></tr>)}</tbody></table>
     <div className="qr-muted">{t('mv.noViewer')}</div>
   </div>;
 }
@@ -136,10 +136,10 @@ export function DataView({ part }: any) {
       <div>{t('dv.material')}</div><div>{L(part.material, 'normalized')} <span className="qr-muted">({L(part.material, 'source')}{part.material?.raw ? `: "${part.material.raw}"` : ''}) · {part.material?.family}</span></div>
       <div>{t('dv.bomSource')}</div><div>{part.bomSource || '—'}</div><div>{t('dv.partsList')}</div><div>{part.partsList?.name || '—'}</div>
     </div>
-    {part.zones && <><h4>{t('dv.zones')}</h4><table className="qr-table"><thead><tr><th>{t('dv.note')}</th><th>{t('dv.text')}</th><th>{t('dv.perSheet')}</th><th>{t('dv.total')}</th></tr></thead><tbody>{part.zones.map((z: any) => <tr key={z.note}><td>{z.note}</td><td>{z.text}</td><td>{Object.entries(z.perSheet).map(([s, c]) => t('dv.sheetN', { s, c })).join(', ') || '—'}</td><td>{z.total}</td></tr>)}</tbody></table></>}
-    <h4>{t('dv.threads')}</h4><table className="qr-table"><thead><tr><th>{t('dv.thread')}</th><th>{t('dv.callout')}</th><th>{t('dv.qty')}</th><th>{t('dv.insert')}</th></tr></thead><tbody>{part.threads.map((th: any, i: number) => <tr key={i}><td>{th.thread}</td><td>{th.raw}</td><td>{th.qty}</td><td>{th.insert}</td></tr>)}</tbody></table>
-    {part.bom.length > 0 && <><h4>{t('dv.bom')}</h4><table className="qr-table"><thead><tr><th>{t('dv.seq')}</th><th>{t('dv.partNo')}</th><th>{t('dv.catalog')}</th><th>{t('dv.desc')}</th><th>{t('dv.qty')}</th></tr></thead><tbody>{part.bom.map((b: any, i: number) => <tr key={i}><td>{b.seq}</td><td>{b.partNo}</td><td>{b.catalogNo}</td><td>{b.desc}{b.alternatives?.length ? <div className="qr-muted">{t('dv.alt', { list: b.alternatives.map((a: any) => a.partNo).join(', ') })}</div> : null}</td><td>{b.qty} {b.uom}</td></tr>)}</tbody></table></>}
-    <h4>{t('dv.notes')}</h4><table className="qr-table"><tbody>{part.notes.map((n: any, i: number) => <tr key={i}><td style={{ width: 40 }}>{n.n}</td><td>{n.text}</td></tr>)}</tbody></table>
+    {part.zones && <><h4>{t('dv.zones')}</h4><table className="qr-mrt qr-table" data-mrt="1"><thead><tr><th>{t('dv.note')}</th><th>{t('dv.text')}</th><th>{t('dv.perSheet')}</th><th>{t('dv.total')}</th></tr></thead><tbody>{part.zones.map((z: any) => <tr key={z.note}><td>{z.note}</td><td>{z.text}</td><td>{Object.entries(z.perSheet).map(([s, c]) => t('dv.sheetN', { s, c })).join(', ') || '—'}</td><td>{z.total}</td></tr>)}</tbody></table></>}
+    <h4>{t('dv.threads')}</h4><table className="qr-mrt qr-table" data-mrt="1"><thead><tr><th>{t('dv.thread')}</th><th>{t('dv.callout')}</th><th>{t('dv.qty')}</th><th>{t('dv.insert')}</th></tr></thead><tbody>{part.threads.map((th: any, i: number) => <tr key={i}><td>{th.thread}</td><td>{th.raw}</td><td>{th.qty}</td><td>{th.insert}</td></tr>)}</tbody></table>
+    {part.bom.length > 0 && <><h4>{t('dv.bom')}</h4><table className="qr-mrt qr-table" data-mrt="1"><thead><tr><th>{t('dv.seq')}</th><th>{t('dv.partNo')}</th><th>{t('dv.catalog')}</th><th>{t('dv.desc')}</th><th>{t('dv.qty')}</th></tr></thead><tbody>{part.bom.map((b: any, i: number) => <tr key={i}><td>{b.seq}</td><td>{b.partNo}</td><td>{b.catalogNo}</td><td>{b.desc}{b.alternatives?.length ? <div className="qr-muted">{t('dv.alt', { list: b.alternatives.map((a: any) => a.partNo).join(', ') })}</div> : null}</td><td>{b.qty} {b.uom}</td></tr>)}</tbody></table></>}
+    <h4>{t('dv.notes')}</h4><table className="qr-mrt qr-table" data-mrt="1"><thead><tr><th>{t('ck.col.item')}</th><th>{t('ck.col.value')}</th></tr></thead><tbody>{part.notes.map((n: any, i: number) => <tr key={i} className="qr-mrt-row"><td>{n.n}</td><td>{n.text}</td></tr>)}</tbody></table>
   </div>;
 }
 

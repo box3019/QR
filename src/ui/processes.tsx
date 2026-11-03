@@ -16,15 +16,18 @@ export function ProcessesPanel({ part }: any) {
     {!req.length && <div className="qr-muted">{t('pp.none')}</div>}
     {req.map((p: any, i: number) => <div key={i} style={{ marginTop: '0.6rem' }}>
       {req.length > 1 && <div className="qr-muted">{t('pp.page')} {p.page}</div>}
-      <div className="qr-kv">
-        <div>{t('pp.material')}</div><div><bdi>{p.material ? [L(p.material, 'family'), p.material.alloy, p.material.temper, p.material.form].filter(Boolean).join(' ') : '—'}</bdi>{p.material && p.material.stds ? <div className="qr-muted qr-ltr">{p.material.stds}</div> : null}</div>
-        <div>{t('pp.heat')}</div><div><bdi>{L(p.summary, 'heatTreat') || '—'}</bdi></div>
-        <div>{t('pp.coatings')}</div><div><bdi>{L(p.summary, 'coatings') || '—'}</bdi></div>
-        <div>{t('pp.paint')}</div><div><bdi>{L(p.summary, 'paint') || '—'}</bdi></div>
-        <div>{t('pp.masking')}</div><div><bdi>{L(p.summary, 'masking') || '—'}</bdi></div>
-        <div>{t('pp.flow')}</div><div><bdi>{L(p.summary, 'flow') || '—'}</bdi></div>
-      </div>
-      {p.procs.length > 0 && <table className="qr-table" style={{ marginTop: '0.5rem' }}>
+      <table className="qr-mrt qr-table" data-mrt="1">
+        <thead><tr><th>{t('ck.col.item')}</th><th>{t('ck.col.value')}</th></tr></thead>
+        <tbody>
+        <tr className="qr-mrt-row"><td>{t('pp.material')}</td><td><bdi>{p.material ? [L(p.material, 'family'), p.material.alloy, p.material.temper, p.material.form].filter(Boolean).join(' ') : '—'}</bdi>{p.material && p.material.stds ? <div className="qr-muted qr-ltr">{p.material.stds}</div> : null}</td></tr>
+        <tr className="qr-mrt-row"><td>{t('pp.heat')}</td><td><bdi>{L(p.summary, 'heatTreat') || '—'}</bdi></td></tr>
+        <tr className="qr-mrt-row"><td>{t('pp.coatings')}</td><td><bdi>{L(p.summary, 'coatings') || '—'}</bdi></td></tr>
+        <tr className="qr-mrt-row"><td>{t('pp.paint')}</td><td><bdi>{L(p.summary, 'paint') || '—'}</bdi></td></tr>
+        <tr className="qr-mrt-row"><td>{t('pp.masking')}</td><td><bdi>{L(p.summary, 'masking') || '—'}</bdi></td></tr>
+        <tr className="qr-mrt-row"><td>{t('pp.flow')}</td><td><bdi>{L(p.summary, 'flow') || '—'}</bdi></td></tr>
+        </tbody>
+      </table>
+      {p.procs.length > 0 && <table className="qr-mrt qr-table" data-mrt="1" style={{ marginTop: '0.5rem' }}>
         <thead><tr><th>{t('pp.no')}</th><th>{t('pp.process')}</th><th>{t('pp.specs')}</th><th>{t('pp.details')}</th></tr></thead>
         <tbody>{p.procs.map((q: any, j: number) => <tr key={j}><td>{q.no}</td><td><bdi>{L(q, 'subtype')}</bdi>{q.layer ? <span className="qr-muted"> ({q.layer})</span> : null}</td>
           <td className="qr-ltr">{[q.stds, q.typecls].filter(Boolean).join(' · ')}</td><td className="qr-ltr">{[q.thick, q.color, q.coats, q.hard, q.temp, q.case].filter(Boolean).join(' · ')}</td></tr>)}</tbody>

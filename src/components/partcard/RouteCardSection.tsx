@@ -3,16 +3,25 @@
 import React from 'react';
 import { t } from '../../i18n';
 import { localized as L } from '../../i18n/localized';
+import { MrtTable, MrtHead, MrtGroup, MrtRow, OverflowLine } from '../../ui/MrtTable';
 
 function Groups({ rc }: any) {
-  return <>{rc.groups.map((g: any) => <div className="qr-rc-g" key={g.key} data-testid="rc-group">
-    <div className="qr-rc-h">{g.key === 'general' ? t('rcard.general') : <><bdi className="qr-ltr">{g.seq}</bdi> {L(g, 'title') || L(g, 'type')}</>}</div>
-    <ul className="qr-rc-list">{g.items.map((i: any, n: number) => <li key={n} data-testid="rc-item" data-kind={i.kind}>
-      {i.kind === 'spec'
-        ? <><bdi className="qr-ltr qr-rc-num">{i.number}</bdi> <span className="qr-muted">{L(i, 'desc')} · {t('rcard.spec')}</span></>
-        : <><span>{L(i, 'text')}</span>{i.number ? <> <bdi className="qr-ltr qr-rc-num">{i.number}</bdi></> : null}</>}
-    </li>)}</ul>
-  </div>)}</>;
+  return <MrtTable className="qr-rc-tab">
+    <MrtHead cells={[t('ck.col.item'), t('ck.col.value'), t('ck.col.source')]} />
+    <tbody>{rc.groups.map((g: any) => <React.Fragment key={g.key}>
+      <MrtGroup colSpan={3} testid="rc-group">{g.key === 'general' ? t('rcard.general') : <><bdi className="qr-ltr">{g.seq}</bdi> {L(g, 'title') || L(g, 'type')}</>}</MrtGroup>
+      {g.items.map((i: any, n: number) => {
+        const item = i.kind === 'spec' ? String(i.number || '') : (L(i, 'text') || '');
+        const val = i.kind === 'spec' ? (L(i, 'desc') || '') : (i.number ? String(i.number) : '');
+        const src = i.kind === 'spec' ? t('rcard.spec') : '';
+        return <MrtRow key={n} data-testid="rc-item" data-kind={i.kind}>
+          <td>{i.kind === 'spec' ? <bdi className="qr-ltr qr-rc-num">{item}</bdi> : <OverflowLine className="qr-ck-body" text={item}>{item}</OverflowLine>}</td>
+          <td className="qr-muted"><OverflowLine className="qr-ck-body" text={val}>{i.kind === 'spec' ? val : (i.number ? <bdi className="qr-ltr qr-rc-num">{val}</bdi> : val)}</OverflowLine></td>
+          <td className="qr-muted">{src}</td>
+        </MrtRow>;
+      })}
+    </React.Fragment>)}</tbody>
+  </MrtTable>;
 }
 
 /** One part: a collapsed details block; null when the part has nothing for the route card. */

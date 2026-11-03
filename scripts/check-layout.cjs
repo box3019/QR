@@ -289,9 +289,17 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (cs.display !== 'table' && cs.display !== 'inline-table') res.issues.push('part-card details not a table: ' + cs.display);
     if (tab.scrollWidth > tab.clientWidth + 1) res.issues.push('part-card table h-scroll ' + tab.scrollWidth + '>' + tab.clientWidth);
   });
+  const listWidgets = '.qr-prob, .qr-tri-row, .qr-prow, .qr-cust-item, .qr-flag-line, ul.qr-rc-list, .qr-recent ul li, .qr-import-files li, .qr-close-jobs li, [data-testid=tri-row], [data-testid=part-item], [data-testid=problem], [data-testid=task], [data-testid=history-row], [data-testid=recent-row], [data-testid=rc-item], [data-testid=ld-part], [data-ck=item], tr.qr-ck-item, tr.qr-bd-item, [data-testid=cks-row]';
+  document.querySelectorAll(listWidgets).forEach((e) => {
+    if (e.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(e);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return;
+    if (e.closest('[data-mrt]')) return;
+    res.issues.push('item list outside MRT table: ' + selOf(e) + ' "' + (e.textContent || '').trim().slice(0, 32) + '"');
+  });
   // Section heading hierarchy: size >= items in the section, weight >= 600
   const headPairs = [
-    ['.qr-ck-gh th', '.qr-ck-tab thead th, .qr-ck-tab td, .qr-ck-tab .qr-ck-l'],
+    ['.qr-mrt-gh th, .qr-ck-gh th', '.qr-mrt td, .qr-ck-tab thead th, .qr-ck-tab td, .qr-ck-tab .qr-ck-l'],
     ['.qr-pgroup-h', '.qr-pgroup-body .pn, .qr-pgroup-body .qr-part'],
     ['.qr-block-title', '.qr-block-line'],
     ['.qr-panel-h', '.qr-tri-row, .qr-part, .qr-panel td'],
@@ -303,14 +311,15 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     ['.qr-catalog th', '.qr-catalog td'],
     ['.qr-field > label', '.qr-field input, .qr-field select, .qr-field .qr-input'],
     ['.qr-rc-sum', '.qr-rc-list, .qr-rc-note'],
-    ['.qr-tri-sec .qr-panel-h', '.qr-tri-sec .qr-tri-row, .qr-tri-sec .qr-tri-open']
+    ['.qr-tri-sec .qr-panel-h', '.qr-tri-sec .qr-tri-row, .qr-tri-sec .qr-tri-open'],
+    ['.qr-mrt-gh th', '.qr-mrt .qr-mrt-row td']
   ];
   const fw = (cs) => { const w = cs.fontWeight; return w === 'bold' ? 700 : w === 'normal' ? 400 : parseFloat(w) || 400; };
   headPairs.forEach(([hs, is]) => {
     document.querySelectorAll(hs).forEach((h) => {
       if (h.closest('.qr-proj-off')) return;
       const hcs = getComputedStyle(h); if (hcs.display === 'none') return;
-      const scope = h.closest('.qr-ck-tab, .qr-pgroup, .qr-block, .qr-panel, .qr-cks, .qr-ck, .qr-hist-t, .qr-catalog, .qr-field, .qr-rc, .qr-tri-sec, .qr-cks-card, details, table') || h.parentElement;
+      const scope = h.closest('.qr-mrt, .qr-ck-tab, .qr-pgroup, .qr-block, .qr-panel, .qr-cks, .qr-ck, .qr-hist-t, .qr-catalog, .qr-field, .qr-rc, .qr-tri-sec, .qr-cks-card, details, table') || h.parentElement;
       const items = [...(scope || document).querySelectorAll(is)].filter((el) => {
         if (el.closest('.qr-proj-off') || el === h || h.contains(el)) return false;
         const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;

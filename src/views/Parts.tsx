@@ -7,8 +7,7 @@ import { tileCounts } from '../parts/groups.mjs';
 import { listRows, reasonFor } from '../parts/reason.mjs';
 import { localized as L } from '../i18n/localized';
 import { Tiles } from '../ui/Tiles';
-
-const clip = (s: string, n = 140) => (s.length > n ? s.slice(0, n - 1) + '\u2026' : s);
+import { MrtTable, MrtHead, MrtRow, OverflowLine } from '../ui/MrtTable';
 
 export function PartsList({ parts, sel, onOpen, unknown, details }: any) {
   const [filter, setFilter] = useState<string | null>(null);
@@ -18,16 +17,24 @@ export function PartsList({ parts, sel, onOpen, unknown, details }: any) {
     <div className="qr-panel qr-plist-box"><div className="qr-scroll qr-plist-rows" data-testid="parts-rows">
       {allReady && !filter && <div className="qr-allgood" data-testid="all-ready"><i className="qr-dot" data-s="ok" aria-hidden="true" />{t('tile.allGood')}</div>}
       {filter && !rows.length && <div className="qr-muted qr-empty" data-testid="tile-empty">{t('tile.empty')}</div>}
-      {rows.map(({ part: p, index: i }: any) => { const r = reasonFor(p); const txt = r.prob ? L(r.prob, 'message') : r.text || t(r.key as string, r.vars);
-        return <button type="button" key={p.id || i} className="qr-prow" data-active={i === sel} data-status={r.status} data-testid="part-item" title={t('pl.open', { pn: p.partNo || p.drawing.name })} onClick={() => onOpen(i)}>
-          <span className="qr-prow-pn pn"><bdi className="qr-ltr">{p.partNo || p.drawing.name}</bdi></span>
-          <span className="qr-prow-rev qr-muted"><bdi className="qr-ltr">{p.rev || '-'}</bdi></span>
-          <span className="qr-prow-st"><PlainStatusBadge part={p} /></span>
-          <span className="qr-prow-why" data-testid="part-reason"><bdi>{clip(String(txt || ''))}</bdi></span>
-          <span className="qr-chev" aria-hidden="true">{'\u203a'}</span>
-          {details && <span className="qr-prow-sub">{p.rfq && <Chip t="neutral" testid="part-qty">{t('parts.qty')} {p.rfq.qty ?? '?'}</Chip>}<Chip t="neutral">{p.customer}</Chip></span>}
-        </button>; })}
-      {details && unknown.length > 0 && <div className="qr-prow qr-muted">{t('parts.other', { list: unknown.join(', ') })}</div>}
+      <MrtTable className="qr-plist-tab">
+        <MrtHead cells={details
+          ? [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value'), t('parts.qty'), t('rc.customer'), '']
+          : [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value'), '']} />
+        <tbody>
+          {rows.map(({ part: p, index: i }: any) => { const r = reasonFor(p); const txt = String(r.prob ? L(r.prob, 'message') : r.text || t(r.key as string, r.vars) || '');
+            return <MrtRow key={p.id || i} className="qr-prow" active={i === sel} data-status={r.status} data-testid="part-item" title={t('pl.open', { pn: p.partNo || p.drawing.name })} onClick={() => onOpen(i)}>
+              <td className="qr-prow-pn pn"><bdi className="qr-ltr">{p.partNo || p.drawing.name}</bdi></td>
+              <td className="qr-prow-rev qr-muted"><bdi className="qr-ltr">{p.rev || '-'}</bdi></td>
+              <td className="qr-prow-st"><PlainStatusBadge part={p} /></td>
+              <td><OverflowLine className="qr-prow-why" testid="part-reason" text={txt}><bdi>{txt}</bdi></OverflowLine></td>
+              {details ? <td>{p.rfq ? <Chip t="neutral" testid="part-qty">{t('parts.qty')} {p.rfq.qty ?? '?'}</Chip> : ''}</td> : null}
+              {details ? <td><Chip t="neutral">{p.customer}</Chip></td> : null}
+              <td className="qr-chev" aria-hidden="true">{'\u203a'}</td>
+            </MrtRow>; })}
+          {details && unknown.length > 0 && <MrtRow className="qr-prow qr-muted"><td colSpan={details ? 7 : 5}>{t('parts.other', { list: unknown.join(', ') })}</td></MrtRow>}
+        </tbody>
+      </MrtTable>
     </div></div>
   </div>;
 }

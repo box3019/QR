@@ -48,7 +48,7 @@ function questionsHtml(parts, lang = 'he', meta = {}) {
   const date = new Date().toLocaleDateString('en-GB');
   let body = '';
   for (const g of groups) {
-    body += `<h2>${L.part} ${esc(g.partNo)} · ${L.rev} ${esc(g.rev || '-')}${g.title ? ' · ' + esc(g.title) : ''}</h2><table><thead><tr><th class="n">${L.n}</th><th class="s">${L.sev}</th><th>${L.q}</th></tr></thead><tbody>`;
+    body += `<h2>${L.part} ${esc(g.partNo)} · ${L.rev} ${esc(g.rev || '-')}${g.title ? ' · ' + esc(g.title) : ''}</h2><table class="mrt" data-mrt="1"><thead><tr><th class="n">${L.n}</th><th class="s">${L.sev}</th><th>${L.q}</th></tr></thead><tbody>`;
     g.questions.forEach((q, i) => { body += `<tr><td class="n">${i + 1}</td><td class="s">${esc(L.sevMap[q.severity] || q.severity)}</td><td><bdi>${esc(q.text)}</bdi></td></tr>`; });
     body += '</tbody></table>';
   }
@@ -58,7 +58,7 @@ function questionsHtml(parts, lang = 'he', meta = {}) {
   h1{font-size:20px;margin:0 0 4px} .meta{color:#475569;margin-bottom:16px}
   h2{font-size:15px;margin:18px 0 6px;border-bottom:2px solid #334155;padding-bottom:3px}
   table{width:100%;border-collapse:collapse} th,td{border:1px solid #94a3b8;padding:5px 7px;vertical-align:top;text-align:start}
-  th{background:#e2e8f0} td.n,th.n{width:28px;text-align:center} td.s,th.s{width:70px}
+  th{background:#e2e8f0;font-weight:600} table.mrt tr:nth-child(even){background:#f8fafc} td.n,th.n{width:28px;text-align:center} td.s,th.s{width:70px}
   </style></head><body><h1>${L.title}</h1><div class="meta">${L.date}: ${date}${meta.customer ? ' · ' + esc(meta.customer) : ''}</div>${body}</body></html>`;
 }
 function questionsText(parts, lang = 'he') {

@@ -5,6 +5,7 @@ import { isOpenDoc } from '../parts/groups.mjs';
 import { Modal } from '../ui/common';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../ui/mrtButtons';
 import { PlainStatusBadge } from '../ui/simple';
+import { MrtTable, MrtHead, MrtRow } from '../ui/MrtTable';
 const qr = () => (window as any).qr;
 type Part = any;
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
@@ -32,8 +33,10 @@ export function SummaryDialog({ parts, onClose }: any) {
     {msg && <span className="qr-muted" style={{ marginInlineEnd: 'auto' }}>{msg}</span>}
     <button className={MRT_BTN} title={t('tip.csv')} onClick={async () => { const r = await qr().exportSummary(parts, 'csv'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.csv')}</button>
     <button className={MRT_BTN_PRIMARY} title={t('tip.pdf')} onClick={async () => { const r = await qr().exportSummary(parts, 'pdf'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.pdf')}</button></>}>
-    <table className="qr-table"><thead><tr><th>{t('rc.part')}</th><th>{t('rc.rev')}</th><th>{t('rc.customer')}</th><th>{t('rc.material')}</th><th>{t('rc.status')}</th><th>{t('sum.blockers')}</th><th>{t('sum.questions')}</th><th>{t('sum.tasks')}</th><th>{t('sum.model')}</th></tr></thead>
-      <tbody>{parts.map((p: Part) => <tr key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{L(p.material, 'line') || L(p.material, 'normalized')}</td><td><PlainStatusBadge part={p} /></td>
-        <td>{p.problems.filter((x: any) => x.severity === 'Blocker').length}</td><td>{p.problems.filter((x: any) => x.severity === 'Question').length}</td><td>{p.tasks.filter(isOpenDoc).length}</td><td>{p.model ? t('sum.found') : '—'}</td></tr>)}</tbody></table>
+    <MrtTable className="qr-table">
+      <MrtHead cells={[t('rc.part'), t('rc.rev'), t('rc.customer'), t('rc.material'), t('rc.status'), t('sum.blockers'), t('sum.questions'), t('sum.tasks'), t('sum.model')]} />
+      <tbody>{parts.map((p: Part) => <MrtRow key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{L(p.material, 'line') || L(p.material, 'normalized')}</td><td><PlainStatusBadge part={p} /></td>
+        <td>{p.problems.filter((x: any) => x.severity === 'Blocker').length}</td><td>{p.problems.filter((x: any) => x.severity === 'Question').length}</td><td>{p.tasks.filter(isOpenDoc).length}</td><td>{p.model ? t('sum.found') : '—'}</td></MrtRow>)}</tbody>
+    </MrtTable>
   </Modal>;
 }

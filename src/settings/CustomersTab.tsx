@@ -3,6 +3,7 @@ import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Chip } from '../ui/common';
 import AliasChips from './AliasChips';
 import { t } from '../i18n';
+import { MrtTable, MrtHead, MrtRow } from '../ui/MrtTable';
 
 const BASES = ['RAFAEL', 'ELTA', 'KLA', 'ELBIT', 'GENERIC'];
 const ROUTING = ['auto', 'routing chart', 'notes', 'notes + parts list'];
@@ -22,9 +23,14 @@ export default function CustomersTab({ rows, onChange }: { rows: any[]; onChange
         <button className={MRT_ACTION_BTN} data-testid="cust-dup" title={t('tip.dup')} onClick={() => add(c)}>{t('cu.dup')}</button>
         {!c.builtin && <button className={MRT_ACTION_BTN} data-testid="cust-del" title={t('tip.del')} onClick={() => { onChange(rows.filter((_, i) => i !== sel)); setSel(0); }}>{t('cu.del')}</button>}
       </div>
-      {rows.map((r, i) => <div key={r.id} className="qr-cust-item" data-active={i === sel} data-disabled={r.enabled === false} onClick={() => setSel(i)}>
-        <b>{r.name}</b><span className="qr-muted">{r.base}</span><span style={{ flex: 1 }} />{r.builtin ? <Chip t="neutral">{t('cu.builtin')}</Chip> : <Chip t="info">{t('cu.custom')}</Chip>}{r.enabled === false && <Chip t="attention">{t('cu.off')}</Chip>}
-      </div>)}
+      <MrtTable className="qr-cust-tab">
+        <MrtHead cells={[t('ck.col.item'), t('ck.col.value'), t('ck.col.status')]} />
+        <tbody>{rows.map((r, i) => <MrtRow key={r.id} className="qr-cust-item" active={i === sel} data-disabled={r.enabled === false} onClick={() => setSel(i)}>
+          <td><b>{r.name}</b></td>
+          <td className="qr-muted">{r.base}</td>
+          <td>{r.builtin ? <Chip t="neutral">{t('cu.builtin')}</Chip> : <Chip t="info">{t('cu.custom')}</Chip>}{r.enabled === false && <Chip t="attention">{t('cu.off')}</Chip>}</td>
+        </MrtRow>)}</tbody>
+      </MrtTable>
     </div>
     {c && <div className="qr-cust-edit">
       <div className="qr-field"><label>{t('cu.enabled')}</label><input type="checkbox" checked={c.enabled !== false} disabled={c.id === 'GENERIC'} onChange={(e) => upd({ enabled: e.target.checked })} /></div>

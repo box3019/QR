@@ -6,6 +6,7 @@ import { localized } from '../../i18n/localized';
 import { MRT_BTN } from '../../ui/mrtButtons';
 import { Fields } from './Fields';
 import { locate } from '../../parts/breakdown.mjs';
+import { MrtTable, MrtHead, MrtRow } from '../../ui/MrtTable';
 
 const ACTION: Record<string, { label: string; tip: string }> = {
   confirm: { label: 'bd.a.confirm', tip: 'tip.bd.confirm' },
@@ -21,30 +22,43 @@ export const Code = ({ children }: any) => <bdi dir="ltr" className="qr-code">{c
 function Dims({ dims }: any) {
   const e = Object.entries(dims || {});
   if (!e.length) return null;
-  return <dl className="qr-dims" data-testid="blk-dims">{e.map(([k, v]) => <div key={k} className="qr-dim"><dt>{labelOf(k)}</dt><dd>{dimText(v).map((x, i) => <Code key={i}>{x}</Code>)}</dd></div>)}</dl>;
+  return <MrtTable className="qr-bd-tab" testid="blk-dims">
+    <MrtHead cells={[t('ck.col.item'), t('ck.col.value')]} />
+    <tbody>{e.map(([k, v]) => <MrtRow key={k} className="qr-bd-item"><td className="qr-bd-k">{labelOf(k)}</td><td className="qr-bd-v">{dimText(v).map((x, i) => <Code key={i}>{x}</Code>)}</td></MrtRow>)}</tbody>
+  </MrtTable>;
 }
 function labelOf(k: string) { const key = 'std.dim.' + k; const v = t(key); return v === key ? <Code>{k}</Code> : v; }
 
 function StdDetails({ d, file, onOpen }: any) {
   return <div className="qr-blk-det" data-testid="blk-details">
-    {d.thread && <div className="qr-flag-line"><Code>{thr(d.thread)}</Code></div>}
-    {d.flags.map((f: any, i: number) => <div key={i} className="qr-flag-line" data-testid="std-flag">
-      <span>{t('blk.f.' + f.type)}</span><span className="qr-flag-v">{t('blk.drawing')} <Code>{String(f.drawing)}</Code></span><span className="qr-flag-v">{t('blk.standard')} <Code>{String(f.required)}</Code></span>
-    </div>)}
+    {d.thread || d.flags.length || (d.doc && d.doc.rev) || d.newerRev ? <MrtTable className="qr-bd-tab">
+      <MrtHead cells={[t('ck.col.item'), t('ck.col.value'), t('ck.col.source')]} />
+      <tbody>
+        {d.thread ? <MrtRow className="qr-bd-item"><td>{t('dv.thread')}</td><td><Code>{thr(d.thread)}</Code></td><td /></MrtRow> : null}
+        {d.flags.map((f: any, i: number) => <MrtRow key={i} className="qr-bd-item" data-testid="std-flag">
+          <td>{t('blk.f.' + f.type)}</td>
+          <td className="qr-flag-v">{t('blk.drawing')} <Code>{String(f.drawing)}</Code></td>
+          <td className="qr-flag-v">{t('blk.standard')} <Code>{String(f.required)}</Code></td>
+        </MrtRow>)}
+        {d.doc && d.doc.rev ? <MrtRow className="qr-bd-item"><td>{t('bd.rev')}</td><td><Code>{d.doc.rev}</Code></td><td /></MrtRow> : null}
+        {d.newerRev ? <MrtRow className="qr-bd-item" data-testid="std-newer"><td>{t('ck.col.status')}</td><td colSpan={2}>{t('std.newerRev', { rev: d.newerRev })}</td></MrtRow> : null}
+      </tbody>
+    </MrtTable> : null}
     <Dims dims={d.dims} />
-    {d.doc && d.doc.rev ? <div className="qr-flag-line"><span>{t('bd.rev')}</span> <Code>{d.doc.rev}</Code></div> : null}
-    {d.newerRev ? <div className="qr-flag-line" data-testid="std-newer">{t('std.newerRev', { rev: d.newerRev })}</div> : null}
     {file && <button type="button" className={MRT_BTN} data-testid="btn-std-open" title={t('tip.stdOpen')} onClick={onOpen}>{t('std.open')}</button>}
   </div>;
 }
 function MaterialDetails({ d }: any) {
   return <div className="qr-blk-det" data-testid="blk-details">
-    {d.raw ? <table className="qr-bd-tab" data-testid="bd-row-raw"><thead><tr><th>{t('ck.col.item')}</th><th>{t('ck.col.value')}</th></tr></thead><tbody><tr className="qr-bd-item"><td className="qr-bd-k">{t('bd.f.src')}</td><td className="qr-bd-v" data-field="raw"><bdi>{d.raw}</bdi></td></tr></tbody></table> : null}
+    {d.raw ? <MrtTable className="qr-bd-tab" testid="bd-row-raw"><MrtHead cells={[t('ck.col.item'), t('ck.col.value')]} /><tbody><MrtRow className="qr-bd-item"><td className="qr-bd-k">{t('bd.f.src')}</td><td className="qr-bd-v" data-field="raw"><bdi>{d.raw}</bdi></td></MrtRow></tbody></MrtTable> : null}
     {d.rows.length ? <Fields sec={d.sec} rows={d.rows} details /> : null}
   </div>;
 }
 function ProblemDetails({ list }: any) {
-  return <div className="qr-blk-det" data-testid="blk-details">{list.map((p: any) => <div key={p.id} className="qr-flag-line" data-sev={p.severity}><bdi>{localized(p, 'message')}</bdi></div>)}</div>;
+  return <div className="qr-blk-det" data-testid="blk-details"><MrtTable className="qr-bd-tab">
+    <MrtHead cells={[t('ck.col.item'), t('ck.col.status'), t('ck.col.value')]} />
+    <tbody>{list.map((p: any) => <MrtRow key={p.id} className="qr-bd-item" data-sev={p.severity}><td>{t('sev.' + p.severity)}</td><td data-s={p.severity}><span className="qr-ck-s" data-s={p.severity === 'Blocker' ? 'no' : 'notfound'}>{p.severity === 'Blocker' ? '\u2013' : '?'}</span></td><td><bdi>{localized(p, 'message')}</bdi></td></MrtRow>)}</tbody>
+  </MrtTable></div>;
 }
 
 export interface BlockViewProps { block: any; open: boolean; onToggle: () => void; onAction: (b: any) => void; state?: any; part?: any }

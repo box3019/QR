@@ -216,7 +216,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-prow { display: grid; grid-template-columns: minmax(7rem, 14rem) 3.5rem 9.5rem minmax(0, 1fr) 1rem; align-items: center; gap: 0.75rem; width: 100%; padding: 0.55rem 0.9rem; text-align: start; background: transparent; border: 0; border-bottom: 1px solid var(--mrt-border, rgba(127, 127, 127, 0.25)); font: inherit; color: inherit; cursor: pointer; border-radius: 0; }
 .qr-prow:hover, .qr-prow:focus-visible { background: rgba(127, 127, 127, 0.12); outline: none; }
 .qr-prow[data-active='true'] { box-shadow: inset 3px 0 0 var(--mrt-accent, #5b8def); }
-.qr-prow-pn { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qr-prow-pn { font-weight: 600; overflow: hidden; text-overflow: clip; white-space: nowrap; }
 .qr-prow-why { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .qr-prow-sub { grid-column: 1 / -1; display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .qr-pnav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -250,7 +250,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-tri-sec { min-width: 0; border: 1px solid var(--mrt-border, rgba(127,127,127,0.25)); border-radius: 6px; overflow: hidden; }
 .qr-tri-sec .qr-panel-h { display: flex; justify-content: space-between; gap: 0.5rem; white-space: nowrap; }
 .qr-tri-row { display: grid; grid-template-columns: auto minmax(0, 5.5rem) minmax(0, 1fr) auto auto; align-items: center; gap: 0.35rem 0.45rem; padding: 0.3rem 0.55rem; border-bottom: 1px solid var(--mrt-border, rgba(127,127,127,0.25)); min-width: 0; width: 100%; }
-.qr-tri-open { background: none; border: 0; font: inherit; font-weight: 600; text-align: start; cursor: pointer; color: inherit; min-width: 0; max-width: 5.5rem; overflow: hidden; text-overflow: ellipsis; }
+.qr-tri-open { background: none; border: 0; font: inherit; font-weight: 600; text-align: start; cursor: pointer; color: inherit; min-width: 0; max-width: 5.5rem; overflow: hidden; text-overflow: clip; }
 .qr-root .qr-tri-open { white-space: nowrap !important; overflow-wrap: normal !important; max-width: 5.5rem; }
 .qr-tri-why { min-width: 0; overflow: visible; text-overflow: clip; white-space: nowrap; }
 .qr-tri-moved { font-size: 0.68rem; font-weight: 600; color: #166534; background: #dcfce7; border: 1px solid #86efac; border-radius: 4px; padding: 0.08rem 0.45rem; white-space: nowrap; flex-shrink: 0; }
@@ -295,6 +295,25 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-rc-part { margin-inline-start: 0.5rem; }
 .qr-root .qr-provisional { margin: 0; padding: 0.25rem 1rem; background: color-mix(in srgb, var(--mrt-warning, #d97706) 12%, var(--mrt-surface)); color: var(--mrt-text); border-bottom: 1px solid color-mix(in srgb, var(--mrt-warning, #d97706) 30%, var(--mrt-border)); font-size: var(--qr-fs-xs); font-weight: 500; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
 .qr-root .qr-proj[data-provisional='true'] .qr-tile-n, .qr-root .qr-proj[data-provisional='true'] .qr-stat-n { font-style: italic; }
+
+/* Shared MRT item table (every list in the app). */
+.qr-root table.qr-mrt { display: table; width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: var(--qr-fs-sm); }
+.qr-root table.qr-mrt thead { display: table-header-group; }
+.qr-root table.qr-mrt tbody { display: table-row-group; }
+.qr-root table.qr-mrt tr { display: table-row; }
+.qr-root table.qr-mrt th, .qr-root table.qr-mrt td { display: table-cell; box-sizing: border-box; padding: 0.12em 0.35em; vertical-align: middle; text-align: start; border-bottom: 1px solid var(--mrt-grid-border, var(--qr-line, rgba(128,128,128,.25))); white-space: nowrap; overflow: hidden; text-overflow: clip; min-width: 0; }
+.qr-root table.qr-mrt thead th { font-size: var(--qr-fs-sm); font-weight: 600; background: var(--mrt-surface-muted); color: var(--mrt-text); border-bottom: 1px solid var(--mrt-grid-border, var(--qr-line, rgba(128,128,128,.35))); padding: 0.28em 0.35em; }
+.qr-root table.qr-mrt tr.qr-mrt-gh th, .qr-root table.qr-mrt tr.qr-ck-gh th { font-size: var(--qr-fs-md); font-weight: 700; background: var(--mrt-surface-muted); color: var(--mrt-text); box-shadow: inset 3px 0 0 var(--mrt-accent); padding: 0.35em 0.4em 0.2em; }
+.qr-root table.qr-mrt tbody tr.qr-mrt-row:nth-child(even of .qr-mrt-row) { background: color-mix(in srgb, var(--mrt-text-muted) 6%, var(--mrt-surface)); }
+.qr-root table.qr-mrt tbody tr.qr-mrt-row:hover { background: color-mix(in srgb, var(--mrt-accent) 10%, var(--mrt-surface)); }
+.qr-root table.qr-mrt tbody tr.qr-mrt-row[data-active='true'] { background: color-mix(in srgb, var(--mrt-accent) 18%, var(--mrt-surface)); outline: 1px solid var(--mrt-accent); outline-offset: -1px; }
+.qr-root table.qr-mrt.qr-cks-tab { table-layout: auto; }
+.qr-root table.qr-mrt.qr-hist-t, .qr-root table.qr-mrt.qr-catalog { table-layout: auto; }
+.qr-root table.qr-mrt.qr-plist-tab { table-layout: auto; }
+.qr-root table.qr-mrt.qr-tri-tab { table-layout: fixed; width: 100%; max-width: 100%; }
+.qr-root table.qr-mrt .qr-tri-acts { white-space: nowrap; display: inline-flex; gap: 0.15rem; max-width: 100%; overflow: hidden; }
+.qr-root table.qr-mrt .qr-tri-acts .mrt-btn, .qr-root table.qr-mrt .qr-tri-acts button { min-width: 0 !important; padding-inline: 0.35rem !important; }
+.qr-root .qr-triage { max-width: 100%; overflow-x: hidden; }
 
 /* Checklist (part card + summary): token fonts only; colour only for yes / no / not found */
 .qr-ck { margin: 8px 0; } .qr-ck > summary { font-size: var(--qr-fs-md); font-weight: 600; cursor: pointer; padding: 4px 0; }
@@ -393,7 +412,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 
 /* Part rows in list view: fixed grid columns */
 .qr-root .qr-prow { grid-template-columns: minmax(100px, 200px) 60px minmax(100px, 160px) minmax(0, 1fr) 24px; }
-.qr-root .qr-prow > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qr-root .qr-prow > * { white-space: nowrap; overflow: hidden; text-overflow: clip; }
 
 /* Ensure all buttons, headers, labels never wrap */
 .qr-root button, .qr-root th, .qr-root summary, .qr-root .qr-menu-item, .qr-root .qr-tab, .qr-root .qr-chip, .qr-root .qr-tag,

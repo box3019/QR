@@ -49,20 +49,20 @@ function partFacts(p, lang) {
 function stdHtml(p, T) {
   const l = p.standards || []; if (!l.length) return '';
   const dim = (d) => Object.entries(d || {}).map(([k, v]) => `${k} ${v && v.mm != null ? v.mm + ' mm' : v}`).join(', ');
-  return `<h4>${esc(T.stds)}</h4><table><tbody>${l.map((s) => `<tr><td>${bdi(s.std + (s.dash ? '-' + s.dash : ''))}</td><td>${esc((T.stStatus || {})[s.status] || s.status)}${s.doc && s.doc.rev ? ' · ' + bdi(s.doc.rev) : ''}</td><td>${bdi(dim(s.dims))}${(s.flags || []).filter((f) => f.drawing).map((f) => ' ✕ ' + bdi(f.drawing + ' → ' + f.required)).join('')}</td></tr>`).join('')}</tbody></table>`;
+  return `<h4>${esc(T.stds)}</h4><table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.stds)}</th><th>${esc(T.group)}</th><th>${esc(T.reason || '')}</th></tr></thead><tbody>${l.map((s) => `<tr><td>${bdi(s.std + (s.dash ? '-' + s.dash : ''))}</td><td>${esc((T.stStatus || {})[s.status] || s.status)}${s.doc && s.doc.rev ? ' · ' + bdi(s.doc.rev) : ''}</td><td>${bdi(dim(s.dims))}${(s.flags || []).filter((f) => f.drawing).map((f) => ' ✕ ' + bdi(f.drawing + ' → ' + f.required)).join('')}</td></tr>`).join('')}</tbody></table>`;
 }
 /** Checklist block of one part (rows in route-card order + Precision / Complexity with the why line); needs p._ck from the main process. */
 function checklistHtml(p, he) {
   if (!p._ck || !p._ck.has) return '';
   const X = require('./checklist/export.cjs'); const lang = he ? 'he' : 'en'; const tt = X.mk(lang); const ind = X.indicators(p._ck, lang);
   const rows = X.lines(p._ck, lang); let g = '';
-  return `<h4>${esc(tt('ck.title'))}</h4><p><b>${esc(tt('ck.prec.title'))}</b>: ${esc(ind.precision)} <span class="muted">${bdi(ind.precisionWhy)}</span><br><b>${esc(tt('ck.cx.title'))}</b>: ${esc(ind.complexity)} <span class="muted">${esc(ind.complexityWhy)}</span></p><table class="ck"><tbody>${rows.map((r) => { const h = r.group !== g ? `<tr><th colspan="3" class="muted">${esc(r.groupLabel)}</th></tr>` : ''; g = r.group; return h + `<tr><td>${esc(r.label)}</td><td><b>${esc(r.stateLabel)}</b>${r.excluded ? ' <span class="muted">(' + esc(tt('ck.excluded')) + ')</span>' : ''}</td><td>${r.what ? bdi(r.what) : ''}${r.where ? ' <span class="muted">' + bdi(r.where) + '</span>' : ''}</td></tr>`; }).join('')}</tbody></table>`;
+  return `<h4>${esc(tt('ck.title'))}</h4><p><b>${esc(tt('ck.prec.title'))}</b>: ${esc(ind.precision)} <span class="muted">${bdi(ind.precisionWhy)}</span><br><b>${esc(tt('ck.cx.title'))}</b>: ${esc(ind.complexity)} <span class="muted">${esc(ind.complexityWhy)}</span></p><table class="mrt" data-mrt="1"><thead><tr><th>${esc(tt('ck.col.item'))}</th><th>${esc(tt('ck.col.status'))}</th><th>${esc(tt('ck.col.value'))}</th></tr></thead><tbody>${rows.map((r) => { const h = r.group !== g ? `<tr class="gh"><th colspan="3">${esc(r.groupLabel)}</th></tr>` : ''; g = r.group; return h + `<tr><td>${esc(r.label)}</td><td><b>${esc(r.stateLabel)}</b>${r.excluded ? ' <span class="muted">(' + esc(tt('ck.excluded')) + ')</span>' : ''}</td><td>${r.what ? bdi(r.what) : ''}${r.where ? ' <span class="muted">' + bdi(r.where) + '</span>' : ''}</td></tr>`; }).join('')}</tbody></table>`;
 }
 /** Neutral "For route card" block of one part: customer specs and certificate / report requirements per routing step. */
 function routeCardHtml(p, T, he) {
   const rc = p.routeCard; if (!rc || !rc.count) return '';
   const f = (o, k) => (he && o[k + 'He']) || o[k] || '';
-  return `<h4>${esc(T.rcard)}</h4><ul class="rc">${rc.groups.map((g) => `<li><b>${g.key === 'general' ? esc(T.rcGen) : bdi(g.seq) + ' ' + esc(f(g, 'title') || f(g, 'type'))}</b>: ${g.items.map((i) => (i.kind === 'spec' ? bdi(i.number) + ' <span class="muted">' + esc(f(i, 'desc')) + ' · ' + esc(T.rcSpec) + '</span>' : esc(f(i, 'text')) + (i.number ? ' ' + bdi(i.number) : ''))).join('; ')}</li>`).join('')}</ul>`;
+  return `<h4>${esc(T.rcard)}</h4><table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.part)}</th><th>${esc(T.reason || '')}</th></tr></thead><tbody>${rc.groups.map((g) => `<tr class="gh"><th colspan="2">${g.key === 'general' ? esc(T.rcGen) : bdi(g.seq) + ' ' + esc(f(g, 'title') || f(g, 'type'))}</th></tr>` + g.items.map((i) => `<tr><td>${i.kind === 'spec' ? bdi(i.number) : esc(f(i, 'text'))}</td><td>${i.kind === 'spec' ? '<span class="muted">' + esc(f(i, 'desc')) + ' · ' + esc(T.rcSpec) + '</span>' : (i.number ? bdi(i.number) : '')}</td></tr>`).join('')).join('')}</tbody></table>`;
 }
 function autoTriage(p) {
   const mat = p && p.material && (p.material.normalized || p.material.raw);
@@ -88,9 +88,9 @@ function partSectionHtml(p, lang, T, he, n) {
   const f = partFacts(p, lang);
   const num = n != null ? `<span class="n">${esc(T.n)} ${n}</span> ` : '';
   return `<section class="part"><h3>${num}${bdi(p.partNo || '?')} <span class="muted">${esc(T.rev)} ${bdi(p.rev || '-')}</span> ${label(plainStatus(p))}</h3>${p.title ? `<div class="muted">${bdi(p.title)}</div>` : ''}
-    <table class="kv">${row('material', f.material)}${row('heat', f.heat)}${row('coat', f.coat)}${row('paint', f.paint)}${row('mask', f.mask)}</table>
-    <h4>${esc(T.seq)}</h4>${f.seq.length ? `<ol class="seq">${f.seq.map((s) => `<li><b>${bdi(s.seq)}</b> ${bdi(s.text)}</li>`).join('')}</ol>` : `<p class="muted">${T.none}</p>`}
-    ${checklistHtml(p, he)}${stdHtml(p, T)}${routeCardHtml(p, T, he)}<h4>${esc(T.flags)}</h4>${f.flags.length ? `<ul class="flags">${f.flags.map((x) => `<li><span class="sev">${esc(T.sev[x.sev] || x.sev)}</span> ${bdi(x.text)}</li>`).join('')}</ul>` : `<p class="muted">${T.none}</p>`}</section>`;
+    <table class="mrt kv" data-mrt="1"><thead><tr><th>${esc(T.part)}</th><th>${esc(T.reason || T.none)}</th></tr></thead><tbody>${row('material', f.material)}${row('heat', f.heat)}${row('coat', f.coat)}${row('paint', f.paint)}${row('mask', f.mask)}</tbody></table>
+    <h4>${esc(T.seq)}</h4>${f.seq.length ? `<table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.n)}</th><th>${esc(T.seq)}</th></tr></thead><tbody>${f.seq.map((s) => `<tr><td><b>${bdi(s.seq)}</b></td><td>${bdi(s.text)}</td></tr>`).join('')}</tbody></table>` : `<p class="muted">${T.none}</p>`}
+    ${checklistHtml(p, he)}${stdHtml(p, T)}${routeCardHtml(p, T, he)}<h4>${esc(T.flags)}</h4>${f.flags.length ? `<table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.group)}</th><th>${esc(T.reason || T.none)}</th></tr></thead><tbody>${f.flags.map((x) => `<tr><td><span class="sev">${esc(T.sev[x.sev] || x.sev)}</span></td><td>${bdi(x.text)}</td></tr>`).join('')}</tbody></table>` : `<p class="muted">${T.none}</p>`}</section>`;
 }
 
 function reportCss() {
@@ -102,7 +102,7 @@ function reportCss() {
   h2{font-size:13pt;color:#1e3a8a;margin:16px 0 6px;border-bottom:1px solid #cbd5e1;padding-bottom:3px}
   h3{font-size:12.5pt;margin:0 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap} h4{font-size:11pt;margin:8px 0 3px;color:#334155}
   table{border-collapse:collapse;width:100%} th,td{border:1px solid #cbd5e1;padding:4px 6px;text-align:start;vertical-align:top;font-size:10.5pt;overflow-wrap:anywhere}
-  th{background:#f1f5f9;font-weight:600} table.kv th{width:22%} .muted{color:#64748b;font-weight:400}
+  th{background:#f1f5f9;font-weight:600} table.kv th{width:22%} table.mrt thead th{background:#f1f5f9;font-weight:600} table.mrt tr.gh th{font-weight:700;font-size:11.5pt;background:#e2e8f0} .muted{color:#64748b;font-weight:400}
   .st{display:inline-block;border:1px solid;border-radius:4px;padding:1px 7px;font-size:10.5pt;font-weight:600}
   .sev{display:inline-block;min-width:52px;border:1px solid #cbd5e1;border-radius:4px;padding:0 4px;font-size:10.5pt;color:#334155;margin-inline-end:4px}
   section.part{border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;margin:0 0 10px} section.part h3,table.kv tr,ol.seq li,ul.flags li{break-inside:avoid} h2,h3,h4{break-after:avoid}
@@ -126,10 +126,10 @@ function reportHtml(parts, lang = 'he', meta = {}) {
   ${reportCss()}
   </style></head><body>
   <header><div class="logo">QR</div><div><h1>${esc(T.title)}</h1><div class="meta"><span>${esc(T.rfq)}: ${bdi(meta.rfq || T.none)}</span><span>${esc(T.customer)}: ${bdi(customer || T.none)}</span><span>${esc(T.date)}: ${bdi(date)}</span><span>${esc(T.parts)}: ${parts.length}</span></div></div></header>
-  <h2>${esc(T.summary)}</h2><table><thead><tr><th>${esc(T.group)}</th><th style="width:12%">${esc(T.count)}</th><th>${esc(T.parts)}</th></tr></thead><tbody>${groups.map((g) => `<tr><td>${label(g.k)}</td><td>${g.items.length}</td><td>${g.items.map((p) => bdi(p.partNo)).join(', ')}</td></tr>`).join('')}</tbody></table>
+  <h2>${esc(T.summary)}</h2><table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.group)}</th><th style="width:12%">${esc(T.count)}</th><th>${esc(T.parts)}</th></tr></thead><tbody>${groups.map((g) => `<tr><td>${label(g.k)}</td><td>${g.items.length}</td><td>${g.items.map((p) => bdi(p.partNo)).join(', ')}</td></tr>`).join('')}</tbody></table>
   <h2>${esc(T.parts)}</h2>${sec}
-  <h2>${esc(T.questions)}</h2>${qHtml.length ? qHtml.map((g) => `<h4>${esc(T.part)} ${bdi(g.partNo)}</h4><ol class="seq">${g.questions.filter((q) => q.severity !== 'Document').map((q) => `<li><span class="sev">${esc(T.sev[q.severity] || q.severity)}</span> ${bdi(q.text)}</li>`).join('')}</ol>`).join('') : `<p class="muted">${esc(T.noQ)}</p>`}
-  <h2>${esc(T.docs)}</h2>${docs.length ? `<table><thead><tr><th>${esc(T.part)}</th><th>${esc(T.docs)}</th></tr></thead><tbody>${docs.map((d) => `<tr><td>${bdi(d.pn)}</td><td>${bdi(d.ref)}</td></tr>`).join('')}</tbody></table>` : `<p class="muted">${esc(T.noDocs)}</p>`}
+  <h2>${esc(T.questions)}</h2>${qHtml.length ? qHtml.map((g) => `<h4>${esc(T.part)} ${bdi(g.partNo)}</h4><table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.group)}</th><th>${esc(T.questions)}</th></tr></thead><tbody>${g.questions.filter((q) => q.severity !== 'Document').map((q) => `<tr><td><span class="sev">${esc(T.sev[q.severity] || q.severity)}</span></td><td>${bdi(q.text)}</td></tr>`).join('')}</tbody></table>`).join('') : `<p class="muted">${esc(T.noQ)}</p>`}
+  <h2>${esc(T.docs)}</h2>${docs.length ? `<table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.part)}</th><th>${esc(T.docs)}</th></tr></thead><tbody>${docs.map((d) => `<tr><td>${bdi(d.pn)}</td><td>${bdi(d.ref)}</td></tr>`).join('')}</tbody></table>` : `<p class="muted">${esc(T.noDocs)}</p>`}
   </body></html>`;
 }
 function packageReportHtml(parts, lang = 'he', meta = {}) {
@@ -151,7 +151,7 @@ function packageReportHtml(parts, lang = 'he', meta = {}) {
   const cover = `<h2>${esc(T.cover)}</h2>
     <p><span class="st ok">${esc(fill(T.processed, { d: processed, n: total, 1: processed, 2: total }))}</span>
       <span class="muted"> · ${esc(T.suitable)} ${buckets.suitable.length} · ${esc(T.notSuitable)} ${buckets.notSuitable.length} · ${esc(T.unknown)} ${buckets.unknown.length}</span></p>
-    <table><thead><tr><th>${esc(T.part)}</th><th>${esc(T.group)}</th><th>${esc(T.reason)}</th></tr></thead><tbody>
+    <table class="mrt" data-mrt="1"><thead><tr><th>${esc(T.part)}</th><th>${esc(T.group)}</th><th>${esc(T.reason)}</th></tr></thead><tbody>
     ${coverRows('suitable')}${coverRows('notSuitable')}${coverRows('unknown')}</tbody></table>`;
   const sec = summaries.map((p, i) => partSectionHtml(p, lang, T, he, i + 1)).join('');
   return `<!doctype html><html lang="${he ? 'he' : 'en'}" dir="${he ? 'rtl' : 'ltr'}"><head><meta charset="utf-8"><title>${esc(T.packTitle)}</title><style>

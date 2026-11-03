@@ -3,6 +3,7 @@ import React from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import type { CloseAsk } from '../../projects/useProjects';
+import { MrtTable, MrtHead, MrtRow } from '../../ui/MrtTable';
 
 export function CloseJobsDialog({ ask, onPick }: { ask: CloseAsk; onPick: (c: 'save' | 'discard' | 'cancel') => void }) {
   const title = ask.mode === 'all' ? t('tab.closeAllTitle') : ask.mode === 'others' ? t('tab.closeOthersTitle') : t('tab.closeTitle');
@@ -11,7 +12,7 @@ export function CloseJobsDialog({ ask, onPick }: { ask: CloseAsk; onPick: (c: 's
     <div className="qr-modal">
       <div className="qr-panel-h" id="close-jobs-title">{title}</div>
       <p className="qr-close-ask">{ask.unsaved.length ? (ask.mode === 'one' ? t('tab.closeUnsaved') : t('tab.closeAllUnsaved')) : t('tab.closeBusy')}</p>
-      {!!names.length && <ul className="qr-close-jobs" data-testid="close-unsaved-list">{names.map((n, i) => <li key={ask.unsaved[i].id}><bdi>{n}</bdi></li>)}</ul>}
+      {!!names.length && <MrtTable className="qr-close-jobs" testid="close-unsaved-list"><MrtHead cells={[t('ck.col.item')]} /><tbody>{names.map((n, i) => <MrtRow key={ask.unsaved[i].id}><td><bdi>{n}</bdi></td></MrtRow>)}</tbody></MrtTable>}
       {ask.busy && ask.unsaved.length > 0 && <p className="qr-close-ask">{t('tab.closeBusyList')}</p>}
       <div className="qr-row qr-close-ask-btns">
         <button type="button" className={MRT_BTN} data-testid="close-cancel" title={t('tip.cancel')} onClick={() => onPick('cancel')}>{t('st.cancel')}</button>
