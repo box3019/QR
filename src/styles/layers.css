@@ -132,7 +132,7 @@
 .qr-root .qr-reject { color: var(--qr-bad-text); }
 .qr-root .qr-route-card, .qr-root .qr-route-card .head { border-color: var(--mrt-border-strong); } .qr-root .qr-route-card .head b { color: var(--mrt-text-muted); } .qr-root .qr-route-card .head > div { border-color: var(--mrt-border); }
 /* Flags column (קבלן חוץ / Outsourced): never shrink narrower than the chip text. Loaded last so it wins over table-layout:fixed + min-width:0. */
-.qr-root .qr-route-card .qr-table { table-layout: auto !important; }
+.qr-root .qr-route-card table.qr-mrt { table-layout: fixed !important; width: 100%; max-width: 100%; }
 .qr-root .qr-route-card .qr-rc-flags { width: 1% !important; min-width: max-content !important; max-width: none !important; overflow: visible !important; white-space: nowrap !important; }
 .qr-root .qr-route-card .qr-chip, .qr-root .qr-rc-flags .qr-chip {
   display: inline-flex !important; width: max-content !important; min-width: max-content !important; max-width: none !important;
@@ -166,7 +166,7 @@
 .qr-root .qr-tour-dot { background: var(--mrt-surface) !important; border-color: var(--mrt-border-strong) !important; }
 
 /* Check parts at 1280-1500px: narrower side column, a wider card pane, buttons never wrap letter by letter */
-@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: min(16.5rem, 30vw) minmax(0, 1fr); } }
+@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: min(13.5rem, 216px) minmax(0, 1fr); } }
 @media (min-width: 1101px) { .qr-root .qr-body:not([data-cols='2']) { grid-template-columns: minmax(230px, 21%) minmax(240px, 1fr) minmax(350px, 34%); } }
 .qr-root .qr-body button:not(.qr-sec-main):not(.qr-tab):not(.qr-pgroup-h), .qr-root .qr-warnbar button { white-space: nowrap !important; overflow-wrap: normal; flex: 0 0 auto; }
 .qr-root .qr-pgroup-h { white-space: nowrap !important; } .qr-root .qr-pgroup-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -309,6 +309,7 @@
 .qr-root table.qr-mrt thead th {
   margin-block-start: 0; font-size: var(--qr-fs-sm) !important; font-weight: 600 !important; box-shadow: none;
 }
+.qr-root table.qr-mrt td { font-size: var(--qr-fs-sm) !important; }
 .qr-root .qr-modal-h { margin-block-start: 0; }
 
 /* Clickable chrome: pointer wins over MRT topbar cursor:default !important. */
@@ -370,10 +371,12 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root .qr-ck-body, .qr-root .qr-ck-where, .qr-root .qr-ck-lab {
   overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%;
 }
+.qr-root .qr-ck-tab td.qr-ck-val { white-space: normal !important; }
+.qr-root .qr-ck-locc { overflow: visible !important; }
 .qr-root .qr-ck-full { overflow: visible !important; max-width: none !important; min-width: min-content !important; white-space: nowrap !important; }
 .qr-root .qr-ck-ind, .qr-root .qr-ck-ind > div { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; max-width: 100%; }
 .qr-root .qr-card.qr-scroll, .qr-root .qr-scroll.qr-card { overflow-x: hidden; }
 .qr-root [data-testid='breakdown-panel'] .qr-scroll { overflow-x: visible; }
 @media (max-width: 1000px) {
-  .qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { padding-inline: 1px; font-size: 0.7rem; }
+  .qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { padding-inline: 1px; font-size: var(--qr-fs-sm); }
 }

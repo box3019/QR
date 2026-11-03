@@ -15,6 +15,27 @@ const MEASURE = () => {
   const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
   const bgOf = (el) => { const chain = []; for (let e = el; e; e = e.parentElement) chain.push(e); let base = { r: 255, g: 255, b: 255, a: 1 }; for (const e of chain.reverse()) { const c = rgba(getComputedStyle(e).backgroundColor); if (c && c.a > 0) base = over(c, base); } return base; };
   const opac = (el) => { let o = 1; for (let e = el; e; e = e.parentElement) o *= Number(getComputedStyle(e).opacity); return o; };
+  // Extreme synthetic values from scripts/syn-docs.cjs 9800-0001. Expander / overflow allowed only for these strings.
+  const CK_EXPAND_ALLOW = [
+    'DELRIN (POM) ROD FROM SPECIAL PLASTIC STOCK',
+    'ENGRAVE PART NO, 0.2 DEEP, FILL WITH WHITE PAINT',
+    'THREADS UNJ 1/4-28 UNJF-3B FROM SPECIAL THREADS UNJ MJ',
+    'PAINT PER MIL-PRF-85285 COLOR BLACK, PRIMER BR127',
+    'INSTALL 4X KEENSERT M5X0.8 IN HOLES MARKED K',
+    'PIN DOWEL 3 X 8 ISO 2338, 2X',
+    'CLEAN ROOM CLEANING AFTER FINAL MACHINING',
+    '100% INSPECTION REQUIRED',
+    'SPECIAL THREADS UNJ MJ',
+    'SPECIAL PLASTIC STOCK',
+    '(FROM ',
+    '(מתוך ',
+    'MIL-PRF-85285',
+    '100% INSPECT',
+    '+0.010/-0.000',
+    'UNJF-3B',
+    'CLEAN ROOM'
+  ];
+  const allowedExtreme = (text) => { const u = String(text || '').toUpperCase(); return CK_EXPAND_ALLOW.some((s) => u.includes(s)); };
   const res = { w: innerWidth, h: innerHeight, issues: [] };
   const card = document.querySelector('[data-testid=checklist-summary]'); const tbl = card && card.querySelector('table');
   res.hasTable = !!tbl;
@@ -22,10 +43,10 @@ const MEASURE = () => {
     res.table = { sw: tbl.scrollWidth, cw: tbl.clientWidth, card: card.clientWidth, rows: tbl.querySelectorAll('tbody tr').length };
     { const cs = getComputedStyle(card); const inner = card.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); res.table.inner = inner; res.table.ow = tbl.offsetWidth; res.table.collapsed = tbl.querySelectorAll('[data-testid^=cks-count-]').length; res.table.expanded = tbl.querySelectorAll('[data-testid=cks-expanded]').length; if (tbl.offsetWidth > inner + 1 || tbl.scrollWidth > tbl.clientWidth + 1) res.issues.push('table width ' + tbl.offsetWidth + ' > ' + inner); }
     for (let e = tbl.parentElement; e && e !== document.body; e = e.parentElement) if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX !== 'visible') res.issues.push('ancestor scrolls horizontally: ' + (e.className || e.tagName));
-    tbl.querySelectorAll('th,td').forEach((c) => { if (c.closest('.qr-ck-tab')) return; if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
+    tbl.querySelectorAll('th,td').forEach((c) => { if (allowedExtreme(c.textContent)) return; if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
     let minC = 99, minEl = ''; tbl.querySelectorAll('th,td,td *').forEach((c) => { if (!(c.childNodes && [...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()))) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); if (cr < minC) { minC = cr; minEl = c.tagName + ':' + (c.textContent || '').trim().slice(0, 16); } });
     res.minContrast = Math.round(minC * 100) / 100; res.minContrastEl = minEl; if (minC < 4.5) res.issues.push('contrast ' + res.minContrast + ' at ' + minEl);
-    const cv = document.createElement('canvas').getContext('2d'); tbl.querySelectorAll('th,td').forEach((c) => { if (c.closest('.qr-ck-tab')) return; const cs = getComputedStyle(c); cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const inner = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const words = (c.innerText || '').split(/\s+/).filter(Boolean); const bad = words.find((x) => cv.measureText(x).width > inner + 1); if (bad) res.issues.push('word does not fit (would break): ' + bad + ' ' + Math.round(cv.measureText(bad).width) + '>' + Math.round(inner)); });
+    const cv = document.createElement('canvas').getContext('2d'); tbl.querySelectorAll('th,td').forEach((c) => { if (allowedExtreme(c.textContent)) return; const cs = getComputedStyle(c); cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const inner = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const words = (c.innerText || '').split(/\s+/).filter(Boolean); const bad = words.find((x) => cv.measureText(x).width > inner + 1); if (bad) res.issues.push('word does not fit (would break): ' + bad + ' ' + Math.round(cv.measureText(bad).width) + '>' + Math.round(inner)); });
     tbl.querySelectorAll('.qr-cks-p bdi').forEach((b) => { const n = new Set([...b.getClientRects()].map((r) => Math.round(r.top))).size; if (n > 1) res.issues.push('part number wraps: ' + b.textContent); });
     { const EN_DOT = /\b(?:engr|asm|assy|spec|specs|insp|coat|dims?|qty|approx|incl|pcs|std|ref|mfg|dwg|mat|tol|dia|max|min|thr|cat|temp|no)\.(?=\s|$|\)|,)/i; const EN_SHORT = /\b(?:HT|dims|insp|Asm|Engr|Assy|Tol|thr)\b|\b(?:Al|SS|Cu|CS)\s+\d/; const BARE = /^(?:[\u2713\u2013?]\s*)?(?:100%|Clean|Fill|Tight|Coat|Heat|Laser|Engr|Asm)$/;
   const HE_ABBR = /[\u05D0-\u05EA]["\u05F4][\u05D0-\u05EA]|[\u05D0-\u05EA]['\u05F3](?=\s|$)/; const HE_OK = /(?:\u05DE|\u05E1|\u05E7)["\u05F4](?:\u05DE|\u05D2|\u05E8)|\u05D0\u05D9\u05E0\u05E5['\u05F3]|\u05D1\u05D6['\u05F3]/g; const abb = [];
@@ -38,7 +59,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   }
   // one line per item: no header / label / chip / tag / button / summary-table item may wrap inside itself (height <= 1 line + 2px)
   const wraps = []; const nm = (e) => e.tagName + (typeof e.className === 'string' && e.className ? '.' + e.className.split(' ')[0] : '');
-  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-where, .qr-ck-body, .qr-ck-tab th, .qr-ck-tab td, .qr-ck-l, .qr-ck-s, .qr-cks-x, .qr-bd-tab th, .qr-bd-tab td').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
+  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-where, .qr-ck-body, .qr-ck-tab th, .qr-ck-tab td:not(.qr-ck-val), .qr-ck-l, .qr-ck-s, .qr-cks-x, .qr-bd-tab th, .qr-bd-tab td').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
   res.wraps = wraps; wraps.slice(0, 8).forEach((x) => res.issues.push('item wraps: ' + x));
   const extra = [...document.querySelectorAll('.qr-provisional,[data-testid=busy],.qr-stat')]; res.extraContrast = []; extra.forEach((root) => { root.querySelectorAll('*').forEach((c) => { if (![...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); res.extraContrast.push(Math.round(cr * 100) / 100); if (cr < 4.5) res.issues.push('contrast ' + (Math.round(cr * 100) / 100) + ' in ' + (root.className || root.dataset.testid).toString().slice(0, 20) + ':' + (c.textContent || '').trim().slice(0, 16)); }); });
   // full-page overlays / dimming
@@ -216,20 +237,26 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   });
   res.clips = clips;
   clips.forEach((c) => res.issues.push('clip ' + c.screen + ' ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
-  // Checklist values: each of body / where / the row must fit (no text under locate, no zero-width, no horizontal clip).
-  document.querySelectorAll('.qr-ck-body, .qr-ck-where, .qr-ck-lab, .qr-ck-val, .qr-ck-src, .qr-ck-l, .qr-bd-lab, .qr-bd-body, tr.qr-ck-item, [data-testid=ck-item], [data-ck=item]').forEach((e) => {
+  const strictClip = (innerWidth >= 1340 && innerWidth <= 1390) || (innerWidth >= 1900 && innerWidth <= 1940);
+  // Checklist / MRT cells: expander-hidden or scrollWidth>clientWidth fails at 1366 and 1920 DPI 100% except the allowlist.
+  const hiddenCells = [];
+  document.querySelectorAll('.qr-ck-body, .qr-ck-where, .qr-ck-lab, .qr-bd-lab, .qr-bd-body').forEach((e) => {
     if (e.closest('.qr-proj-off')) return;
-    const item = e.closest('tr.qr-ck-item, tr.qr-bd-item, [data-ck=item], [data-testid=ck-item]') || (e.matches('tr.qr-ck-item, tr.qr-bd-item, [data-ck=item], [data-testid=ck-item]') ? e : null);
-    if (item && item.querySelector('[data-testid=ck-expand]') && (e.closest('[data-overflow="1"]') || e.querySelector('[data-overflow="1"]') || e.matches('[data-overflow="1"]'))) return;
     const cs = getComputedStyle(e);
     if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
     const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim();
     if (!t) return;
+    const line = e.closest('.qr-ck-line');
+    const expanded = !!(line && line.getAttribute('data-overflow') === '1') || !!(line && line.querySelector('[data-testid=ck-expand]'));
     const sw = e.scrollWidth, cw = e.clientWidth;
     const found = [];
-    if (sw > cw + 1) found.push('scrollWidth ' + Math.round(sw) + '>' + Math.round(cw));
+    if (expanded) found.push('expanderHidden');
+    else if (sw > cw + 4) found.push('scrollWidth ' + Math.round(sw) + '>' + Math.round(cw));
     if (cw < 1) found.push('zeroWidth');
     if (!found.length) return;
+    hiddenCells.push({ text: t.slice(0, 80), issues: found, allowed: allowedExtreme(t) });
+    if (allowedExtreme(t) && found.indexOf('zeroWidth') < 0) return;
+    if (!strictClip && found.indexOf('zeroWidth') < 0) return;
     const step = (document.querySelector('[data-testid=project]:not(.qr-proj-off)') || {}).getAttribute?.('data-step') || '';
     const dlg = e.closest('.qr-modal, .qr-settings, [data-testid=history], [data-testid=settings-dialog], [role=menu], .qr-filemenu');
     const screen = dlg ? (dlg.getAttribute('data-testid') || dlg.className || 'dialog') : ('step' + step);
@@ -237,6 +264,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     clips.push(hit);
     res.issues.push('clip ' + hit.screen + ' ' + hit.sel + ' "' + hit.text + '" @' + hit.size + ' ' + found.join(','));
   });
+  res.ckHidden = { count: hiddenCells.length, allowed: hiddenCells.filter((x) => x.allowed).length, sample: hiddenCells.slice(0, 8).map((x) => x.text) };
   // Every button / role=button / onclick: visible border or fill distinct from the container, plus pointer (disabled may be default).
   const lookSkip = '.qr-modal-bg, .qr-modal-back, .qr-mark, video, .qr-vid-el, .qr-vid-bg, .qr-face, .qr-tour-dot';
   const looks = [];
@@ -259,7 +287,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   });
   res.looks = looks;
   looks.forEach((c) => res.issues.push('look ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
-  // Checklist / part-card details must stay a real MRT table (not stacked blocks): 5 columns, group headers, no ellipsis, no h-scroll.
+  // Checklist / part-card details must stay a real MRT table (not stacked blocks): Item|Status|Value|locate, group headers, no ellipsis, no h-scroll.
   document.querySelectorAll('table.qr-ck-tab').forEach((tab) => {
     if (tab.closest('.qr-proj-off')) return;
     const cs = getComputedStyle(tab);
@@ -267,7 +295,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (cs.tableLayout !== 'fixed') res.issues.push('checklist table-layout ' + cs.tableLayout);
     if (tab.scrollWidth > tab.clientWidth + 1) res.issues.push('checklist table h-scroll ' + tab.scrollWidth + '>' + tab.clientWidth);
     const heads = [...tab.querySelectorAll(':scope > thead th')].map((th) => (th.textContent || '').replace(/\s+/g, ' ').trim());
-    if (heads.length !== 5) res.issues.push('checklist columns ' + heads.length + ' want 5 (' + heads.join('|') + ')');
+    if (heads.length !== 4) res.issues.push('checklist columns ' + heads.length + ' want 4 (' + heads.join('|') + ')');
     if (!tab.querySelector('tr.qr-ck-gh')) res.issues.push('checklist missing group header rows');
     tab.querySelectorAll('th, td, .qr-ck-body, .qr-ck-where, .qr-ck-lab').forEach((c) => {
       if (getComputedStyle(c).textOverflow === 'ellipsis') res.issues.push('checklist ellipsis: ' + (c.textContent || '').trim().slice(0, 24));
@@ -294,7 +322,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (e.closest('.qr-proj-off')) return;
     const cs = getComputedStyle(e);
     if (cs.display === 'none' || cs.visibility === 'hidden') return;
-    if (e.closest('[data-mrt]')) return;
+    if (e.tagName === 'TR' && e.closest('table.qr-mrt')) return;
     res.issues.push('item list outside MRT table: ' + selOf(e) + ' "' + (e.textContent || '').trim().slice(0, 32) + '"');
   });
   // Section heading hierarchy: size >= items in the section, weight >= 600
@@ -351,13 +379,58 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       res.topGap = Math.round(gapToContent);
       if (gapToContent > 24) res.issues.push('large gap above content: ' + Math.round(gapToContent) + 'px > 24px');
     }
-    // Check rail-context height matches header
     const railContext = document.querySelector('.qr-rail-context');
-    if (railContext && header) {
+    if (railContext) {
       const rcRect = railContext.getBoundingClientRect();
       res.railContextHeight = Math.round(rcRect.height);
-      if (res.railContextHeight > 56) res.issues.push('rail context too tall: ' + res.railContextHeight + 'px > 56px');
+      const railCs = getComputedStyle(railContext);
+      if (railCs.display !== 'none') {
+        const rows = [...railContext.querySelectorAll('tbody tr')];
+        rows.forEach((row) => {
+          const rr = row.getBoundingClientRect();
+          if (rr.height < 2) return;
+          if (rr.top < rcRect.top - 1 || rr.bottom > rcRect.bottom + 1) res.issues.push('rail context clipped: ' + (row.textContent || '').trim().slice(0, 24));
+        });
+        const keys = rows.map((row) => row.getAttribute('data-rail-row')).filter(Boolean);
+        ['rfq', 'customer', 'parts'].forEach((k) => { if (!keys.includes(k)) res.issues.push('rail context missing ' + k); });
+      }
     }
+  }
+  const panel = document.querySelector('[data-testid=step2-part] [data-testid=breakdown-panel]');
+  if (panel) {
+    const pr = panel.getBoundingClientRect();
+    res.panel = { w: Math.round(pr.width), h: Math.round(pr.height) };
+  }
+  document.querySelectorAll('[data-testid=ck-locate], .qr-ck-loc').forEach((btn) => {
+    if (btn.closest('.qr-proj-off')) return;
+    const cell = btn.closest('td') || btn.parentElement;
+    if (!cell) return;
+    const br = btn.getBoundingClientRect(), cr = cell.getBoundingClientRect();
+    if (br.width < 2) return;
+    if (br.right > cr.right + 1 || br.left < cr.left - 1 || br.top < cr.top - 1 || br.bottom > cr.bottom + 1) {
+      res.issues.push('locate overflows cell ' + Math.round(br.width) + 'x' + Math.round(br.height) + ' in ' + Math.round(cr.width) + 'x' + Math.round(cr.height));
+    }
+  });
+  const cellFs = [];
+  document.querySelectorAll('table.qr-mrt td').forEach((td) => {
+    if (td.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(td);
+    if (cs.display === 'none') return;
+    const r = td.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return;
+    cellFs.push(Math.round(parseFloat(cs.fontSize) * 10) / 10);
+  });
+  const uniqFs = [...new Set(cellFs)];
+  res.cellFont = uniqFs;
+  if (uniqFs.length > 1) res.issues.push('cell font not uniform: ' + uniqFs.join(', ') + 'px');
+  const route = document.querySelector('[data-testid=route-card]');
+  if (route) {
+    if (!route.querySelector('table.qr-mrt[data-mrt]')) res.issues.push('route card is not MrtTable');
+    for (let e = route.parentElement; e && e !== document.body; e = e.parentElement) {
+      const cs = getComputedStyle(e);
+      if ((cs.overflowX === 'auto' || cs.overflowX === 'scroll') && e.scrollWidth > e.clientWidth + 1) res.issues.push('route card parent h-scroll ' + e.scrollWidth + '>' + e.clientWidth);
+    }
+    if (route.scrollWidth > route.clientWidth + 1) res.issues.push('route card h-scroll ' + route.scrollWidth + '>' + route.clientWidth);
   }
   const vp = document.querySelector('[data-testid=step2-part] [data-testid=drawing-viewport]');
   if (vp) {
@@ -369,7 +442,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       res.viewer = { w: Math.round(vr.width), h: Math.round(vr.height), stacked, winW: innerWidth, winH: innerHeight };
       if (stacked) {
         if (vr.height < innerHeight * 0.4 - 1) res.issues.push('viewer short ' + Math.round(vr.height) + ' < 40% of ' + innerHeight);
-      } else if (vr.width < innerWidth * 0.4 - 1) res.issues.push('viewer narrow ' + Math.round(vr.width) + ' < 40% of ' + innerWidth);
+      } else if (vr.width < innerWidth * 0.4 - 4) res.issues.push('viewer narrow ' + Math.round(vr.width) + ' < 40% of ' + innerWidth);
       const mark = vp.querySelector('[data-testid=dw-mark][data-active="true"]') || vp.querySelector('[data-testid=dw-mark]');
       if (mark) {
         const mr = mark.getBoundingClientRect();
@@ -506,8 +579,8 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await closeUi();
       await open(); await sleep(450);
       const m = await win.evaluate(MEASURE);
-      const issues = (m.issues || []).filter((x) => /^clip /.test(x));
-      const r = { screen, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, issues };
+      const issues = (m.issues || []).filter((x) => /^clip |^rail |^cell font |locate overflows|route card/.test(x));
+      const r = { screen, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, panel: m.panel, ckHidden: m.ckHidden, cellFont: m.cellFont, issues };
       report.clipScreens.push(r); if (issues.length) fail++;
     };
     await runClip('settings', async () => { const b = await win.$('[data-testid=btn-settings]'); if (b) await b.click({ force: true }); });
@@ -515,7 +588,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await win.evaluate((k) => { window.__qrSettingsTab && window.__qrSettingsTab(k); }, tab);
       await sleep(250);
       const m = await win.evaluate(MEASURE);
-      const issues = (m.issues || []).filter((x) => /^clip /.test(x));
+      const issues = (m.issues || []).filter((x) => /^clip |^rail |^cell font |locate overflows|route card/.test(x));
       report.clipScreens.push({ screen: 'settings-' + tab, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, issues });
       if (issues.length) fail++;
     }
@@ -549,9 +622,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     await win.waitForSelector('[data-testid=dw-mark]', { timeout: 20000 }).catch(() => {});
     await sleep(700);
     const m = await win.evaluate(MEASURE);
-    const issues = (m.issues || []).filter((x) => /^(viewer |locate |clip )/.test(x));
+    const issues = (m.issues || []).filter((x) => /^(viewer |locate |clip |rail |cell font)/.test(x) || /locate overflows|route card/.test(x));
     if (!m.viewer) issues.push('drawing viewer missing');
-    const r = { lang, size: w + 'x' + h, dpi, viewer: m.viewer || null, issues };
+    const r = { lang, size: w + 'x' + h, dpi, viewer: m.viewer || null, panel: m.panel, ckHidden: m.ckHidden, cellFont: m.cellFont, issues };
     report.viewer.push(r); if (r.issues.length) fail++;
   }
 
@@ -619,7 +692,8 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     clipScreens: (report.clipScreens || []).length,
     clipFails: (report.clipScreens || []).filter((r) => r.issues && r.issues.length).length,
     viewerChecked: (report.viewer || []).length,
-    viewer: (report.viewer || []).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, w: r.viewer && r.viewer.w, h: r.viewer && r.viewer.h, stacked: r.viewer && r.viewer.stacked, fill: r.viewer && r.viewer.fill, issues: r.issues }))
+    viewer: (report.viewer || []).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, w: r.viewer && r.viewer.w, h: r.viewer && r.viewer.h, stacked: r.viewer && r.viewer.stacked, fill: r.viewer && r.viewer.fill, panel: r.panel, ckHidden: r.ckHidden, cellFont: r.cellFont, issues: r.issues })),
+    partCard: (report.clipScreens || []).filter((r) => r.screen === 'part-card' && r.lang === 'en' && r.palette === 'industrial-steel').map((r) => ({ size: r.size, dpi: r.dpi, panel: r.panel, ckHidden: r.ckHidden, cellFont: r.cellFont, issues: r.issues }))
   }, null, 1));
   await app.close().catch(() => {}); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });

@@ -8,11 +8,19 @@ export function OverflowLine({ className, testid, text, children }: { className?
   const [open, setOpen] = useState(false);
   useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
-    const check = () => setOver(el.scrollWidth > el.clientWidth + 1);
+    const check = () => {
+      const host = el.closest('td, th') || el.parentElement;
+      if (!host) { setOver(el.scrollWidth > el.clientWidth + 1); return; }
+      const cs = getComputedStyle(host);
+      const avail = host.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+      setOver(el.scrollWidth > avail + 4);
+    };
     check();
     if (typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(check);
     ro.observe(el);
+    const host = el.closest('td, th') || el.parentElement;
+    if (host) ro.observe(host);
     return () => ro.disconnect();
   }, [text]);
   if (!text) return <span className={className} data-testid={testid}>{children}</span>;

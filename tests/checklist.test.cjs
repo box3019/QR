@@ -91,14 +91,15 @@ test('UI wiring: part card + summary sections, click-to-zoom focus, tooltips, to
   assert.match(rd('src/components/partcard/PartCard.tsx'), /<ChecklistSection part=\{part\} onFocus=\{onFocus\}/); assert.match(rd('src/components/wizard/StepSummary.tsx'), /<ChecklistSummary/);
   const ck = rd('src/checklist/Checklist.tsx'); assert.match(ck, /onFocus && onFocus\(f\)/); assert.match(ck, /title=\{t\('ck\.show'\)\}/); assert.match(ck, /ck-locate/); assert.match(ck, /ck\.locateMissing/); assert.match(ck, /ck-zone-note/);
   assert.match(ck, /qr-ck-item/); assert.match(ck, /qr-ck-body/); assert.match(ck, /qr-ck-where/);
-  assert.match(ck, /ck\.col\.item/); assert.match(ck, /ck\.col\.status/); assert.match(ck, /ck\.col\.value/); assert.match(ck, /ck\.col\.source/);
+  assert.match(ck, /ck\.col\.item/); assert.match(ck, /ck\.col\.status/); assert.match(ck, /ck\.col\.value/); assert.match(ck, /SourceLine/); assert.match(ck, /ck-where/);
   const mrt = rd('src/ui/MrtTable.tsx');
   assert.match(mrt, /qr-ck-full/); assert.match(mrt, /ck-expand/); assert.match(mrt, /ck\.valueFull/);
   assert.match(ck, /MrtHead/); assert.match(ck, /colSpan=\{COLS\}/);
   assert.match(ck, /className="qr-ck-tab"/); assert.match(ck, /className="qr-ck-gh"/);
   assert.match(ck, /MrtTable/); assert.match(rd('src/ui/MrtTable.tsx'), /data-mrt="1"/);
   const css = rd('src/styles/wizard.css'); const block = css.slice(css.indexOf('/* Checklist (part card')); assert.ok(!/font-size:\s*\d/.test(block.split('/* ===== Print')[0]), 'token font sizes only'); assert.ok(!/background(-color)?:\s*#(0|1|2|3)/i.test(block.split('/* ===== Print')[0]), 'no dark fills');
-  assert.match(css, /minmax\(45vw, 1fr\) minmax\(0, 22rem\)/);
+  assert.match(css, /minmax\(40vw, 1fr\) minmax\(0, 1\.15fr\)/);
+  assert.match(css, /minmax\(40vw, 1fr\) minmax\(28rem, 1\.4fr\)/);
   assert.match(css, /nth-child\(even of \.qr-ck-item\)/);
   assert.match(css, /tr\.qr-ck-item\[data-active='true'\]/);
   assert.doesNotMatch((css.match(/\.qr-root \.qr-ck-body[\s\S]*?qr-ck-lab \{[\s\S]*?\}/) || [''])[0], /ellipsis/);

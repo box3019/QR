@@ -1,4 +1,4 @@
-﻿// Part card: the Alex checklist as an MRT table — Item | Status | Value | Source | locate.
+﻿// Part card: the Alex checklist as an MRT table — Item | Status | Value | locate. Source is a second sub-line in Value.
 import React, { useEffect, useMemo, useRef } from 'react';
 import { t } from '../i18n';
 import { evaluate, ROWS } from '../../core/checklist/live.mjs';
@@ -11,7 +11,7 @@ const GLYPH: any = { yes: '\u2713', no: '\u2013', notfound: '?' };
 export const stateLabel = (s: string) => t('ck.' + s);
 export function State({ s }: any) { return <span className="qr-ck-s" data-s={s} data-testid="ck-state">{GLYPH[s]} {stateLabel(s)}</span>; }
 const MAXI = 8;
-const COLS = 5;
+const COLS = 4;
 
 function LocateBtn({ f, onFocus }: { f: any; onFocus?: (x: any) => void }) {
   if (!f) return null;
@@ -22,6 +22,11 @@ function valueText(i: any, row: any) {
   return itemWhat(i) + (i.derived ? ' (' + t('ck.derived', { x: t('ck.r.' + (i.derived === 'fit' ? 'tight' : 'threads')) }) + ')' : '') + (row.excluded ? ' (' + t('ck.excluded') + ')' : '');
 }
 
+function SourceLine({ w }: { w: string }) {
+  if (!w) return <span data-testid="ck-where" />;
+  return <OverflowLine className="qr-ck-where qr-muted" testid="ck-where" text={w}>{w}</OverflowLine>;
+}
+
 function ItemRows({ row, onFocus, pid, focusId, r }: any) {
   const items: any[] = row.items || [];
   if (!items.length) {
@@ -30,8 +35,7 @@ function ItemRows({ row, onFocus, pid, focusId, r }: any) {
     return <MrtRow data-testid={'ck-row-' + r.id} data-s={row.state} className={'qr-ck-item' + (r.sub ? ' qr-ck-sub' : '')}>
       <td className="qr-ck-l"><OverflowLine className="qr-ck-lab" text={itemName}>{itemName}</OverflowLine></td>
       <td className="qr-ck-st"><State s={row.state} /></td>
-      <td className="qr-ck-val"><OverflowLine className="qr-ck-body" testid="ck-what" text={empty}>{empty}</OverflowLine></td>
-      <td className="qr-ck-src" data-testid="ck-where"></td>
+      <td className="qr-ck-val"><OverflowLine className="qr-ck-body" testid="ck-what" text={empty}>{empty}</OverflowLine><span data-testid="ck-where" /></td>
       <td className="qr-ck-locc"></td>
     </MrtRow>;
   }
@@ -48,8 +52,7 @@ function ItemRows({ row, onFocus, pid, focusId, r }: any) {
     return <MrtRow key={n} className={'qr-ck-item' + (r.sub ? ' qr-ck-sub' : '')} data-testid={n === 0 ? 'ck-row-' + r.id : 'ck-item'} data-ck="item" data-zone={i.zone ? i.zone.label : ''} data-id={id} active={focusId === id} data-loc={f ? '1' : '0'} data-s={row.state} title={f ? full : locTip} onClick={click}>
       <td className="qr-ck-l">{n === 0 ? <OverflowLine className="qr-ck-lab" text={itemName}>{itemName}</OverflowLine> : ''}</td>
       <td className="qr-ck-st">{n === 0 ? <State s={row.state} /> : null}</td>
-      <td className="qr-ck-val"><OverflowLine className="qr-ck-body" testid="ck-what" text={bodyText}>{bodyText}</OverflowLine></td>
-      <td className="qr-ck-src"><OverflowLine className="qr-ck-where qr-muted" testid="ck-where" text={w}>{w}</OverflowLine></td>
+      <td className="qr-ck-val"><OverflowLine className="qr-ck-body" testid="ck-what" text={bodyText}>{bodyText}</OverflowLine><SourceLine w={w} /></td>
       <td className="qr-ck-locc"><LocateBtn f={f} onFocus={onFocus} /></td>
     </MrtRow>;
   })}
@@ -99,14 +102,12 @@ export function ChecklistBody({ part, onFocus, focusId }: any) {
         <col className="qr-ck-c-item" />
         <col className="qr-ck-c-st" />
         <col className="qr-ck-c-val" />
-        <col className="qr-ck-c-src" />
         <col className="qr-ck-c-loc" />
       </colgroup>}>
       <MrtHead cells={[
         { label: t('ck.col.item'), className: 'qr-ck-h-item' },
         { label: t('ck.col.status'), className: 'qr-ck-h-st' },
         { label: t('ck.col.value'), className: 'qr-ck-h-val' },
-        { label: t('ck.col.source'), className: 'qr-ck-h-src' },
         { label: '\u2316', className: 'qr-ck-h-loc', title: t('ck.show') }
       ]} />
       <tbody>{ev.order.map((g: string) => <React.Fragment key={g}>
