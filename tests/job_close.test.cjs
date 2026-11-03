@@ -87,7 +87,7 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   assert.ok(/\.qr-ptabs \{[^}]*overflow:\s*hidden/.test(css));
   assert.ok(!/\.qr-ptabs \{[^}]*overflow-x:\s*auto/.test(css));
   const layers = src('src/styles/layers.css');
-  assert.ok(/#3a3a3c/.test(layers) && /#dc2626/.test(layers) && /opacity:\s*1 !important/.test(layers));
+  assert.ok(/--mrt-text/.test(layers) && /#dc2626/.test(layers) && /opacity:\s*1 !important/.test(layers));
   assert.ok(/flex-wrap:\s*nowrap !important/.test(layers));
   const fit = src('src/styles/fit.css');
   assert.ok(/flex-wrap:\s*nowrap !important/.test(fit));

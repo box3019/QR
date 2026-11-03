@@ -2,7 +2,7 @@
    measured with scripts/btn-probe (MRT dist CSS rendered in Electron). No MRT code is imported. */
 :root {
   --qr-btn-radius: 6px;
-  --qr-btn-border-w: 1px;
+  --qr-btn-border-w: 2px;
   /* Compact MRT size in px: buttons do NOT grow with QR's Large/XLarge/Huge text setting (capped at Normal). */
   --qr-btn-h: 32px;
   --qr-btn-pad-x: 12px;
@@ -32,7 +32,7 @@
   --qr-btn-disabled-border: #86868b;
   --qr-radius: var(--qr-btn-radius);
 }
-.qr-btn, .qr-root .mrt-btn {
+.qr-btn, .qr-root .mrt-btn, .qr-root button.mrt-app-control.mrt-btn, .qr-root button.mrt-btn.mrt-action-btn {
   border-radius: var(--qr-btn-radius) !important;
   border: var(--qr-btn-border-w) solid var(--qr-btn-border) !important;
   background: var(--qr-btn-bg) !important;

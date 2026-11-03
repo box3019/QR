@@ -154,7 +154,7 @@
 
 /* project tabs (MRT workspace tab strip; MRT's tailwind layout classes written out) and one mounted view per project */
 .qr-ptabs { display: flex; align-items: center; gap: 0.375rem; flex: 1 1 auto; min-width: 0; overflow: hidden; }
-.qr-ptabs .mrt-workspace-tab { display: flex; align-items: center; flex: 0 0 auto; min-width: max-content; max-width: none; background: #ffffff; }
+.qr-ptabs .mrt-workspace-tab { display: flex; align-items: center; flex: 0 0 auto; min-width: max-content; max-width: none; background: var(--mrt-surface, #ffffff); color: var(--mrt-text); }
 .qr-ptabs .mrt-workspace-tab__label { display: inline-flex; align-items: center; gap: 0.4rem; min-width: max-content; flex: 0 1 auto; white-space: nowrap; overflow: visible; text-overflow: clip; font-size: 12px; }
 .qr-ptabs .mrt-workspace-tab__label bdi { overflow: visible; text-overflow: clip; white-space: nowrap; }
 .qr-ptabs .mrt-workspace-tab__close { flex: 0 0 auto; color: #3a3a3c; white-space: nowrap; } /* always visible (MRT shows it on hover only): every tab, even the only one, has its x */
@@ -294,7 +294,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-ck-sub .qr-ck-l { padding-inline-start: 18px; }
 .qr-ck-l { width: 1%; white-space: nowrap; overflow-wrap: normal; } .qr-ck-w { width: 99%; max-width: 0; overflow: hidden; }
 .qr-ck-gh th, .qr-ck-ind > div { white-space: nowrap; }
-.qr-ck-ind > div { overflow: hidden; text-overflow: ellipsis; }
+.qr-ck-ind > div { overflow: visible; text-overflow: clip; }
 /* Checklist states: yes = ok (green), no = neutral (no color, normal operation), notfound = warn. Red only for tight tolerances (below). */
 .qr-ck-s { font-weight: 600; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--mrt-text-muted); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
 .qr-ck-items { margin: 0; padding: 0; list-style: none; } .qr-ck-where { font-size: var(--qr-fs-xs); }
@@ -353,7 +353,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-ck-tab .qr-ck-l { white-space: nowrap; }
 
 /* Indicators and levels: never wrap */
-.qr-root .qr-ck-ind, .qr-root .qr-ck-ind > div, .qr-root .qr-ck-lvl { white-space: nowrap; }
+.qr-root .qr-ck-lvl { white-space: nowrap; }
+.qr-root .qr-ck-ind, .qr-root .qr-ck-ind > div { white-space: normal; }
 
 /* Stats bar: proper grid sizing for large screens */
 .qr-root .qr-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }

@@ -352,6 +352,11 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       report.idle.push(r); if (r.issues.length || !r.hasTable) fail++;
     }
   }
+  if (process.env.IDLE_ONLY) {
+    report.fail = fail; fs.writeFileSync(path.join(out, 'layout_report.json'), JSON.stringify(report, null, 1));
+    console.log(JSON.stringify({ idleChecked: report.idle.length, fail, bad: report.idle.filter((r) => r.issues.length).slice(0, 8).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, pal: r.palette, issues: r.issues.slice(0, 5) })) }, null, 1));
+    await app.close().catch(() => {}); process.exit(fail ? 1 : 0);
+  }
   // triage reason: one line, not truncated, at 1366x768 @100% and 1920x1080 @200%
   await set('industrial-steel', 'en');
   await win.evaluate(() => window.__qrStep(2));

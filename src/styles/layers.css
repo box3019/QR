@@ -17,7 +17,9 @@
 .qr-root .qr-topbar { background: var(--mrt-chrome-surface); border-bottom: 1px solid var(--mrt-chrome-border); box-shadow: var(--qr-bar-shadow); position: relative; z-index: 3; flex-wrap: nowrap !important; overflow: hidden; align-items: center; }
 .qr-root .qr-topbar > :not(.qr-ptabs) { flex-shrink: 0; }
 .qr-root .qr-ptabs { min-width: 0; flex: 1 1 auto; }
-.qr-root .qr-ptabs .mrt-workspace-tab { flex: 0 0 auto; background: #ffffff !important; max-width: none !important; min-width: max-content !important; }
+.qr-root .qr-ptabs .mrt-workspace-tab { flex: 0 0 auto; background: var(--mrt-surface) !important; color: var(--mrt-text) !important; max-width: none !important; min-width: max-content !important; }
+.qr-root .qr-ptabs .mrt-workspace-tab--active { background: var(--mrt-surface-muted) !important; }
+.qr-root .qr-ptabs .mrt-workspace-tab__label, .qr-root .qr-ptabs .mrt-workspace-tab--active .mrt-workspace-tab__label { color: var(--mrt-text) !important; -webkit-text-fill-color: var(--mrt-text); }
 .qr-root .qr-ptabs .mrt-workspace-tab__label { font-size: 12px !important; overflow: visible !important; text-overflow: clip !important; min-width: max-content !important; max-width: none !important; flex: 0 1 auto !important; }
 .qr-root .qr-ptabs .mrt-workspace-tab__label bdi, .qr-root .qr-ptabs .mrt-workspace-tab__label .qr-tab-cust { overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; }
 .qr-root .qr-topbar .mrt-topbar-cmd, .qr-root .qr-topbar .mrt-action-btn--topbar {
@@ -39,8 +41,8 @@
   width: 24px !important; min-width: 24px !important; max-width: 24px !important;
   height: 24px !important; min-height: 24px !important; padding: 0 !important;
   margin-inline-end: 4px; flex: 0 0 24px !important;
-  color: #3a3a3c !important; -webkit-text-fill-color: #3a3a3c; background: var(--qr-btn-bg) !important;
-  border: 1px solid var(--qr-btn-border) !important; box-shadow: none !important; overflow: visible !important;
+  color: var(--mrt-text) !important; -webkit-text-fill-color: var(--mrt-text); background: var(--qr-btn-bg) !important;
+  border: 2px solid var(--qr-btn-border) !important; box-shadow: none !important; overflow: visible !important;
   cursor: pointer !important; border-radius: var(--qr-btn-radius) !important;
   font-size: 16px !important; font-weight: 700 !important; line-height: 1 !important;
   white-space: nowrap !important;
@@ -242,7 +244,7 @@
 .qr-root .qr-block-chev, .qr-root .qr-tri-open, .qr-root .qr-loaded-part, .qr-root .qr-sec-main, .qr-root .qr-pgroup-h,
 .qr-root summary {
   cursor: pointer;
-  border: 1px solid var(--qr-btn-border) !important;
+  border: 2px solid var(--qr-btn-border) !important;
   background: var(--qr-btn-bg) !important;
   color: var(--qr-btn-fg);
   border-radius: var(--qr-btn-radius) !important;
@@ -287,7 +289,7 @@
   cursor: default; display: inline-flex !important; align-items: center; padding-inline: 0.45em !important;
 }
 .qr-root .qr-tab, .qr-root .qr-settings-tab, .qr-root .qr-menu-item { text-align: start; }
-.qr-root .mrt-workspace-tab { background: var(--qr-btn-bg) !important; border: 1px solid var(--qr-btn-border) !important; }
+.qr-root .mrt-workspace-tab { background: var(--qr-btn-bg) !important; border: 2px solid var(--qr-btn-border) !important; }
 
 /* Section headings (MRT): larger/bolder than the rows, tinted band + accent bar, compact space above. */
 .qr-root .qr-ck-gh th, .qr-root .qr-pgroup-h, .qr-root .qr-block-title, .qr-root .qr-sec, .qr-root .qr-panel-h,
@@ -295,11 +297,71 @@
 .qr-root .qr-catalog th, .qr-root .qr-field > label, .qr-root .qr-rc-sum, .qr-root .qr-tri-sec .qr-panel-h,
 .qr-root .qr-modal-h, .qr-root .qr-wsum-table th {
   font-size: var(--qr-fs-md) !important; font-weight: 700 !important; color: var(--mrt-text) !important;
-  background: var(--mrt-surface-muted); border-inline-start: 3px solid var(--mrt-accent);
+  background: var(--mrt-surface-muted); box-shadow: inset 3px 0 0 var(--mrt-accent);
   padding-block: 0.28em 0.18em; margin-block-start: 0.35em;
 }
 .qr-root .qr-pgroup-h { max-height: none !important; min-height: 1.8em !important; }
 .qr-root .qr-block-title { font-weight: 700 !important; color: var(--mrt-text) !important; }
 .qr-root .qr-block[data-status='none'] .qr-block-title { font-weight: 700 !important; }
-.qr-root .qr-hist-t th, .qr-root .qr-cks-tab th, .qr-root .qr-catalog th, .qr-root .qr-wsum-table th { margin-block-start: 0; }
+.qr-root .qr-hist-t th, .qr-root .qr-cks-tab th, .qr-root .qr-catalog th, .qr-root .qr-wsum-table th {
+  margin-block-start: 0; font-size: var(--qr-fs-sm) !important; box-shadow: inset 3px 0 0 var(--mrt-accent);
+}
 .qr-root .qr-modal-h { margin-block-start: 0; }
+
+/* Clickable chrome: pointer wins over MRT topbar cursor:default !important. */
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-topbar-chrome button:not(:disabled),
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-topbar-chrome button:not(:disabled) *,
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-topbar-chrome [role='button'],
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-topbar-chrome [role='button'] *,
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-topbar-chrome [role='tab'],
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-topbar-chrome [role='tab'] *,
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-tab__label,
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-tab__add,
+html:not([data-mrt-cursor-lock='1']) .qr-root .mrt-workspace-tab__close,
+html:not([data-mrt-cursor-lock='1']) .qr-root .qr-tab-more,
+html:not([data-mrt-cursor-lock='1']) .qr-root [data-testid='tab-more'],
+html:not([data-mrt-cursor-lock='1']) .qr-root [data-testid='tab-more-item'],
+html:not([data-mrt-cursor-lock='1']) .qr-root [data-testid='tab-more-close'],
+html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
+  cursor: pointer !important;
+}
+
+.qr-root .mrt-wizard-step, .qr-root .qr-rail .mrt-wizard-step {
+  background: var(--qr-btn-bg) !important; border: 2px solid var(--qr-btn-border) !important; cursor: pointer !important;
+}
+.qr-root .qr-ck-link, .qr-root .qr-cks-x, .qr-root [data-testid='btn-questions'], .qr-root [data-testid='btn-summary'],
+.qr-root [data-testid='btn-cancel'], .qr-root [data-testid='btn-close'],
+.qr-root button.mrt-app-control.mrt-btn, .qr-root button.mrt-btn.mrt-action-btn, .qr-root button.mrt-btn-secondary {
+  border: 2px solid var(--qr-btn-border) !important; background: var(--qr-btn-bg) !important; cursor: pointer !important;
+}
+.qr-root button:disabled, .qr-root button.mrt-app-control.mrt-btn:disabled, .qr-root button.mrt-btn:disabled {
+  border: 2px dashed var(--qr-btn-disabled-border) !important; background: var(--qr-btn-disabled-bg) !important;
+  color: var(--qr-btn-disabled-fg) !important; cursor: default !important;
+}
+.qr-root .mrt-workspace-tab__label, .qr-root .mrt-workspace-tab__add, .qr-root .mrt-workspace-tab__close, .qr-root .qr-tab-more {
+  border: 2px solid var(--qr-btn-border) !important; background: var(--qr-btn-bg) !important; cursor: pointer !important;
+}
+
+.qr-root .qr-sum-g {
+  white-space: nowrap !important; display: inline-flex; align-items: center; gap: 0.25em;
+  max-width: none; overflow: visible; text-overflow: clip; font-size: var(--qr-fs-xs);
+}
+.qr-root .qr-hist-g { flex-wrap: wrap; }
+.qr-root .qr-hist-t { table-layout: auto; }
+
+/* Checklist: each row is a stacked block so the value uses the full column (no ellipsis, no wrap inside a value). */
+.qr-root .qr-ck-tab, .qr-root .qr-ck-tab tbody { display: block; width: 100%; max-width: 100%; }
+.qr-root .qr-ck-tab tr { display: flex; flex-wrap: wrap; width: 100%; max-width: 100%; box-sizing: border-box; }
+.qr-root .qr-ck-tab th, .qr-root .qr-ck-tab td { display: block; max-width: 100%; box-sizing: border-box; }
+.qr-root .qr-ck-l { flex: 1 1 100%; width: auto; max-width: 100%; white-space: nowrap; }
+.qr-root .qr-ck-w { flex: 1 1 100%; width: auto; max-width: 100%; overflow: visible; }
+.qr-root .qr-ck-items { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; max-width: 100%; }
+.qr-root .qr-ck-items li { display: flex; flex-wrap: nowrap; align-items: baseline; gap: 4px; max-width: 100%; }
+.qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span, .qr-root .qr-ck-body {
+  overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; max-width: none;
+}
+.qr-root .qr-ck-ind, .qr-root .qr-ck-ind > div { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; max-width: 100%; }
+.qr-root .qr-card.qr-scroll, .qr-root .qr-scroll.qr-card { overflow-x: hidden; }
+@media (max-width: 1000px) {
+  .qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { padding-inline: 1px; font-size: 0.7rem; }
+}
