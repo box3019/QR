@@ -73,7 +73,7 @@ export function ChecklistBody({ part, onFocus, focusId }: any) {
     {ev.read && !ev.read.ok && <div className="qr-ck-warn" data-testid="ck-lowread">{t('ck.lowRead')}</div>}
     {ev.zoneEstimated && <div className="qr-muted qr-ck-zn" data-testid="ck-zone-note">{t('ck.zoneNote')}</div>}
     <table className="qr-ck-tab" ref={box} tabIndex={0} data-testid="ck-list"><tbody>{ev.order.map((g: string) => <React.Fragment key={g}>
-      <tr className="qr-ck-gh"><th colSpan={2}>{t('ck.g.' + g)}</th></tr>
+      <tr className="qr-ck-gh"><th colSpan={2} data-testid={'ck-g-' + g}>{t('ck.g.' + g)}</th></tr>
       {ROWS.filter((r: any) => r.group === g).map((r: any) => { const row = R[r.id]; return <tr key={r.id} data-testid={'ck-row-' + r.id} data-s={row.state} className={r.sub ? 'qr-ck-sub' : ''}>
         <td className="qr-ck-l">{t('ck.r.' + r.id)}</td><td className="qr-ck-w"><State s={row.state} /><Items row={row} onFocus={onFocus} pid={part.id || part.partNo} focusId={focusId} /></td></tr>; })}
     </React.Fragment>)}</tbody></table>

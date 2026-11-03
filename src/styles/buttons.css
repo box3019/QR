@@ -18,11 +18,11 @@
   --qr-btn-border: rgba(60, 60, 67, 0.55);
   --qr-btn-bg-hover: #f2f2f7;
   --qr-btn-border-hover: rgba(60, 60, 67, 0.75);
-  /* primary: same light button, neutral slate text + border (no dark fill, no blue) */
-  --qr-btn-primary-bg: #ffffff;
-  --qr-btn-primary-fg: #1c1c1e;
+  /* primary: filled with the default slate accent (themes.css retints to --mrt-accent) */
+  --qr-btn-primary-bg: #48484a;
+  --qr-btn-primary-fg: #ffffff;
   --qr-btn-primary-border: #48484a;
-  --qr-btn-primary-bg-hover: #f2f2f7;
+  --qr-btn-primary-bg-hover: #3a3a3c;
   --qr-btn-primary-border-hover: #1c1c1e;
   /* states */
   --qr-btn-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1c1c1e;

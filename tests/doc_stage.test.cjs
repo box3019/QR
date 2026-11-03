@@ -66,7 +66,7 @@ test('UI wiring: collapsed neutral section in the part card and the summary, too
   assert.strictEqual(en['rcard.title'], 'For route card'); assert.strictEqual(he['rcard.title'], 'לכרטיס מסלול');
   assert.ok(!/readiness/i.test(rd('src/views/Parts.tsx')), 'one status per part: no second readiness tag in the list'); assert.ok(!/tReadiness/.test(rd('src/views/Dialogs.tsx') + rd('src/views/Viewer.tsx')));
   assert.match(rd('src/ProjectView.tsx'), /data-provisional=\{!!busy && has\}/); assert.match(rd('src/ProjectView.tsx'), /data-testid="provisional"/);
-  const css = rd('src/styles/wizard.css'); const block = css.slice(css.indexOf('/* For route card')); assert.ok(!/color:\s*#|red|danger/.test(block.split('.qr-provisional')[0].replace(/#d0d5dd|#636366/g, '')), 'no status colours'); for (const m of block.matchAll(/font-size:\s*([^;]+);/g)) assert.match(m[1], /^var\(--qr-fs-(xs|sm|md|lg|xl)\)$/);
+  const css = rd('src/styles/wizard.css'); const block = css.slice(css.indexOf('/* For route card')); assert.ok(!/color:\s*#|red|danger/.test(block.split('.qr-provisional')[0].replace(/#d0d5dd|#636366/g, '')), 'no status colours'); for (const m of block.matchAll(/font-size:\s*([^;]+);/g)) assert.match(m[1].replace(/\s*!important\s*$/, ''), /^var\(--qr-fs-(xs|sm|md|lg|xl)\)$/);
 });
 test('hints follow ONE setting: auto = program language; a language only when picked', () => {
   const s = (o) => normalizeSettings(o);

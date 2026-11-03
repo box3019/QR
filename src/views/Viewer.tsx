@@ -98,7 +98,7 @@ export function RouteCard({ part }: any) {
         <td>{s.seq}</td><td style={{ textTransform: 'capitalize' }}>{L(s, 'type')}{s.title ? <div className="qr-muted">{L(s, 'title')}</div> : null}</td>
         <td>{s.items.map((it: any, j: number) => <div key={j}>{it.seq && it.seq !== s.seq ? <b>{it.seq} </b> : null}<bdi>{L(it, 'text')}</bdi></div>)}</td>
         <td>{(s.specRefs || []).join(', ')}</td><td>{L(s, 'source')}</td>
-        <td className="qr-rc-flags">{s.outsourced && <Chip t="info">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></tr>)}</tbody>
+        <td className="qr-rc-flags">{s.outsourced && <Chip t="info" testid="rc-outsourced">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></tr>)}</tbody>
     </table>
     {!part.route.length && <div className="qr-muted" style={{ padding: 10 }}>{t('rc.none')}</div>}
   </div>;

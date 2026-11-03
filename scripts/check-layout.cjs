@@ -139,39 +139,139 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     });
   }
   // Every button, chip, tag, toggle, tab and menu item: no clipped text, no ellipsis, no wrap inside the control
-  const clipSel = 'button, [role="button"], [role="menuitem"], [role="tab"], [role="switch"], .qr-chip, .qr-tag, .qr-pcard-tag, .qr-pcard-badge, .qr-status, .qr-badge, .qr-tab, .qr-settings-tab, .mrt-workspace-tab, .qr-menu-item, .mrt-btn, summary.qr-rc-sum, summary.qr-ck > summary, .qr-cks-x';
+  const clipSel = 'button, [role="button"], [role="menuitem"], [role="option"], [role="tab"], [role="switch"], [role="checkbox"], .qr-chip, .qr-tag, .qr-pcard-tag, .qr-pcard-badge, .qr-status, .qr-badge, .qr-tab, .qr-settings-tab, .mrt-workspace-tab, .qr-menu-item, .mrt-btn, .mrt-action-btn, summary, .qr-cks-x, .qr-sum-g, .qr-pres-chips button';
+  const clipSkip = '[data-testid=tab-close],[data-testid=tab-more-close],[data-testid=ck-locate],[data-testid=block-locate],[data-testid=block-chev],[data-testid=cks-expand],.qr-ck-link,.qr-ck-loc,.qr-chip-x,.qr-face';
+  const selOf = (e) => {
+    const id = e.getAttribute('data-testid'); if (id) return '[data-testid=' + id + ']';
+    if (e.id) return '#' + e.id;
+    const cls = (typeof e.className === 'string' ? e.className : '').trim().split(/\s+/).filter(Boolean).slice(0, 3).join('.');
+    return (e.tagName || 'EL').toLowerCase() + (cls ? '.' + cls : '');
+  };
+  const textBox = (el) => {
+    const rg = document.createRange(); let minL = Infinity, maxR = -Infinity, minT = Infinity, maxB = -Infinity, tops = [], rects = [];
+    const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
+    while ((n = walk.nextNode())) {
+      if (!n.textContent.trim()) continue;
+      const pcs = getComputedStyle(n.parentElement);
+      if (pcs.display === 'none' || pcs.visibility === 'hidden') continue;
+      try { rg.selectNodeContents(n); } catch { continue; }
+      [...rg.getClientRects()].forEach((r) => {
+        if (r.width < 1 || r.height < 2) return;
+        minL = Math.min(minL, r.left); maxR = Math.max(maxR, r.right); minT = Math.min(minT, r.top); maxB = Math.max(maxB, r.bottom);
+        tops.push(r.top);
+        rects.push({ left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height });
+      });
+    }
+    return { w: maxR - minL, h: maxB - minT, left: minL, right: maxR, top: minT, bottom: maxB, tops, rects };
+  };
+  const stackedWrap = (box) => {
+    const rs = box.rects || [];
+    for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) {
+      const a = rs[i], b = rs[j];
+      if (Math.abs(a.top - b.top) <= 6) continue;
+      const overlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+      if (overlap > Math.min(a.width, b.width) * 0.35) return true;
+    }
+    return false;
+  };
   const clips = [];
   document.querySelectorAll(clipSel).forEach((e) => {
-    if (e.closest('.qr-proj-off')) return;
+    if (e.closest('.qr-proj-off') || e.matches(clipSkip) || e.closest(clipSkip)) return;
     const cs = getComputedStyle(e);
     if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
+    const r0 = e.getBoundingClientRect();
+    if (r0.width < 2 || r0.height < 2) return;
     const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim();
     if (!t) return;
-    if (e.matches('[data-testid=tab-close],[data-testid=tab-more-close],[data-testid=ck-locate],[data-testid=block-locate],[data-testid=block-chev],[data-testid=cks-expand]') || /^[\u00D7\u2715\u25BE\u25B8\u2316]$/.test(t)) return;
-    const lab = [...e.querySelectorAll('span')].find((s) => !s.classList.contains('ico') && (s.textContent || '').trim());
+    if (/^[\u00D7\u2715\u25BE\u25B8\u2316\u2026]$/.test(t)) return;
+    const lab = [...e.querySelectorAll('span,label,bdi')].find((s) => !s.classList.contains('ico') && (s.textContent || '').trim());
     if (e.matches('.mrt-topbar-cmd') && lab && (getComputedStyle(lab).display === 'none' || getComputedStyle(lab).visibility === 'hidden')) return;
-    const sw = e.scrollWidth, cw = e.clientWidth, sh = e.scrollHeight, ch = e.clientHeight;
+    const measureEl = (e.matches('.mrt-topbar-cmd,.mrt-workspace-tab') && lab) ? lab : e;
+    const mcs = measureEl === e ? cs : getComputedStyle(measureEl);
+    const sw = measureEl.scrollWidth, cw = measureEl.clientWidth, sh = measureEl.scrollHeight, ch = measureEl.clientHeight;
     const found = [];
-    if (sw > cw + 1) found.push('scrollWidth ' + sw + '>' + cw);
-    if (sh > ch + 1) found.push('scrollHeight ' + sh + '>' + ch);
-    if (cs.textOverflow === 'ellipsis' && cs.overflow !== 'visible' && sw > cw + 1) found.push('ellipsis');
-    const rg = document.createRange();
-    try { if (lab) rg.selectNodeContents(lab); else rg.selectNodeContents(e); } catch { return; }
-    const rects = [...rg.getClientRects()].filter((r) => r.width > 2 && r.height > 4);
-    const tops = [...new Set(rects.map((r) => Math.round(r.top)))].sort((a, b) => a - b);
-    if (tops.length > 1 && tops[tops.length - 1] - tops[0] > 6) found.push('wrap');
-    const br = e.getBoundingClientRect();
-    const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-    const tw = rects.length ? Math.max(...rects.map((r) => r.width)) : 0;
-    if (tw > br.width - pad + 1) found.push('labelNarrower ' + Math.round(tw) + '>' + Math.round(br.width - pad));
+    if (sw > cw + 1) found.push('scrollWidth ' + Math.round(sw) + '>' + Math.round(cw));
+    if (measureEl === e && sh > ch + 1) found.push('scrollHeight ' + Math.round(sh) + '>' + Math.round(ch));
+    const ellip = (el) => {
+      const s = getComputedStyle(el);
+      return s.textOverflow === 'ellipsis' && (s.overflow === 'hidden' || s.overflowX === 'hidden' || s.overflow === 'clip') && el.scrollWidth > el.clientWidth + 1;
+    };
+    if (ellip(measureEl) || ellip(e) || (lab && ellip(lab))) found.push('ellipsis');
+    const box = textBox(measureEl);
+    const isStack = e.matches('.mrt-topbar-cmd,.mrt-workspace-tab');
+    if (!isStack && stackedWrap(box)) found.push('wrap');
+    if (isStack && lab && stackedWrap(textBox(lab))) found.push('wrap');
+    const br = measureEl.getBoundingClientRect();
+    const padX = parseFloat(mcs.paddingLeft) + parseFloat(mcs.paddingRight);
+    const padY = parseFloat(mcs.paddingTop) + parseFloat(mcs.paddingBottom);
+    if (box.w > 0 && box.w > br.width - padX + 1) found.push('labelNarrower ' + Math.round(box.w) + '>' + Math.round(br.width - padX));
+    const content = { left: br.left + parseFloat(mcs.paddingLeft), right: br.right - parseFloat(mcs.paddingRight) };
+    if (box.w > 0 && (box.right > content.right + 1 || box.left < content.left - 1)) found.push('overflowBox');
     if (found.length) {
       const step = (document.querySelector('[data-testid=project]:not(.qr-proj-off)') || {}).getAttribute?.('data-step') || '';
-      const dlg = e.closest('[data-testid]') && e.closest('.qr-modal, .qr-settings, [data-testid=history], [role=menu]');
-      clips.push({ screen: dlg ? (dlg.getAttribute('data-testid') || dlg.className || 'dialog') : ('step' + step), sel: (e.getAttribute('data-testid') || e.className || e.tagName).toString().slice(0, 56), text: t.slice(0, 56), issues: found });
+      const dlg = e.closest('.qr-modal, .qr-settings, [data-testid=history], [data-testid=settings-dialog], [role=menu], .qr-filemenu');
+      const screen = dlg ? (dlg.getAttribute('data-testid') || dlg.className || 'dialog') : ('step' + step);
+      clips.push({ screen: String(screen).slice(0, 48), sel: selOf(e).slice(0, 72), text: t.slice(0, 56), size: innerWidth + 'x' + innerHeight, issues: [...new Set(found)] });
     }
   });
   res.clips = clips;
-  clips.forEach((c) => res.issues.push('clip ' + c.screen + ' ' + c.sel + ' "' + c.text + '" @' + innerWidth + 'x' + innerHeight + ' ' + c.issues.join(',')));
+  clips.forEach((c) => res.issues.push('clip ' + c.screen + ' ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
+  // Every button / role=button / onclick: visible border or fill distinct from the container, plus pointer (disabled may be default).
+  const lookSkip = '.qr-modal-bg, .qr-modal-back, .qr-mark, video, .qr-vid-el, .qr-vid-bg, .qr-face, .qr-tour-dot';
+  const looks = [];
+  const distinct = (a, b) => { if (!a || !b) return false; return Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b) > 18 || Math.abs((a.a == null ? 1 : a.a) - (b.a == null ? 1 : b.a)) > 0.12; };
+  document.querySelectorAll('button, [role="button"], [onclick]').forEach((e) => {
+    if (e.closest('.qr-proj-off') || e.matches(lookSkip) || e.closest(lookSkip)) return;
+    const cs = getComputedStyle(e);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
+    if (e.getBoundingClientRect().width < 2 || e.getBoundingClientRect().height < 2) return;
+    const parent = e.parentElement; const pbg = parent ? bgOf(parent) : { r: 255, g: 255, b: 255, a: 1 };
+    const brd = rgba(cs.borderTopColor); const bw = parseFloat(cs.borderTopWidth) || 0;
+    const bg = rgba(cs.backgroundColor);
+    const hasBorder = bw >= 0.9 && brd && (brd.a == null ? 1 : brd.a) > 0.15 && distinct(over(brd, pbg), pbg);
+    const hasFill = bg && (bg.a == null ? 1 : bg.a) > 0.12 && distinct(over(bg, pbg), pbg);
+    const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    const found = [];
+    if (!hasBorder && !hasFill) found.push('plain');
+    if (!e.disabled && e.getAttribute('aria-disabled') !== 'true' && cs.cursor !== 'pointer') found.push('cursor:' + cs.cursor);
+    if (found.length) looks.push({ sel: selOf(e), text: t, issues: found, size: innerWidth + 'x' + innerHeight });
+  });
+  res.looks = looks;
+  looks.forEach((c) => res.issues.push('look ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
+  // Section heading hierarchy: size >= items in the section, weight >= 600
+  const headPairs = [
+    ['.qr-ck-gh th', '.qr-ck-tab td, .qr-ck-tab .qr-ck-l'],
+    ['.qr-pgroup-h', '.qr-pgroup-body .pn, .qr-pgroup-body .qr-part'],
+    ['.qr-block-title', '.qr-block-line'],
+    ['.qr-panel-h', '.qr-tri-row, .qr-part, .qr-panel td'],
+    ['.qr-cks > summary', '.qr-cks-tab td'],
+    ['.qr-ck > summary', '.qr-ck-tab td, .qr-ck-items'],
+    ['.qr-sec', '.qr-prob, .qr-sec + *'],
+    ['.qr-hist-t th', '.qr-hist-t td'],
+    ['.qr-cks-tab th', '.qr-cks-tab td'],
+    ['.qr-catalog th', '.qr-catalog td'],
+    ['.qr-field > label', '.qr-field input, .qr-field select, .qr-field .qr-input'],
+    ['.qr-rc-sum', '.qr-rc-list, .qr-rc-note'],
+    ['.qr-tri-sec .qr-panel-h', '.qr-tri-sec .qr-tri-row, .qr-tri-sec .qr-tri-open']
+  ];
+  const fw = (cs) => { const w = cs.fontWeight; return w === 'bold' ? 700 : w === 'normal' ? 400 : parseFloat(w) || 400; };
+  headPairs.forEach(([hs, is]) => {
+    document.querySelectorAll(hs).forEach((h) => {
+      if (h.closest('.qr-proj-off')) return;
+      const hcs = getComputedStyle(h); if (hcs.display === 'none') return;
+      const scope = h.closest('.qr-ck-tab, .qr-pgroup, .qr-block, .qr-panel, .qr-cks, .qr-ck, .qr-hist-t, .qr-catalog, .qr-field, .qr-rc, .qr-tri-sec, .qr-cks-card, details, table') || h.parentElement;
+      const items = [...(scope || document).querySelectorAll(is)].filter((el) => {
+        if (el.closest('.qr-proj-off') || el === h || h.contains(el)) return false;
+        const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0;
+      });
+      if (!items.length) return;
+      const maxItem = Math.max(...items.map((el) => parseFloat(getComputedStyle(el).fontSize) || 0));
+      const hsiz = parseFloat(hcs.fontSize) || 0;
+      const t = (h.innerText || h.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+      if (hsiz + 0.05 < maxItem) res.issues.push('headingSize ' + selOf(h) + ' "' + t + '" ' + hsiz + '<' + maxItem);
+      if (fw(hcs) < 600) res.issues.push('headingWeight ' + selOf(h) + ' "' + t + '" ' + fw(hcs));
+    });
+  });
   // Check header height (should be <=56px)
   const header = document.querySelector('.qr-wiz-head');
   if (header) {
@@ -294,18 +394,21 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     for (const st of [2, 3, 4]) {
       await win.evaluate((s) => { window.__qrStep(s); if (s === 2) window.__qrSelect && window.__qrSelect(0, 'drawing'); }, st); await sleep(900);
       const m = await win.evaluate(MEASURE);
-      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, printButton: m.printButton, savePdfButton: m.savePdfButton });
-      if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length)) fail++;
+      const clipIssues = (m.issues || []).filter((x) => /^clip /.test(x));
+      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, clips: m.clips, printButton: m.printButton, savePdfButton: m.savePdfButton, issues: clipIssues });
+      if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length) || clipIssues.length) fail++;
       // Check Print / Save PDF buttons are visible on each step
-      if (!m.printButton) { report.scan[report.scan.length - 1].issues = ['Print button not visible']; fail++; }
-      if (!m.savePdfButton) { (report.scan[report.scan.length - 1].issues || (report.scan[report.scan.length - 1].issues = [])).push('Save PDF button not visible'); fail++; }
+      if (!m.printButton) { report.scan[report.scan.length - 1].issues.push('Print button not visible'); fail++; }
+      if (!m.savePdfButton) { report.scan[report.scan.length - 1].issues.push('Save PDF button not visible'); fail++; }
     }
   }
-  // settings, history, route card, part card: same clip scan at 1920 and 4K, 100% and 200%, both languages
+  // settings, history, file menu, package lists, route card, part card: clip scan at every size/DPI/palette/language
   report.clipScreens = [];
-  const CLIP_SIZES = QUICK ? [[1920, 1080, 1]] : [[1920, 1080, 1], [1920, 1080, 2], [3840, 2160, 1]];
-  for (const lang of ['en', 'he']) for (const [w, h, dpi] of CLIP_SIZES) {
-    await size(w, h, dpi); await set('industrial-steel', lang); await sleep(400);
+  const CLIP_SIZES = QUICK ? [[1920, 1080, 1]] : SIZES.flatMap(([w, h]) => (w >= 1920 ? DPI_SCALES : [1]).map((dpi) => [w, h, dpi]));
+  const CLIP_PALS = QUICK ? ['industrial-steel'] : PALETTES;
+  const SETTINGS_TABS = QUICK ? ['interface', 'processes', 'customers'] : ['interface', 'general', 'language', 'ocr', 'precision', 'materials', 'processes', 'customers', 'outlook', 'folders', 'updates', 'assistant'];
+  for (const lang of ['en', 'he']) for (const [w, h, dpi] of CLIP_SIZES) for (const pal of CLIP_PALS) {
+    await size(w, h, dpi); await set(pal, lang); await sleep(400);
     const closeUi = async () => {
       await win.evaluate(() => { document.querySelectorAll('.qr-modal-bg').forEach((e) => e.click()); });
       await win.keyboard.press('Escape').catch(() => {});
@@ -313,22 +416,37 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     };
     const runClip = async (screen, open) => {
       await closeUi();
-      await open(); await sleep(500);
+      await open(); await sleep(450);
       const m = await win.evaluate(MEASURE);
       const issues = (m.issues || []).filter((x) => /^clip /.test(x));
-      const r = { screen, lang, size: w + 'x' + h, dpi, clips: m.clips, issues };
+      const r = { screen, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, issues };
       report.clipScreens.push(r); if (issues.length) fail++;
-      await closeUi();
     };
     await runClip('settings', async () => { const b = await win.$('[data-testid=btn-settings]'); if (b) await b.click({ force: true }); });
+    for (const tab of SETTINGS_TABS) {
+      await win.evaluate((k) => { window.__qrSettingsTab && window.__qrSettingsTab(k); }, tab);
+      await sleep(250);
+      const m = await win.evaluate(MEASURE);
+      const issues = (m.issues || []).filter((x) => /^clip /.test(x));
+      report.clipScreens.push({ screen: 'settings-' + tab, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, issues });
+      if (issues.length) fail++;
+    }
     await runClip('history', async () => { const b = await win.$('[data-testid=btn-history]'); if (b) await b.click({ force: true }); });
     await runClip('file-menu', async () => { const b = await win.$('[data-testid=btn-file]'); if (b) await b.click({ force: true }); });
+    await closeUi();
+    await win.evaluate(() => { window.__qrStep(2); });
+    await sleep(500);
+    await runClip('package-list', async () => {});
+    await win.evaluate(() => { window.__qrStep(3); });
+    await sleep(400);
+    await runClip('docs-list', async () => {});
     await win.evaluate(() => { window.__qrStep(2); window.__qrSelect && window.__qrSelect(0, 'route'); });
     await sleep(700);
     await runClip('route-card', async () => {});
     await win.evaluate(() => { window.__qrSelect && window.__qrSelect(0, 'drawing'); });
-    await sleep(500);
+    await sleep(400);
     await runClip('part-card', async () => {});
+    await closeUi();
   }
 
   // job tabs: 4 / 8 / 15 chips at 1366×768 @100% and 1920×1080 @200% — one-row header, visible ×, overflow to More

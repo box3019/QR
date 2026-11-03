@@ -17,8 +17,9 @@
 .qr-root .qr-topbar { background: var(--mrt-chrome-surface); border-bottom: 1px solid var(--mrt-chrome-border); box-shadow: var(--qr-bar-shadow); position: relative; z-index: 3; flex-wrap: nowrap !important; overflow: hidden; align-items: center; }
 .qr-root .qr-topbar > :not(.qr-ptabs) { flex-shrink: 0; }
 .qr-root .qr-ptabs { min-width: 0; flex: 1 1 auto; }
-.qr-root .qr-ptabs .mrt-workspace-tab { flex: 0 0 auto; background: #ffffff !important; }
-.qr-root .qr-ptabs .mrt-workspace-tab__label { font-size: 12px !important; }
+.qr-root .qr-ptabs .mrt-workspace-tab { flex: 0 0 auto; background: #ffffff !important; max-width: none !important; min-width: max-content !important; }
+.qr-root .qr-ptabs .mrt-workspace-tab__label { font-size: 12px !important; overflow: visible !important; text-overflow: clip !important; min-width: max-content !important; max-width: none !important; flex: 0 1 auto !important; }
+.qr-root .qr-ptabs .mrt-workspace-tab__label bdi, .qr-root .qr-ptabs .mrt-workspace-tab__label .qr-tab-cust { overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; }
 .qr-root .qr-topbar .mrt-topbar-cmd, .qr-root .qr-topbar .mrt-action-btn--topbar {
   height: 44px !important; min-height: 44px !important; max-height: 44px !important;
   min-width: 72px !important; flex-shrink: 0 !important; max-width: none !important;
@@ -38,14 +39,15 @@
   width: 24px !important; min-width: 24px !important; max-width: 24px !important;
   height: 24px !important; min-height: 24px !important; padding: 0 !important;
   margin-inline-end: 4px; flex: 0 0 24px !important;
-  color: #3a3a3c !important; -webkit-text-fill-color: #3a3a3c; background: transparent !important;
-  border: 0 !important; box-shadow: none !important; overflow: visible !important;
+  color: #3a3a3c !important; -webkit-text-fill-color: #3a3a3c; background: var(--qr-btn-bg) !important;
+  border: 1px solid var(--qr-btn-border) !important; box-shadow: none !important; overflow: visible !important;
+  cursor: pointer !important; border-radius: var(--qr-btn-radius) !important;
   font-size: 16px !important; font-weight: 700 !important; line-height: 1 !important;
   white-space: nowrap !important;
 }
 .qr-root .mrt-workspace-tab__close .qr-tab-x { display: inline-block; font-size: 16px; line-height: 1; min-width: 14px; min-height: 14px; color: inherit; -webkit-text-fill-color: inherit; }
 .qr-root .mrt-workspace-tab__close:hover, .qr-root .qr-more-job .mrt-workspace-tab__close:hover {
-  color: #dc2626 !important; -webkit-text-fill-color: #dc2626; background: transparent !important;
+  color: #dc2626 !important; -webkit-text-fill-color: #dc2626; background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important;
 }
 .qr-root .qr-wiz > .qr-wiz-head { box-shadow: var(--qr-bar-shadow); position: relative; z-index: 2; }
 .qr-root .qr-wiz-footer { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
@@ -126,6 +128,16 @@
 .qr-root .qr-pattern { color: var(--mrt-text-muted); }
 .qr-root .qr-reject { color: var(--qr-bad-text); }
 .qr-root .qr-route-card, .qr-root .qr-route-card .head { border-color: var(--mrt-border-strong); } .qr-root .qr-route-card .head b { color: var(--mrt-text-muted); } .qr-root .qr-route-card .head > div { border-color: var(--mrt-border); }
+/* Flags column (קבלן חוץ / Outsourced): never shrink narrower than the chip text. Loaded last so it wins over table-layout:fixed + min-width:0. */
+.qr-root .qr-route-card .qr-table { table-layout: auto !important; }
+.qr-root .qr-route-card .qr-rc-flags { width: 1% !important; min-width: max-content !important; max-width: none !important; overflow: visible !important; white-space: nowrap !important; }
+.qr-root .qr-route-card .qr-chip, .qr-root .qr-rc-flags .qr-chip {
+  display: inline-flex !important; width: max-content !important; min-width: max-content !important; max-width: none !important;
+  overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; flex: 0 0 auto !important;
+}
+/* Status tiles: count and label on one line (no wrap inside the control). */
+.qr-root .qr-tile { flex-direction: row !important; align-items: center !important; white-space: nowrap !important; min-width: max-content !important; width: max-content !important; max-width: none !important; overflow: visible !important; }
+.qr-root .qr-tile-n, .qr-root .qr-tile-l { white-space: nowrap !important; overflow: visible !important; text-overflow: clip !important; min-width: max-content; }
 .qr-root .qr-modal-bg, .qr-root .qr-modal-back { background: var(--mrt-scrim); }
 .qr-root .qr-modal, .qr-root .qr-modal-h, .qr-root .qr-modal-f { color: var(--mrt-text); }
 .qr-root .qr-modal-h { background: var(--mrt-dialog-header); border-bottom-color: var(--mrt-border); } .qr-root .qr-modal-f { border-top-color: var(--mrt-border); }
@@ -222,3 +234,72 @@
   .qr-root .qr-cks-card { padding-inline: 4px; }
   .qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { padding-inline: 2px; }
 }
+
+/* Every control looks like an MRT button: visible border + fill, hover/press, focus ring, pointer. */
+.qr-root button, .qr-root [role="button"], .qr-root [role="tab"], .qr-root [role="menuitem"], .qr-root [role="switch"],
+.qr-root .qr-chip, .qr-root .qr-badge, .qr-root .qr-status, .qr-root .qr-tab, .qr-root .qr-settings-tab, .qr-root .qr-menu-item,
+.qr-root .qr-ck-link, .qr-root .qr-hist-open, .qr-root .qr-recent-row, .qr-root .qr-cks-x, .qr-root .qr-ck-loc, .qr-root .qr-chip-x,
+.qr-root .qr-block-chev, .qr-root .qr-tri-open, .qr-root .qr-loaded-part, .qr-root .qr-sec-main, .qr-root .qr-pgroup-h,
+.qr-root summary {
+  cursor: pointer;
+  border: 1px solid var(--qr-btn-border) !important;
+  background: var(--qr-btn-bg) !important;
+  color: var(--qr-btn-fg);
+  border-radius: var(--qr-btn-radius) !important;
+  box-shadow: none;
+}
+.qr-root button:hover:not(:disabled), .qr-root [role="button"]:hover, .qr-root [role="tab"]:hover, .qr-root [role="menuitem"]:hover,
+.qr-root [role="switch"]:hover, .qr-root .qr-ck-link:hover, .qr-root .qr-hist-open:hover, .qr-root .qr-recent-row:hover,
+.qr-root .qr-menu-item:hover, .qr-root .qr-tab:hover, .qr-root .qr-settings-tab:hover, .qr-root .qr-cks-x:hover,
+.qr-root .qr-ck-loc:hover, .qr-root .qr-chip-x:hover, .qr-root .qr-block-chev:hover, .qr-root .qr-tri-open:hover,
+.qr-root .qr-loaded-part:hover, .qr-root .qr-sec-main:hover, .qr-root .qr-pgroup-h:hover, .qr-root summary:hover {
+  background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important;
+}
+.qr-root button:active:not(:disabled), .qr-root [role="button"]:active, .qr-root [role="menuitem"]:active {
+  background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important;
+}
+.qr-root button:focus-visible, .qr-root [role="button"]:focus-visible, .qr-root [role="tab"]:focus-visible,
+.qr-root [role="menuitem"]:focus-visible, .qr-root [role="switch"]:focus-visible {
+  outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--qr-btn-focus-ring) !important;
+}
+.qr-root button.mrt-btn-primary, .qr-root .qr-btn-primary, .qr-root .mrt-btn.mrt-btn-primary {
+  background: var(--qr-btn-primary-bg) !important; color: var(--qr-btn-primary-fg) !important;
+  border-color: var(--qr-btn-primary-border) !important;
+}
+.qr-root button.mrt-btn-primary:hover:not(:disabled), .qr-root .qr-btn-primary:hover:not(:disabled),
+.qr-root .mrt-btn.mrt-btn-primary:hover:not(:disabled) {
+  background: var(--qr-btn-primary-bg-hover) !important; border-color: var(--qr-btn-primary-border-hover) !important;
+}
+.qr-root button:disabled, .qr-root [aria-disabled='true'] {
+  cursor: default !important; background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important;
+  border: 1px dashed var(--qr-btn-disabled-border) !important;
+}
+.qr-root .qr-ck-link, .qr-root .qr-hist-open, .qr-root .qr-recent-row, .qr-root .qr-cks-x, .qr-root .qr-tri-open, .qr-root .qr-loaded-part {
+  display: inline-flex !important; align-items: center; text-decoration: none !important;
+  padding: 0.12em 0.5em !important; min-height: 0 !important; height: auto !important; min-width: max-content !important;
+  font: inherit; white-space: nowrap !important;
+}
+.qr-root .qr-ck-loc, .qr-root .qr-chip-x, .qr-root .qr-block-chev, .qr-root .qr-cks-x {
+  display: inline-grid !important; place-items: center; width: 1.5rem !important; min-width: 1.5rem !important; max-width: 1.5rem;
+  height: 1.5rem !important; min-height: 1.5rem !important; padding: 0 !important;
+}
+.qr-root .qr-chip, .qr-root .qr-badge, .qr-root .qr-status {
+  cursor: default; display: inline-flex !important; align-items: center; padding-inline: 0.45em !important;
+}
+.qr-root .qr-tab, .qr-root .qr-settings-tab, .qr-root .qr-menu-item { text-align: start; }
+.qr-root .mrt-workspace-tab { background: var(--qr-btn-bg) !important; border: 1px solid var(--qr-btn-border) !important; }
+
+/* Section headings (MRT): larger/bolder than the rows, tinted band + accent bar, compact space above. */
+.qr-root .qr-ck-gh th, .qr-root .qr-pgroup-h, .qr-root .qr-block-title, .qr-root .qr-sec, .qr-root .qr-panel-h,
+.qr-root .qr-cks > summary, .qr-root .qr-ck > summary, .qr-root .qr-hist-t th, .qr-root .qr-cks-tab th,
+.qr-root .qr-catalog th, .qr-root .qr-field > label, .qr-root .qr-rc-sum, .qr-root .qr-tri-sec .qr-panel-h,
+.qr-root .qr-modal-h, .qr-root .qr-wsum-table th {
+  font-size: var(--qr-fs-md) !important; font-weight: 700 !important; color: var(--mrt-text) !important;
+  background: var(--mrt-surface-muted); border-inline-start: 3px solid var(--mrt-accent);
+  padding-block: 0.28em 0.18em; margin-block-start: 0.35em;
+}
+.qr-root .qr-pgroup-h { max-height: none !important; min-height: 1.8em !important; }
+.qr-root .qr-block-title { font-weight: 700 !important; color: var(--mrt-text) !important; }
+.qr-root .qr-block[data-status='none'] .qr-block-title { font-weight: 700 !important; }
+.qr-root .qr-hist-t th, .qr-root .qr-cks-tab th, .qr-root .qr-catalog th, .qr-root .qr-wsum-table th { margin-block-start: 0; }
+.qr-root .qr-modal-h { margin-block-start: 0; }

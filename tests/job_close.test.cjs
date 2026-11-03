@@ -102,6 +102,10 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   assert.ok(/\[4, 8, 15\]/.test(lay) && /1366, 768, 1/.test(lay) && /1920, 1080, 2/.test(lay));
   assert.ok(/tab-more-close/.test(lay));
   assert.ok(/clipSel/.test(lay) && /labelNarrower/.test(lay) && /clipScreens/.test(lay) && /route-card/.test(lay));
+  assert.ok(/overflowBox/.test(lay) && /package-list/.test(lay) && /CLIP_PALS/.test(lay) && /SETTINGS_TABS/.test(lay));
+  assert.ok(/role="option"/.test(lay) && /textBox/.test(lay) && /stackedWrap/.test(lay));
+  assert.ok(/lookSkip/.test(lay) && /\[onclick\]/.test(lay) && /res\.looks/.test(lay) && /plain/.test(lay));
+  assert.ok(/headingSize/.test(lay) && /headingWeight/.test(lay) && /qr-ck-gh/.test(lay));
   const main = src('electron/main.cjs') + src('electron/preload.cjs');
   assert.ok(/qr:importCache:release/.test(main) && /releaseImportCache/.test(main) && /jobId: job/.test(main));
 });

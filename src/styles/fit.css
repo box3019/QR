@@ -19,10 +19,10 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
   white-space: nowrap !important; overflow-wrap: normal; text-align: center;
 }
 .mrt-workspace-tab__label {
-  height: auto !important; min-height: 0 !important; min-width: 0 !important; max-width: none;
+  height: auto !important; min-height: 0 !important; min-width: max-content !important; max-width: none;
   padding-block: 4px !important; padding-inline: 8px !important;
   font-size: 12px !important; line-height: 1.2 !important;
-  white-space: nowrap !important; overflow-wrap: normal; text-align: start;
+  white-space: nowrap !important; overflow: visible !important; text-overflow: clip !important; overflow-wrap: normal; text-align: start;
 }
 .mrt-workspace-tab__add, .qr-tab-more {
   height: auto !important; min-height: 26px !important; min-width: auto !important; max-width: none;
@@ -40,8 +40,8 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 .qr-topbar .mrt-topbar-cmd .ico { font-size: 1.15em; line-height: 1; }
 .qr-brand-badge { width: 1.75em; height: 1.75em; }
 .qr-chip, .qr-status, .qr-badge {
-  height: auto !important; line-height: normal !important; max-width: none; min-width: max-content; width: max-content;
-  white-space: nowrap; overflow: visible; text-overflow: clip; padding-block: 0.12em !important; box-sizing: border-box; flex: 0 0 auto;
+  height: auto !important; line-height: normal !important; max-width: none !important; min-width: max-content !important; width: max-content !important;
+  white-space: nowrap !important; overflow: visible !important; text-overflow: clip !important; padding-block: 0.12em !important; box-sizing: border-box; flex: 0 0 auto !important;
 }
 select, .qr-input, select.qr-input {
   height: auto !important; min-height: 2.1em; line-height: normal !important; font: inherit; font-size: 0.875rem;

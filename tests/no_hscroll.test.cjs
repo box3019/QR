@@ -23,13 +23,20 @@ test('never dim content: no opacity rules on the provisional / busy state; busy 
   const q = rd('src/styles/qr.css'); const busy = q.match(/\.qr-busy\s*\{[^}]*\}/)[0]; assert.ok(/position:\s*fixed/.test(busy) && /bottom:/.test(busy) && !/inset:\s*0\b/.test(busy) && !/\b(width|height):\s*100/.test(busy));
   assert.ok(!/\.qr-(proj|wiz|summary-step|sum-wrap)[^{]*\{[^}]*(opacity|filter)\s*:/.test(rd('src/styles/layers.css') + css));
 });
+test('section headings are larger and bolder than their rows (MRT hierarchy)', () => {
+  assert.ok(/\.qr-ck-gh th \{[^}]*font-size:\s*var\(--qr-fs-md\)/.test(css));
+  assert.ok(/\.qr-ck-gh th \{[^}]*font-weight:\s*700/.test(css));
+  const layers = rd('src/styles/layers.css');
+  assert.ok(/qr-ck-gh th/.test(layers) && /font-weight:\s*700/.test(layers) && /--qr-fs-md/.test(layers));
+  assert.ok(/border-inline-start:\s*3px solid var\(--mrt-accent\)/.test(layers));
+});
 test('route-card flags chip grows to the full label (no ellipsis, no clip)', () => {
   const fit = rd('src/styles/fit.css');
   assert.ok(/\.qr-chip, \.qr-status, \.qr-badge \{[^}]*overflow:\s*visible/.test(fit));
   assert.ok(/\.qr-chip, \.qr-status, \.qr-badge \{[^}]*text-overflow:\s*clip/.test(fit));
   assert.ok(/qr-rc-flags/.test(css) && /min-width:\s*max-content/.test(css));
   const v = rd('src/views/Viewer.tsx');
-  assert.ok(/qr-rc-flags/.test(v) && /rc\.outsourced/.test(v));
+  assert.ok(/qr-rc-flags/.test(v) && /rc\.outsourced/.test(v) && /rc-outsourced/.test(v));
   assert.ok(!/width: 90/.test(v));
 });
 test('tables in QR wrap instead of scrolling horizontally', () => {

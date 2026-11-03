@@ -229,3 +229,14 @@
 :is(.qr-root, .qr-pal-prev, .qr-acc-sw)[data-mrt-theme='dark'][data-qr-accent='amber'] { --mrt-accent: #fcd34d; --mrt-accent-soft: rgba(252, 211, 77, 0.2); --mrt-focus: #fcd34d; --qr-btn-primary-border: #fcd34d; }
 /* high contrast keeps its black accent whatever the accent choice */
 :is(.qr-root, .qr-pal-prev)[data-mrt-theme][data-qr-palette='high-contrast'][data-qr-accent] { --mrt-accent: #000000; --mrt-accent-soft: rgba(0, 0, 0, 0.14); --mrt-focus: #000000; }
+/* Primary actions: filled with the accent. Light accents (dark theme) use dark text so AA still holds. */
+:is(.qr-root, .qr-pal-prev, .qr-acc-sw)[data-mrt-theme='light'] {
+  --qr-btn-primary-bg: var(--mrt-accent); --qr-btn-primary-fg: #ffffff; --qr-btn-primary-border: var(--mrt-accent);
+  --qr-btn-primary-bg-hover: var(--mrt-text); --qr-btn-primary-border-hover: var(--mrt-text);
+  --mrt-btn-primary-bg: var(--mrt-accent); --mrt-btn-primary-fg: #ffffff; --mrt-btn-primary-border: var(--mrt-accent); --mrt-btn-primary-bg-hover: var(--mrt-text);
+}
+:is(.qr-root, .qr-pal-prev, .qr-acc-sw)[data-mrt-theme='dark'] {
+  --qr-btn-primary-bg: var(--mrt-accent); --qr-btn-primary-fg: #1c1c1e; --qr-btn-primary-border: var(--mrt-accent);
+  --qr-btn-primary-bg-hover: var(--mrt-text); --qr-btn-primary-border-hover: var(--mrt-text);
+  --mrt-btn-primary-bg: var(--mrt-accent); --mrt-btn-primary-fg: #1c1c1e; --mrt-btn-primary-border: var(--mrt-accent); --mrt-btn-primary-bg-hover: var(--mrt-text);
+}
