@@ -818,6 +818,8 @@
   "ck.items.many": "{n} items",
   "ck.expand": "Show the full checklist for this part",
   "ck.collapse": "Hide the full checklist for this part",
+  "ck.valueFull": "Show the full value",
+  "ck.valueHide": "Hide the full value",
   "print.empty": "Print document rendered empty",
   "print.failed": "Print failed.",
   "st.tab.updates": "Updates",

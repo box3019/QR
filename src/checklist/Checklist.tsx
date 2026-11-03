@@ -1,5 +1,5 @@
 ﻿// Part card: the Alex checklist in route-card order, plus the Precision level and Complexity indicators. Colours only for yes / no / not found.
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { evaluate, ROWS } from '../../core/checklist/live.mjs';
 import { getCkSettings } from './store';
@@ -15,6 +15,26 @@ function LocateBtn({ f, onFocus }: { f: any; onFocus?: (x: any) => void }) {
   return <button type="button" className="qr-ck-loc" data-testid="ck-locate" title={t('ck.show')} onClick={(e) => { e.stopPropagation(); onFocus && onFocus(f); }}>{'\u2316'}</button>;
 }
 
+function OverflowLine({ className, testid, text, children }: { className: string; testid?: string; text: string; children: any }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [over, setOver] = useState(false);
+  const [open, setOpen] = useState(false);
+  useLayoutEffect(() => {
+    const el = ref.current; if (!el) return;
+    const check = () => setOver(el.scrollWidth > el.clientWidth + 1);
+    check();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text]);
+  return <span className="qr-ck-line" data-overflow={over ? '1' : undefined} data-open={open ? '1' : undefined}>
+    <span ref={ref} className={className} data-testid={testid} title={text}>{children}</span>
+    {over ? <button type="button" className="qr-ck-more" data-testid="ck-expand" aria-expanded={open} title={open ? t('ck.valueHide') : t('ck.valueFull')} onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}>{open ? '\u25BE' : '\u25B8'}</button> : null}
+    {open ? <span className="qr-ck-full" data-testid="ck-full">{text}</span> : null}
+  </span>;
+}
+
 function Items({ row, onFocus, pid, focusId }: any) {
   const items: any[] = row.items || []; if (!items.length) return <span className="qr-muted">{row.state === 'notfound' ? t('ck.nfWhy') : ''}</span>;
   const rows = items.slice(0, MAXI);
@@ -26,10 +46,11 @@ function Items({ row, onFocus, pid, focusId }: any) {
     const full = itemWhat(i) + (w ? ' \u2014 ' + w : '');
     const locTip = f ? t('ck.show') : t('ck.locateMissing');
     const click = () => { if (!f || !onFocus) return; onFocus(f); };
+    const bodyText = itemWhat(i) + (i.derived ? ' (' + t('ck.derived', { x: t('ck.r.' + (i.derived === 'fit' ? 'tight' : 'threads')) }) + ')' : '') + (row.excluded ? ' (' + t('ck.excluded') + ')' : '');
     return <li key={n} className="qr-ck-item" data-testid="ck-item" data-zone={i.zone ? i.zone.label : ''} data-id={id} data-active={focusId === id ? 'true' : undefined} data-loc={f ? '1' : '0'} title={f ? full : locTip} onClick={click}>
       <div className="qr-ck-stack">
-        <span className="qr-ck-body" title={full}>{body}</span>
-        {w ? <span className="qr-ck-where qr-muted" data-testid="ck-where">{w}</span> : null}
+        <OverflowLine className="qr-ck-body" text={bodyText}>{body}</OverflowLine>
+        {w ? <OverflowLine className="qr-ck-where qr-muted" testid="ck-where" text={w}>{w}</OverflowLine> : null}
       </div>
       <LocateBtn f={f} onFocus={onFocus} />
     </li>; })}

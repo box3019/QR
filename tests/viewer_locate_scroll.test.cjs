@@ -19,6 +19,8 @@ test('after the first locate click the highlight box is inside the viewport', as
   const k = (1500 * z) / imgW;
   const box = { left: bbox.x * k, top: bbox.y * k, w: bbox.w * k, h: bbox.h * k };
   assert.ok(inView(box, s, viewW, viewH), 'locate scroll keeps the box in view');
+  const fill = Math.max(box.w / viewW, box.h / viewH);
+  assert.ok(fill <= 0.4 + 0.02, 'highlight is in view and <=40% of the viewport, not larger than Fit page');
   const W = 1500 * z, H = W * imgH / imgW;
   const c = m.centerScroll(viewW, viewH, W, H);
   assert.ok(!inView(box, c, viewW, viewH) || Math.abs(c.left - s.left) > 8 || Math.abs(c.top - s.top) > 8, 'sheet-centre scroll is not the locate scroll');
@@ -30,5 +32,6 @@ test('Viewer resize/fit recentering is skipped after a locate zoom', () => {
   assert.match(v, /if \(locateRef\.current\)/);
   assert.match(v, /scrollLocate/);
   assert.match(v, /locateRef\.current = true/);
+  assert.match(v, /setZoom\(zoomToBox\(/);
   assert.doesNotMatch(v, /new ResizeObserver\(\(\) => \{ if \(autoRef\.current\) refit\(\); else recenter\(\); \}\)/);
 });

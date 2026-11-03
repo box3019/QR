@@ -219,6 +219,8 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   // Checklist values: each of body / where / the row must fit (no text under locate, no zero-width, no horizontal clip).
   document.querySelectorAll('.qr-ck-body, .qr-ck-where, .qr-ck-items li, [data-testid=ck-item]').forEach((e) => {
     if (e.closest('.qr-proj-off')) return;
+    const item = e.closest('[data-testid=ck-item]') || (e.matches('[data-testid=ck-item]') ? e : null);
+    if (item && item.querySelector('[data-testid=ck-expand]') && (e.closest('[data-overflow="1"]') || e.querySelector('[data-overflow="1"]') || e.matches('[data-overflow="1"]'))) return;
     const cs = getComputedStyle(e);
     if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
     const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim();
@@ -316,6 +318,28 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const rcRect = railContext.getBoundingClientRect();
       res.railContextHeight = Math.round(rcRect.height);
       if (res.railContextHeight > 56) res.issues.push('rail context too tall: ' + res.railContextHeight + 'px > 56px');
+    }
+  }
+  const vp = document.querySelector('[data-testid=step2-part] [data-testid=drawing-viewport]');
+  if (vp) {
+    const vr = vp.getBoundingClientRect();
+    if (vr.width > 8 && vr.height > 8) {
+      const cols = document.querySelector('.qr-pview-cols');
+      const kids = cols ? [...cols.children].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 8 && r.height > 8; }) : [];
+      const stacked = kids.length < 2 || Math.abs(kids[0].getBoundingClientRect().left - kids[1].getBoundingClientRect().left) < 16;
+      res.viewer = { w: Math.round(vr.width), h: Math.round(vr.height), stacked, winW: innerWidth, winH: innerHeight };
+      if (stacked) {
+        if (vr.height < innerHeight * 0.4 - 1) res.issues.push('viewer short ' + Math.round(vr.height) + ' < 40% of ' + innerHeight);
+      } else if (vr.width < innerWidth * 0.4 - 1) res.issues.push('viewer narrow ' + Math.round(vr.width) + ' < 40% of ' + innerWidth);
+      const mark = vp.querySelector('[data-testid=dw-mark][data-active="true"]') || vp.querySelector('[data-testid=dw-mark]');
+      if (mark) {
+        const mr = mark.getBoundingClientRect();
+        res.viewer.mark = { w: Math.round(mr.width), h: Math.round(mr.height), left: Math.round(mr.left - vr.left), top: Math.round(mr.top - vr.top) };
+        if (mr.left < vr.left - 1 || mr.right > vr.right + 1 || mr.top < vr.top - 1 || mr.bottom > vr.bottom + 1) res.issues.push('locate highlight outside viewer');
+        const fill = Math.max(mr.width / vr.width, mr.height / vr.height);
+        res.viewer.fill = Math.round(fill * 1000) / 1000;
+        if (fill > 0.42) res.issues.push('locate highlight ' + Math.round(fill * 100) + '% > 40% of viewer');
+      }
     }
   }
   return res;
@@ -419,8 +443,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await win.evaluate((s) => { window.__qrStep(s); if (s === 2) window.__qrSelect && window.__qrSelect(0, 'drawing'); }, st); await sleep(900);
       const m = await win.evaluate(MEASURE);
       const clipIssues = (m.issues || []).filter((x) => /^clip /.test(x));
-      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, clips: m.clips, printButton: m.printButton, savePdfButton: m.savePdfButton, issues: clipIssues });
-      if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length) || clipIssues.length) fail++;
+      const viewIssues = st === 2 ? (m.issues || []).filter((x) => /^(viewer |locate )/.test(x)) : [];
+      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, clips: m.clips, viewer: m.viewer, printButton: m.printButton, savePdfButton: m.savePdfButton, issues: [...clipIssues, ...viewIssues] });
+      if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length) || clipIssues.length || viewIssues.length) fail++;
       // Check Print / Save PDF buttons are visible on each step
       if (!m.printButton) { report.scan[report.scan.length - 1].issues.push('Print button not visible'); fail++; }
       if (!m.savePdfButton) { report.scan[report.scan.length - 1].issues.push('Save PDF button not visible'); fail++; }
@@ -471,6 +496,24 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     await sleep(400);
     await runClip('part-card', async () => {});
     await closeUi();
+  }
+
+  report.viewer = [];
+  const VIEW_SIZES = QUICK ? [[1920, 1080, 1]] : [[1366, 768, 1], [1366, 768, 1.5], [1920, 1080, 1], [1920, 1080, 1.5], [2560, 1440, 1], [3840, 2160, 1], [3840, 2160, 2]];
+  await set('industrial-steel', 'en');
+  for (const lang of (QUICK ? ['en'] : ['en', 'he'])) for (const [w, h, dpi] of VIEW_SIZES) {
+    await size(w, h, dpi); await set('industrial-steel', lang); await sleep(400);
+    await win.evaluate(() => { window.__qrStep(2); window.__qrSelect && window.__qrSelect(0, 'drawing'); });
+    await win.waitForSelector('[data-testid=drawing-viewport]', { timeout: 30000 }).catch(() => {});
+    await sleep(800);
+    await win.evaluate(() => { const b = document.querySelector('[data-testid=ck-locate]'); if (b) b.click(); });
+    await win.waitForSelector('[data-testid=dw-mark]', { timeout: 20000 }).catch(() => {});
+    await sleep(700);
+    const m = await win.evaluate(MEASURE);
+    const issues = (m.issues || []).filter((x) => /^(viewer |locate |clip )/.test(x));
+    if (!m.viewer) issues.push('drawing viewer missing');
+    const r = { lang, size: w + 'x' + h, dpi, viewer: m.viewer || null, issues };
+    report.viewer.push(r); if (r.issues.length) fail++;
   }
 
   // job tabs: 4 / 8 / 15 chips at 1366×768 @100% and 1920×1080 @200% — one-row header, visible ×, overflow to More
@@ -535,7 +578,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     printButtonVisible: report.scan.every((s) => s.printButton),
     savePdfButtonVisible: report.scan.every((s) => s.savePdfButton),
     clipScreens: (report.clipScreens || []).length,
-    clipFails: (report.clipScreens || []).filter((r) => r.issues && r.issues.length).length
+    clipFails: (report.clipScreens || []).filter((r) => r.issues && r.issues.length).length,
+    viewerChecked: (report.viewer || []).length,
+    viewer: (report.viewer || []).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, w: r.viewer && r.viewer.w, h: r.viewer && r.viewer.h, stacked: r.viewer && r.viewer.stacked, fill: r.viewer && r.viewer.fill, issues: r.issues }))
   }, null, 1));
   await app.close().catch(() => {}); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });

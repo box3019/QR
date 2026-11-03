@@ -23,6 +23,7 @@ export function DrawingView({ part, focus, details, onFocus, onSelect }: any) {
   const W = Math.round(1500 * zoom); // displayed width
   const imgRef = useRef<any>(null); imgRef.current = img; const autoRef = useRef(true); autoRef.current = auto;
   const locateRef = useRef(false); // true after a locate zoom — resize must not re-centre the sheet
+  const boxRef = useRef<any>(null);
   const refit = () => { const el = ref.current; const im = imgRef.current; if (!el || !im) return; setZoom(fitSheet(el.clientWidth, el.clientHeight, im.width, im.height)); };
   const recenter = () => { const el = ref.current; if (!el) return; const c = centerScroll(el.clientWidth, el.clientHeight, el.scrollWidth, el.scrollHeight); el.scrollLeft = c.left; el.scrollTop = c.top; };
   const scrollLocate = () => {
@@ -37,7 +38,15 @@ export function DrawingView({ part, focus, details, onFocus, onSelect }: any) {
   // a new part / sheet / image: fit the whole sheet again
   useEffect(() => { if (focus && (focus.bbox || (focus.boxes && focus.boxes.length))) { setAuto(false); autoRef.current = false; return; } locateRef.current = false; setAuto(true); autoRef.current = true; if (img) refit(); }, [img, part.drawing.path, page]);
   // the pane changes size (window resize, panel toggle, details): keep the fit (or the centre when zoomed by hand). After a locate zoom, re-apply the box scroll instead of recentring.
-  useEffect(() => { const el = ref.current; if (!el || typeof ResizeObserver === 'undefined') return; const ro = new ResizeObserver(() => { if (locateRef.current) { scrollLocate(); return; } if (autoRef.current) refit(); else recenter(); }); ro.observe(el); return () => ro.disconnect(); }, [img]);
+  useEffect(() => { const el = ref.current; if (!el || typeof ResizeObserver === 'undefined') return; const ro = new ResizeObserver(() => {
+    if (locateRef.current) {
+      const im = imgRef.current, box = boxRef.current;
+      if (el && im && box) setZoom(zoomToBox(el.clientWidth, el.clientHeight, im.width, im.height, box));
+      scrollLocate();
+      return;
+    }
+    if (autoRef.current) refit(); else recenter();
+  }); ro.observe(el); return () => ro.disconnect(); }, [img]);
   // wheel (and Ctrl+wheel) = zoom; passive:false so the page does not scroll instead
   useEffect(() => { const el = ref.current; if (!el) return; const h = (e: WheelEvent) => { e.preventDefault(); locateRef.current = false; setAuto(false); setZoom((z) => zoomStep(z, e.deltaY)); }; el.addEventListener('wheel', h, { passive: false }); return () => el.removeEventListener('wheel', h); }, [img]);
   // pan: left-drag moves the scroll position only
@@ -50,6 +59,7 @@ export function DrawingView({ part, focus, details, onFocus, onSelect }: any) {
   const boxes = (focus && (focus.boxes || (focus.bbox ? [focus.bbox] : []))) || [];
   const boxIndex = Math.min(focus && focus.boxIndex != null ? focus.boxIndex : 0, Math.max(0, boxes.length - 1));
   const activeBox = boxes[boxIndex] || focus?.bbox;
+  boxRef.current = activeBox;
   const activePage = (activeBox && activeBox.page) || focus?.page;
   useEffect(() => { if (activePage) setPage(activePage); }, [activePage]);
   useEffect(() => {

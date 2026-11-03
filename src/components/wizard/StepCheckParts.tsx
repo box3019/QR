@@ -13,7 +13,7 @@ export function StepCheckParts({ parts, sel, open, onOpen, onBack, onGo, onLeave
   const tabs = viewerTabs(details); const cur = tabs.includes(tab) ? tab : 'drawing';
   return <div className="qr-body qr-onefocus qr-pview" data-testid="step2-part">
     <PartNav parts={parts} sel={sel} step={2} onBack={onBack} onGo={onGo} onLeave={onLeave} rtl={rtl} />
-    <div className="qr-pview-cols">
+    <div className="qr-pview-cols" data-locate={focus ? '1' : undefined}>
       <div className="qr-panel">
         <div className="qr-tabs">{tabs.map((k: string) => <button key={k} className="qr-tab" data-active={cur === k} data-testid={'tab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('tab.' + k)}</button>)}</div>
         <div className="qr-scroll">
