@@ -355,6 +355,10 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 /* Checklist: real MRT table (do not flatten to stacked blocks). */
 .qr-root .qr-ck-tab, .qr-root .qr-bd-tab, .qr-root table.qr-mrt { display: table; width: 100%; max-width: 100%; table-layout: fixed; }
 .qr-root table.qr-mrt.qr-cks-tab, .qr-root table.qr-mrt.qr-hist-t, .qr-root table.qr-mrt.qr-catalog { table-layout: auto; }
+.qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding: 3px 2px; }
+@media (max-width: 1100px) {
+  .qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding-inline: 1px; }
+}
 .qr-root table.qr-mrt.qr-tri-tab { table-layout: fixed; }
 .qr-root .qr-ck-tab thead, .qr-root .qr-bd-tab thead, .qr-root table.qr-mrt thead { display: table-header-group; }
 .qr-root .qr-ck-tab tbody, .qr-root .qr-bd-tab tbody, .qr-root table.qr-mrt tbody { display: table-row-group; }
