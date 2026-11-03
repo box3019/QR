@@ -216,6 +216,25 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   });
   res.clips = clips;
   clips.forEach((c) => res.issues.push('clip ' + c.screen + ' ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
+  // Checklist values: each of body / where / the row must fit (no text under locate, no zero-width, no horizontal clip).
+  document.querySelectorAll('.qr-ck-body, .qr-ck-where, .qr-ck-items li, [data-testid=ck-item]').forEach((e) => {
+    if (e.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(e);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
+    const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!t) return;
+    const sw = e.scrollWidth, cw = e.clientWidth;
+    const found = [];
+    if (sw > cw + 1) found.push('scrollWidth ' + Math.round(sw) + '>' + Math.round(cw));
+    if (cw < 1) found.push('zeroWidth');
+    if (!found.length) return;
+    const step = (document.querySelector('[data-testid=project]:not(.qr-proj-off)') || {}).getAttribute?.('data-step') || '';
+    const dlg = e.closest('.qr-modal, .qr-settings, [data-testid=history], [data-testid=settings-dialog], [role=menu], .qr-filemenu');
+    const screen = dlg ? (dlg.getAttribute('data-testid') || dlg.className || 'dialog') : ('step' + step);
+    const hit = { screen: String(screen).slice(0, 48), sel: selOf(e).slice(0, 72), text: t.slice(0, 56), size: innerWidth + 'x' + innerHeight, issues: found };
+    clips.push(hit);
+    res.issues.push('clip ' + hit.screen + ' ' + hit.sel + ' "' + hit.text + '" @' + hit.size + ' ' + found.join(','));
+  });
   // Every button / role=button / onclick: visible border or fill distinct from the container, plus pointer (disabled may be default).
   const lookSkip = '.qr-modal-bg, .qr-modal-back, .qr-mark, video, .qr-vid-el, .qr-vid-bg, .qr-face, .qr-tour-dot';
   const looks = [];

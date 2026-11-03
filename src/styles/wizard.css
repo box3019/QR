@@ -222,10 +222,11 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-pnav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .qr-pnav-title { font-weight: 600; }
 .qr-chev-back { margin-inline-start: 0; margin-inline-end: 0.35rem; }
-.qr-pview-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(340px, 2fr); gap: 0.75rem; }
+.qr-pview-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(40rem, 1.2fr); gap: 0.75rem; }
 .qr-pview-cols.qr-pview-one { grid-template-columns: minmax(0, 1fr); }
 .qr-pview-cols > * { min-height: 0; min-width: 0; }
-@media (max-width: 1000px) { .qr-pview-cols { grid-template-columns: minmax(0, 1fr); } .qr-prow { grid-template-columns: minmax(6rem, 10rem) 3rem 8.5rem minmax(0, 1fr) 1rem; } }.qr-pview-one > * { width: 100%; max-width: 1100px; margin-inline: auto; }
+.qr-pview-cols > [data-testid='breakdown-panel'] { min-width: 40rem; }
+@media (max-width: 1000px) { .qr-pview-cols { grid-template-columns: minmax(0, 1fr); } .qr-pview-cols > [data-testid='breakdown-panel'] { min-width: 0; } .qr-prow { grid-template-columns: minmax(6rem, 10rem) 3rem 8.5rem minmax(0, 1fr) 1rem; } }.qr-pview-one > * { width: 100%; max-width: 1100px; margin-inline: auto; }
 
 /* Package material triage: two sections, compact, full width, one line labels */
 .qr-triage { display: flex; flex-direction: column; gap: 0.55rem; flex: 1; min-height: 0; min-width: 0; width: 100%; overflow: hidden; }
@@ -292,11 +293,11 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-ck-tab td, .qr-ck-tab th { padding: 2px 6px; vertical-align: top; border-bottom: 1px solid var(--qr-line, rgba(128,128,128,.25)); text-align: start; }
 .qr-ck-gh th { font-size: var(--qr-fs-md); font-weight: 700; padding: 0.35em 0.4em 0.2em; color: var(--mrt-text); background: var(--mrt-surface-muted); border-inline-start: 3px solid var(--mrt-accent); }
 .qr-ck-sub .qr-ck-l { padding-inline-start: 18px; }
-.qr-ck-l { width: 1%; white-space: nowrap; overflow-wrap: normal; } .qr-ck-w { width: 99%; max-width: 0; overflow: hidden; }
+.qr-ck-l { width: 1%; white-space: nowrap; overflow-wrap: normal; } .qr-ck-w { width: 99%; max-width: none; overflow: visible; }
 .qr-ck-gh th, .qr-ck-ind > div { white-space: nowrap; }
 .qr-ck-ind > div { overflow: visible; text-overflow: clip; }
 /* Checklist states: yes = ok (green), no = neutral (no color, normal operation), notfound = warn. Red only for tight tolerances (below). */
-.qr-ck-s { font-weight: 600; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--mrt-text-muted); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
+.qr-ck-s { font-weight: 600; display: block; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--mrt-text-muted); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
 .qr-ck-items { margin: 0; padding: 0; list-style: none; } .qr-ck-where { font-size: var(--qr-fs-xs); }
 .qr-ck-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline dotted; cursor: pointer; text-align: start; }
 .qr-root .qr-cks-card { margin: 0; padding: 8px 4px 10px; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r); box-shadow: var(--qr-card-shadow); width: 100%; box-sizing: border-box; min-width: 0; }
@@ -315,6 +316,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-hist-body, .qr-root .qr-modal-b, .qr-root .qr-settings-body, .qr-root .qr-summary-step, .qr-root .qr-wiz > .qr-wiz-main { overflow-x: hidden !important; }
 .qr-root .qr-ck-link, .qr-root .qr-cks-p .qr-ck-link { white-space: nowrap; max-width: 100%; text-align: start; }
 .qr-root .qr-ck-link > *, .qr-root .qr-ck-items li, .qr-root .qr-ck-items li * { white-space: nowrap; overflow-wrap: normal; min-width: 0; }
+.qr-root .qr-ck-body, .qr-root .qr-ck-where { min-width: min-content; }
 .qr-root .qr-ck-items li { max-width: 100%; }
 .qr-root .qr-ck-link { padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; min-width: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; line-height: inherit; display: inline; }
 
@@ -322,12 +324,15 @@ button.qr-loaded-part:hover { text-decoration: underline; }
    (tests/no_wrap.test.cjs, scripts/check-layout.cjs). Long descriptive text may still wrap between words. */
 .qr-root .qr-cks-p .qr-ck-link > * { white-space: nowrap; }
 .qr-root th, .qr-root button, .qr-root summary, .qr-root .qr-stat-l, .qr-root .qr-stat-n, .qr-root .qr-chip, .qr-root .qr-pcard-tag, .qr-root .qr-pcard-badge, .qr-root .qr-brand-badge, .qr-root .qr-lbl, .qr-root .qr-warnbar button { white-space: nowrap; }
-/* Part card checklist: one item = one line (what + where); a too-long item is shortened with an ellipsis, the full text is the tooltip. */
-.qr-root .qr-ck-items li { display: flex; align-items: baseline; gap: 4px; }
-.qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span { flex: 0 1 auto; overflow: hidden; text-overflow: clip; }
+/* Part card checklist: label / value / source-location each on their own line; locate sits in a reserved column. */
+.qr-root .qr-ck-items li, .qr-root .qr-ck-item { display: grid; grid-template-columns: minmax(0, 1fr) 1.75rem; column-gap: 4px; align-items: start; width: 100%; max-width: 100%; }
+.qr-root .qr-ck-stack { display: flex; flex-direction: column; align-items: stretch; gap: 1px; min-width: 0; }
+.qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span, .qr-root .qr-ck-body, .qr-root .qr-ck-where {
+  overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; max-width: none;
+}
+.qr-root .qr-ck-body, .qr-root .qr-ck-where { display: block; }
 .qr-root .qr-ck-items li > .qr-ck-link { display: block !important; max-width: 100%; }
-.qr-root .qr-ck-items li > .qr-ck-where { flex: 0 100 auto; }
-.qr-root .qr-ck-loc { flex: 0 0 auto !important; width: 1.25rem !important; min-width: 1.25rem !important; max-width: 1.25rem !important; height: 1.25rem !important; min-height: 0 !important; padding: 0 !important; margin-inline-start: auto !important; border: 0 !important; background: none !important; box-shadow: none !important; color: var(--mrt-text-muted); cursor: pointer; font: inherit; line-height: 1; display: inline-grid !important; place-items: center; }
+.qr-root .qr-ck-loc { grid-column: 2; grid-row: 1 / -1; align-self: start; width: 1.75rem !important; min-width: 1.75rem !important; max-width: 1.75rem !important; height: 1.5rem !important; min-height: 1.5rem !important; padding: 0 !important; margin: 0 !important; cursor: pointer; display: inline-grid !important; place-items: center; }
 .qr-root .qr-ck-loc:hover { color: var(--mrt-text); }
 .qr-root .qr-ck-items li[data-active='true'] { outline: 1px solid var(--mrt-accent); outline-offset: 1px; }
 .qr-root .qr-route-card .qr-table { table-layout: auto !important; }
@@ -339,7 +344,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-cks-x { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 4px !important; margin: 0 !important; min-height: 0 !important; min-width: 0 !important; height: auto !important; font: inherit; color: inherit; cursor: pointer; display: inline; }
 .qr-cks-x:dir(rtl) { transform: scaleX(-1); }
 .qr-cks-xr > td { padding: 6px 10px; white-space: normal; background: var(--mrt-surface); }
-.qr-cks-xin { width: 0; min-width: 100%; contain: inline-size; }
+.qr-cks-xin { width: auto; min-width: 100%; max-width: 100%; }
 .qr-cks-xin .qr-ck-tab td, .qr-cks-xin .qr-ck-tab th { border-width: 0 0 1px 0; padding: 2px 6px; background: transparent; }
 
 /* ===== Large screen layout: every value/label/header on one line, no wrap, no overlap at any window size or DPI ===== */

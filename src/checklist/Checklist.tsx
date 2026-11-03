@@ -26,9 +26,11 @@ function Items({ row, onFocus, pid, focusId }: any) {
     const full = itemWhat(i) + (w ? ' \u2014 ' + w : '');
     const locTip = f ? t('ck.show') : t('ck.locateMissing');
     const click = () => { if (!f || !onFocus) return; onFocus(f); };
-    return <li key={n} data-testid="ck-item" data-zone={i.zone ? i.zone.label : ''} data-id={id} data-active={focusId === id ? 'true' : undefined} data-loc={f ? '1' : '0'} title={f ? full : locTip} onClick={click}>
-      <span className="qr-ck-body" title={full}>{body}</span>
-      {w ? <span className="qr-ck-where qr-muted" data-testid="ck-where"> {'\u2014'} {w}</span> : null}
+    return <li key={n} className="qr-ck-item" data-testid="ck-item" data-zone={i.zone ? i.zone.label : ''} data-id={id} data-active={focusId === id ? 'true' : undefined} data-loc={f ? '1' : '0'} title={f ? full : locTip} onClick={click}>
+      <div className="qr-ck-stack">
+        <span className="qr-ck-body" title={full}>{body}</span>
+        {w ? <span className="qr-ck-where qr-muted" data-testid="ck-where">{w}</span> : null}
+      </div>
       <LocateBtn f={f} onFocus={onFocus} />
     </li>; })}
     {items.length > MAXI && <li className="qr-muted">{t('ck.more', { n: items.length - MAXI })}</li>}</ul>;
