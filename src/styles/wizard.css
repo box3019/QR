@@ -222,13 +222,13 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-pnav { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .qr-pnav-title { font-weight: 600; }
 .qr-chev-back { margin-inline-start: 0; margin-inline-end: 0.35rem; }
-.qr-pview-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 28rem; gap: 0.75rem; }
+.qr-pview-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(45vw, 1fr) minmax(0, 22rem); gap: 0.75rem; }
 .qr-pview-cols.qr-pview-one { grid-template-columns: minmax(0, 1fr); }
 .qr-pview-cols > * { min-height: 0; min-width: 0; }
 .qr-pview-cols > :first-child { min-width: 0; }
 .qr-pview-cols > .qr-panel { display: flex; flex-direction: column; }
 .qr-pview-cols > .qr-panel > .qr-scroll { flex: 1; min-height: 0; }
-.qr-pview-cols > [data-testid='breakdown-panel'] { min-width: 0; max-width: 28rem; }
+.qr-pview-cols > [data-testid='breakdown-panel'] { min-width: 0; max-width: 22rem; }
 @media (max-width: 1000px) {
   .qr-pview-cols { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(45vh, 1fr) minmax(0, 1fr); }
   .qr-pview-cols > :first-child { min-height: 45vh !important; }
@@ -302,16 +302,18 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 /* Precision levels: red only for veryTight (genuinely tight tolerances); others neutral */
 .qr-ck-lvl { font-weight: 600; } .qr-ck-lvl[data-lvl="veryTight"] { color: var(--qr-bad-text); text-decoration: underline; } .qr-ck-lvl[data-lvl="tight"] { color: var(--qr-warn-text); } .qr-ck-lvl[data-lvl="complex"] { text-decoration: underline; }
 .qr-ck-warn { font-size: var(--qr-fs-xs); margin: 2px 0 4px; } .qr-ck-zn { font-size: var(--qr-fs-xs); }
-.qr-ck-tab { table-layout: auto; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
-.qr-ck-tab td, .qr-ck-tab th { padding: 2px 6px; vertical-align: top; border-bottom: 1px solid var(--qr-line, rgba(128,128,128,.25)); text-align: start; }
-.qr-ck-gh th { font-size: var(--qr-fs-md); font-weight: 700; padding: 0.35em 0.4em 0.2em; color: var(--mrt-text); background: var(--mrt-surface-muted); border-inline-start: 3px solid var(--mrt-accent); }
-.qr-ck-sub .qr-ck-l { padding-inline-start: 18px; }
-.qr-ck-l { width: 1%; white-space: nowrap; overflow-wrap: normal; } .qr-ck-w { width: 99%; max-width: none; overflow: visible; }
+.qr-ck-tab { table-layout: fixed; width: 100%; max-width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
+.qr-ck-tab col.qr-ck-c-item { width: 26%; } .qr-ck-tab col.qr-ck-c-st { width: 16%; } .qr-ck-tab col.qr-ck-c-val { width: 32%; } .qr-ck-tab col.qr-ck-c-src { width: 18%; } .qr-ck-tab col.qr-ck-c-loc { width: 1.75rem; }
+.qr-ck-tab thead th { font-size: var(--qr-fs-sm); font-weight: 600; background: var(--mrt-surface-muted); color: var(--mrt-text); border-bottom: 1px solid var(--mrt-grid-border, var(--qr-line, rgba(128,128,128,.35))); padding: 0.28em 0.35em; text-align: start; white-space: nowrap; }
+.qr-ck-tab td, .qr-ck-tab tbody th { padding: 0.12em 0.35em; vertical-align: middle; border-bottom: 1px solid var(--mrt-grid-border, var(--qr-line, rgba(128,128,128,.25))); text-align: start; }
+.qr-ck-gh th { font-size: var(--qr-fs-md); font-weight: 700; padding: 0.35em 0.4em 0.2em; color: var(--mrt-text); background: var(--mrt-surface-muted); box-shadow: inset 3px 0 0 var(--mrt-accent); }
+.qr-ck-sub .qr-ck-l { padding-inline-start: 12px; }
+.qr-ck-l, .qr-ck-st, .qr-ck-val, .qr-ck-src, .qr-ck-locc { white-space: nowrap; overflow: hidden; text-overflow: clip; min-width: 0; }
+.qr-ck-locc { width: 1.75rem; text-align: center; overflow: visible; }
 .qr-ck-gh th, .qr-ck-ind > div { white-space: nowrap; }
 .qr-ck-ind > div { overflow: visible; text-overflow: clip; }
-/* Checklist states: yes = ok (green), no = neutral (no color, normal operation), notfound = warn. Red only for tight tolerances (below). */
-.qr-ck-s { font-weight: 600; display: block; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--mrt-text-muted); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
-.qr-ck-items { margin: 0; padding: 0; list-style: none; } .qr-ck-where { font-size: var(--qr-fs-xs); }
+.qr-ck-s { font-weight: 600; white-space: nowrap; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--mrt-text-muted); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
+.qr-ck-where { font-size: var(--qr-fs-xs); }
 .qr-ck-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline dotted; cursor: pointer; text-align: start; }
 .qr-root .qr-cks-card { margin: 0; padding: 8px 4px 10px; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r); box-shadow: var(--qr-card-shadow); width: 100%; box-sizing: border-box; min-width: 0; }
 .qr-cks > summary { font-size: var(--qr-fs-md); font-weight: 600; cursor: pointer; padding: 4px 0 8px; }
@@ -328,29 +330,32 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-table td, .qr-root .qr-table th, .qr-root .qr-hist-t td, .qr-root .qr-hist-t th, .qr-root .qr-wsum-table td, .qr-root .qr-wsum-table th, .qr-root .qr-catalog td, .qr-root .qr-catalog th { overflow-wrap: anywhere; word-break: normal; min-width: 0; }
 .qr-root .qr-hist-body, .qr-root .qr-modal-b, .qr-root .qr-settings-body, .qr-root .qr-summary-step, .qr-root .qr-wiz > .qr-wiz-main { overflow-x: hidden !important; }
 .qr-root .qr-ck-link, .qr-root .qr-cks-p .qr-ck-link { white-space: nowrap; max-width: 100%; text-align: start; }
-.qr-root .qr-ck-link > *, .qr-root .qr-ck-items li, .qr-root .qr-ck-items li * { white-space: nowrap; overflow-wrap: normal; min-width: 0; }
-.qr-root .qr-ck-body, .qr-root .qr-ck-where { min-width: 0; }
-.qr-root .qr-ck-items li { max-width: 100%; }
+.qr-root .qr-ck-tab td, .qr-root .qr-ck-tab th, .qr-root .qr-ck-body, .qr-root .qr-ck-where { white-space: nowrap; overflow-wrap: normal; min-width: 0; }
 .qr-root .qr-ck-link { padding: 0 !important; margin: 0 !important; min-height: 0 !important; height: auto !important; min-width: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; line-height: inherit; display: inline; }
 
 /* One line per item: headers, labels, chips, tags, badges, stat tiles and buttons never wrap inside themselves; a new line only between separate items
    (tests/no_wrap.test.cjs, scripts/check-layout.cjs). Long descriptive text may still wrap between words. */
 .qr-root .qr-cks-p .qr-ck-link > * { white-space: nowrap; }
 .qr-root th, .qr-root button, .qr-root summary, .qr-root .qr-stat-l, .qr-root .qr-stat-n, .qr-root .qr-chip, .qr-root .qr-pcard-tag, .qr-root .qr-pcard-badge, .qr-root .qr-brand-badge, .qr-root .qr-lbl, .qr-root .qr-warnbar button { white-space: nowrap; }
-/* Part card checklist: label / value / source-location each on their own line; locate sits in a reserved column. */
-.qr-root .qr-ck-items li, .qr-root .qr-ck-item { display: grid; grid-template-columns: minmax(0, 1fr) 1.75rem; column-gap: 4px; align-items: start; width: 100%; max-width: 100%; }
-.qr-root .qr-ck-stack { display: flex; flex-direction: column; align-items: stretch; gap: 1px; min-width: 0; }
+/* Part card checklist: MRT table (Item | Status | Value | Source | locate). One line per cell. */
+.qr-root .qr-ck-tab { table-layout: fixed; width: 100%; max-width: 100%; border-collapse: collapse; }
+.qr-root .qr-ck-tab thead th { background: var(--mrt-surface-muted); font-weight: 600; }
+.qr-root .qr-ck-tab tbody tr.qr-ck-item:nth-child(even of .qr-ck-item) { background: color-mix(in srgb, var(--mrt-text-muted) 6%, var(--mrt-surface)); }
+.qr-root .qr-ck-tab tbody tr.qr-ck-item:hover { background: color-mix(in srgb, var(--mrt-accent) 10%, var(--mrt-surface)); }
+.qr-root .qr-ck-tab tbody tr.qr-ck-item[data-active='true'] { background: color-mix(in srgb, var(--mrt-accent) 18%, var(--mrt-surface)); outline: 1px solid var(--mrt-accent); outline-offset: -1px; }
 .qr-root .qr-ck-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 2px; min-width: 0; position: relative; }
-.qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span, .qr-root .qr-ck-body, .qr-root .qr-ck-where {
-  overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%;
+.qr-root .qr-ck-body, .qr-root .qr-ck-where, .qr-root .qr-ck-lab {
+  overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%; display: block; min-width: 0;
 }
-.qr-root .qr-ck-body, .qr-root .qr-ck-where { display: block; min-width: 0; }
 .qr-root .qr-ck-more { width: 1.25rem !important; min-width: 1.25rem !important; max-width: 1.25rem !important; height: 1.25rem !important; min-height: 1.25rem !important; padding: 0 !important; }
 .qr-root .qr-ck-full { position: absolute; z-index: 8; inset-inline-start: 0; top: calc(100% + 2px); white-space: nowrap; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border-strong); border-radius: 4px; padding: 2px 6px; box-shadow: var(--qr-card-shadow); }
-.qr-root .qr-ck-items li > .qr-ck-link { display: block !important; max-width: 100%; }
-.qr-root .qr-ck-loc { grid-column: 2; grid-row: 1 / -1; align-self: start; width: 1.75rem !important; min-width: 1.75rem !important; max-width: 1.75rem !important; height: 1.5rem !important; min-height: 1.5rem !important; padding: 0 !important; margin: 0 !important; cursor: pointer; display: inline-grid !important; place-items: center; }
-.qr-root .qr-ck-loc:hover { color: var(--mrt-text); }
-.qr-root .qr-ck-items li[data-active='true'] { outline: 1px solid var(--mrt-accent); outline-offset: 1px; }
+.qr-root .qr-ck-loc { width: 1.5rem !important; min-width: 1.5rem !important; max-width: 1.5rem !important; height: 1.5rem !important; min-height: 1.5rem !important; padding: 0 !important; margin: 0 !important; cursor: pointer; display: inline-grid !important; place-items: center; }
+.qr-root .qr-bd-tab { table-layout: fixed; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
+.qr-root .qr-bd-tab th { background: var(--mrt-surface-muted); font-weight: 600; text-align: start; padding: 0.28em 0.4em; white-space: nowrap; border-bottom: 1px solid var(--mrt-grid-border, var(--mrt-border)); }
+.qr-root .qr-bd-tab td { padding: 0.12em 0.4em; white-space: nowrap; overflow: hidden; text-overflow: clip; border-bottom: 1px solid var(--mrt-grid-border, var(--mrt-border)); min-width: 0; }
+.qr-root .qr-bd-lab, .qr-root .qr-bd-body { overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%; display: block; min-width: 0; }
+.qr-root .qr-bd-tab tbody tr:nth-child(even) { background: color-mix(in srgb, var(--mrt-text-muted) 6%, var(--mrt-surface)); }
+.qr-root .qr-bd-tab tbody tr:hover { background: color-mix(in srgb, var(--mrt-accent) 10%, var(--mrt-surface)); }
 .qr-root .qr-route-card .qr-table { table-layout: auto !important; }
 .qr-root .qr-route-card .qr-rc-flags, .qr-root .qr-rc-flags { width: 1%; min-width: max-content !important; max-width: none; white-space: nowrap; overflow: visible !important; }
 .qr-root .qr-route-card .qr-chip, .qr-root .qr-rc-flags .qr-chip { overflow: visible !important; text-overflow: clip; max-width: none !important; width: max-content !important; min-width: max-content !important; }
@@ -368,10 +373,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { white-space: nowrap; }
 
 /* Checklist part card table: auto layout with nowrap cells */
-.qr-root .qr-ck-tab { table-layout: auto; }
+.qr-root .qr-ck-tab { table-layout: fixed; }
 .qr-root .qr-ck-tab th, .qr-root .qr-ck-tab td { white-space: nowrap; }
-.qr-root .qr-ck-tab .qr-ck-w { white-space: normal; } /* Item column can have multiple items stacked */
-.qr-root .qr-ck-tab .qr-ck-l { white-space: nowrap; }
 
 /* Indicators and levels: never wrap */
 .qr-root .qr-ck-lvl { white-space: nowrap; }

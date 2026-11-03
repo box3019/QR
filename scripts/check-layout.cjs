@@ -22,10 +22,10 @@ const MEASURE = () => {
     res.table = { sw: tbl.scrollWidth, cw: tbl.clientWidth, card: card.clientWidth, rows: tbl.querySelectorAll('tbody tr').length };
     { const cs = getComputedStyle(card); const inner = card.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); res.table.inner = inner; res.table.ow = tbl.offsetWidth; res.table.collapsed = tbl.querySelectorAll('[data-testid^=cks-count-]').length; res.table.expanded = tbl.querySelectorAll('[data-testid=cks-expanded]').length; if (tbl.offsetWidth > inner + 1 || tbl.scrollWidth > tbl.clientWidth + 1) res.issues.push('table width ' + tbl.offsetWidth + ' > ' + inner); }
     for (let e = tbl.parentElement; e && e !== document.body; e = e.parentElement) if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX !== 'visible') res.issues.push('ancestor scrolls horizontally: ' + (e.className || e.tagName));
-    tbl.querySelectorAll('th,td').forEach((c) => { if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
+    tbl.querySelectorAll('th,td').forEach((c) => { if (c.closest('.qr-ck-tab')) return; if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
     let minC = 99, minEl = ''; tbl.querySelectorAll('th,td,td *').forEach((c) => { if (!(c.childNodes && [...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()))) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); if (cr < minC) { minC = cr; minEl = c.tagName + ':' + (c.textContent || '').trim().slice(0, 16); } });
     res.minContrast = Math.round(minC * 100) / 100; res.minContrastEl = minEl; if (minC < 4.5) res.issues.push('contrast ' + res.minContrast + ' at ' + minEl);
-    const cv = document.createElement('canvas').getContext('2d'); tbl.querySelectorAll('th,td').forEach((c) => { const cs = getComputedStyle(c); cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const inner = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const words = (c.innerText || '').split(/\s+/).filter(Boolean); const bad = words.find((x) => cv.measureText(x).width > inner + 1); if (bad) res.issues.push('word does not fit (would break): ' + bad + ' ' + Math.round(cv.measureText(bad).width) + '>' + Math.round(inner)); });
+    const cv = document.createElement('canvas').getContext('2d'); tbl.querySelectorAll('th,td').forEach((c) => { if (c.closest('.qr-ck-tab')) return; const cs = getComputedStyle(c); cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const inner = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const words = (c.innerText || '').split(/\s+/).filter(Boolean); const bad = words.find((x) => cv.measureText(x).width > inner + 1); if (bad) res.issues.push('word does not fit (would break): ' + bad + ' ' + Math.round(cv.measureText(bad).width) + '>' + Math.round(inner)); });
     tbl.querySelectorAll('.qr-cks-p bdi').forEach((b) => { const n = new Set([...b.getClientRects()].map((r) => Math.round(r.top))).size; if (n > 1) res.issues.push('part number wraps: ' + b.textContent); });
     { const EN_DOT = /\b(?:engr|asm|assy|spec|specs|insp|coat|dims?|qty|approx|incl|pcs|std|ref|mfg|dwg|mat|tol|dia|max|min|thr|cat|temp|no)\.(?=\s|$|\)|,)/i; const EN_SHORT = /\b(?:HT|dims|insp|Asm|Engr|Assy|Tol|thr)\b|\b(?:Al|SS|Cu|CS)\s+\d/; const BARE = /^(?:[\u2713\u2013?]\s*)?(?:100%|Clean|Fill|Tight|Coat|Heat|Laser|Engr|Asm)$/;
   const HE_ABBR = /[\u05D0-\u05EA]["\u05F4][\u05D0-\u05EA]|[\u05D0-\u05EA]['\u05F3](?=\s|$)/; const HE_OK = /(?:\u05DE|\u05E1|\u05E7)["\u05F4](?:\u05DE|\u05D2|\u05E8)|\u05D0\u05D9\u05E0\u05E5['\u05F3]|\u05D1\u05D6['\u05F3]/g; const abb = [];
@@ -38,7 +38,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   }
   // one line per item: no header / label / chip / tag / button / summary-table item may wrap inside itself (height <= 1 line + 2px)
   const wraps = []; const nm = (e) => e.tagName + (typeof e.className === 'string' && e.className ? '.' + e.className.split(' ')[0] : '');
-  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-items li, .qr-ck-where, .qr-ck-tab th, .qr-ck-l, .qr-ck-s, .qr-cks-x').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
+  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-where, .qr-ck-body, .qr-ck-tab th, .qr-ck-tab td, .qr-ck-l, .qr-ck-s, .qr-cks-x, .qr-bd-tab th, .qr-bd-tab td').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
   res.wraps = wraps; wraps.slice(0, 8).forEach((x) => res.issues.push('item wraps: ' + x));
   const extra = [...document.querySelectorAll('.qr-provisional,[data-testid=busy],.qr-stat')]; res.extraContrast = []; extra.forEach((root) => { root.querySelectorAll('*').forEach((c) => { if (![...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); res.extraContrast.push(Math.round(cr * 100) / 100); if (cr < 4.5) res.issues.push('contrast ' + (Math.round(cr * 100) / 100) + ' in ' + (root.className || root.dataset.testid).toString().slice(0, 20) + ':' + (c.textContent || '').trim().slice(0, 16)); }); });
   // full-page overlays / dimming
@@ -140,7 +140,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   }
   // Every button, chip, tag, toggle, tab and menu item: no clipped text, no ellipsis, no wrap inside the control
   const clipSel = 'button, [role="button"], [role="menuitem"], [role="option"], [role="tab"], [role="switch"], [role="checkbox"], .qr-chip, .qr-tag, .qr-pcard-tag, .qr-pcard-badge, .qr-status, .qr-badge, .qr-tab, .qr-settings-tab, .mrt-workspace-tab, .qr-menu-item, .mrt-btn, .mrt-action-btn, summary, .qr-cks-x, .qr-sum-g, .qr-pres-chips button';
-  const clipSkip = '[data-testid=tab-close],[data-testid=tab-more-close],[data-testid=ck-locate],[data-testid=block-locate],[data-testid=block-chev],[data-testid=cks-expand],.qr-ck-link,.qr-ck-loc,.qr-chip-x,.qr-face';
+  const clipSkip = '[data-testid=tab-close],[data-testid=tab-more-close],[data-testid=ck-locate],[data-testid=block-locate],[data-testid=block-chev],[data-testid=cks-expand],[data-testid=ck-expand],.qr-ck-link,.qr-ck-loc,.qr-ck-more,.qr-chip-x,.qr-face';
   const selOf = (e) => {
     const id = e.getAttribute('data-testid'); if (id) return '[data-testid=' + id + ']';
     if (e.id) return '#' + e.id;
@@ -217,9 +217,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   res.clips = clips;
   clips.forEach((c) => res.issues.push('clip ' + c.screen + ' ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
   // Checklist values: each of body / where / the row must fit (no text under locate, no zero-width, no horizontal clip).
-  document.querySelectorAll('.qr-ck-body, .qr-ck-where, .qr-ck-items li, [data-testid=ck-item]').forEach((e) => {
+  document.querySelectorAll('.qr-ck-body, .qr-ck-where, .qr-ck-lab, .qr-ck-val, .qr-ck-src, .qr-ck-l, .qr-bd-lab, .qr-bd-body, tr.qr-ck-item, [data-testid=ck-item], [data-ck=item]').forEach((e) => {
     if (e.closest('.qr-proj-off')) return;
-    const item = e.closest('[data-testid=ck-item]') || (e.matches('[data-testid=ck-item]') ? e : null);
+    const item = e.closest('tr.qr-ck-item, tr.qr-bd-item, [data-ck=item], [data-testid=ck-item]') || (e.matches('tr.qr-ck-item, tr.qr-bd-item, [data-ck=item], [data-testid=ck-item]') ? e : null);
     if (item && item.querySelector('[data-testid=ck-expand]') && (e.closest('[data-overflow="1"]') || e.querySelector('[data-overflow="1"]') || e.matches('[data-overflow="1"]'))) return;
     const cs = getComputedStyle(e);
     if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
@@ -259,14 +259,44 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   });
   res.looks = looks;
   looks.forEach((c) => res.issues.push('look ' + c.sel + ' "' + c.text + '" @' + c.size + ' ' + c.issues.join(',')));
+  // Checklist / part-card details must stay a real MRT table (not stacked blocks): 5 columns, group headers, no ellipsis, no h-scroll.
+  document.querySelectorAll('table.qr-ck-tab').forEach((tab) => {
+    if (tab.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(tab);
+    if (cs.display !== 'table' && cs.display !== 'inline-table') res.issues.push('checklist is not a table: ' + cs.display);
+    if (cs.tableLayout !== 'fixed') res.issues.push('checklist table-layout ' + cs.tableLayout);
+    if (tab.scrollWidth > tab.clientWidth + 1) res.issues.push('checklist table h-scroll ' + tab.scrollWidth + '>' + tab.clientWidth);
+    const heads = [...tab.querySelectorAll(':scope > thead th')].map((th) => (th.textContent || '').replace(/\s+/g, ' ').trim());
+    if (heads.length !== 5) res.issues.push('checklist columns ' + heads.length + ' want 5 (' + heads.join('|') + ')');
+    if (!tab.querySelector('tr.qr-ck-gh')) res.issues.push('checklist missing group header rows');
+    tab.querySelectorAll('th, td, .qr-ck-body, .qr-ck-where, .qr-ck-lab').forEach((c) => {
+      if (getComputedStyle(c).textOverflow === 'ellipsis') res.issues.push('checklist ellipsis: ' + (c.textContent || '').trim().slice(0, 24));
+    });
+    const ghs = [...tab.querySelectorAll('tr.qr-ck-gh th')];
+    const itemFs = Math.max(0, ...[...tab.querySelectorAll('td')].map((el) => parseFloat(getComputedStyle(el).fontSize) || 0));
+    ghs.forEach((h) => {
+      const hcs = getComputedStyle(h);
+      const n = (h.innerText || '').trim().slice(0, 32);
+      if ((parseFloat(hcs.fontSize) || 0) + 0.05 < itemFs) res.issues.push('group header small: ' + n);
+      const w = hcs.fontWeight === 'bold' ? 700 : hcs.fontWeight === 'normal' ? 400 : parseFloat(hcs.fontWeight) || 400;
+      if (w < 600) res.issues.push('group header weight: ' + n + ' ' + w);
+    });
+    res.ckTable = { heads, groups: ghs.length, display: cs.display, layout: cs.tableLayout };
+  });
+  document.querySelectorAll('table.qr-bd-tab').forEach((tab) => {
+    if (tab.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(tab);
+    if (cs.display !== 'table' && cs.display !== 'inline-table') res.issues.push('part-card details not a table: ' + cs.display);
+    if (tab.scrollWidth > tab.clientWidth + 1) res.issues.push('part-card table h-scroll ' + tab.scrollWidth + '>' + tab.clientWidth);
+  });
   // Section heading hierarchy: size >= items in the section, weight >= 600
   const headPairs = [
-    ['.qr-ck-gh th', '.qr-ck-tab td, .qr-ck-tab .qr-ck-l'],
+    ['.qr-ck-gh th', '.qr-ck-tab thead th, .qr-ck-tab td, .qr-ck-tab .qr-ck-l'],
     ['.qr-pgroup-h', '.qr-pgroup-body .pn, .qr-pgroup-body .qr-part'],
     ['.qr-block-title', '.qr-block-line'],
     ['.qr-panel-h', '.qr-tri-row, .qr-part, .qr-panel td'],
     ['.qr-cks > summary', '.qr-cks-tab td'],
-    ['.qr-ck > summary', '.qr-ck-tab td, .qr-ck-items'],
+    ['.qr-ck > summary', '.qr-ck-tab td'],
     ['.qr-sec', '.qr-prob, .qr-sec + *'],
     ['.qr-hist-t th', '.qr-hist-t td'],
     ['.qr-cks-tab th', '.qr-cks-tab td'],

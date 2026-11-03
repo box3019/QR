@@ -39,7 +39,7 @@ function StdDetails({ d, file, onOpen }: any) {
 }
 function MaterialDetails({ d }: any) {
   return <div className="qr-blk-det" data-testid="blk-details">
-    {d.raw ? <dl className="qr-bd-row" data-testid="bd-row-raw"><dt>{t('bd.f.src')}</dt><dd data-field="raw"><bdi>{d.raw}</bdi></dd></dl> : null}
+    {d.raw ? <table className="qr-bd-tab" data-testid="bd-row-raw"><thead><tr><th>{t('ck.col.item')}</th><th>{t('ck.col.value')}</th></tr></thead><tbody><tr className="qr-bd-item"><td className="qr-bd-k">{t('bd.f.src')}</td><td className="qr-bd-v" data-field="raw"><bdi>{d.raw}</bdi></td></tr></tbody></table> : null}
     {d.rows.length ? <Fields sec={d.sec} rows={d.rows} details /> : null}
   </div>;
 }

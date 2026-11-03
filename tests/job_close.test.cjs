@@ -109,6 +109,7 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   assert.ok(/role="option"/.test(lay) && /textBox/.test(lay) && /stackedWrap/.test(lay));
   assert.ok(/lookSkip/.test(lay) && /\[onclick\]/.test(lay) && /res\.looks/.test(lay) && /plain/.test(lay));
   assert.ok(/headingSize/.test(lay) && /headingWeight/.test(lay) && /qr-ck-gh/.test(lay));
+  assert.ok(/checklist is not a table/.test(lay) && /checklist columns/.test(lay) && /table\.qr-ck-tab/.test(lay));
   const main = src('electron/main.cjs') + src('electron/preload.cjs');
   assert.ok(/qr:importCache:release/.test(main) && /releaseImportCache/.test(main) && /jobId: job/.test(main));
 });
