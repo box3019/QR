@@ -1,5 +1,6 @@
 ﻿'use strict';
 const { zoneGrid, zoneOf } = require('./zones.cjs');
+const Loc = require('./locate.cjs');
 // Checklist detector (Alex's paper list): rules-driven, deterministic, no guessing.
 // Each row is yes (found, with WHAT and WHERE), no (explicitly excluded, or the drawing was read well and it is not called out) or notfound (drawing could not be read well enough to say).
 // Thresholds (tight tolerances, fits) are NOT applied here: this module stores every candidate and core/checklist/live.mjs applies the Settings thresholds live.
@@ -104,16 +105,23 @@ function unitOf(text) {
 }
 const LINE_AT = (raw, idx) => raw.slice(0, idx).split('\n').length - 1;
 const compact = (x) => String(x || '').replace(/\s+/g, '').toUpperCase();
-function locate(page, needle) { const k = compact(needle); if (k.length < 2) return null; const toks = (page.tokens || []).filter((x) => x.text); for (const len of [k.length, Math.min(k.length, 12), Math.min(k.length, 7), Math.min(k.length, 4)]) { const kk = k.slice(0, len); const t = toks.find((x) => compact(x.text).includes(kk)); if (t) return { x: Math.round(t.x), y: Math.round(t.y), w: Math.round(t.w), h: Math.round(t.h) }; } return null; }
-/** first page whose tokens contain the needle -> { page, bbox, zone } (zone grids are cached per page) */
-function place(pages, needle, grids, prefer) { const order = prefer != null ? [...pages].sort((a, b) => (a.n === prefer ? -1 : b.n === prefer ? 1 : 0)) : pages; for (const p of order) { const bb = locate(p, needle); if (bb) return { page: p.n, bbox: bb, zone: zoneOf(grids.get(p.n) || (grids.set(p.n, zoneGrid(p)), grids.get(p.n)), bb) }; } return null; }
+function locate(page, needle) { return Loc.locate(page, needle); }
+/** first page whose tokens contain the exact needle -> { page, bbox, zone, source } */
+function place(pages, needle, grids, prefer) {
+  const pl = Loc.placeAll(pages, needle, prefer != null ? +prefer : null);
+  if (!pl) return null;
+  const bb = pl.bbox[0];
+  const grid = grids.get(pl.page) || (grids.set(pl.page, zoneGrid((pages || []).find((p) => p.n === pl.page) || pages[0])), grids.get(pl.page));
+  return { page: pl.page, bbox: bb, zone: zoneOf(grid, bb), source: { page: pl.page, bbox: pl.bbox } };
+}
 function candidates({ pages = [], notes = [] }) {
   const text = pages.map((p) => p.raw || '').join('\n'); const unit = unitOf(text);
   const out = { tol: [], fit: [], gdt: [], ra: [], dec: [] }; const seen = new Set(); const grids = new Map(); const gridOf = (p) => { if (!grids.has(p.n)) grids.set(p.n, zoneGrid(p)); return grids.get(p.n); };
   const add = (kind, o, p, raw, idx, snippet) => {
     const ctx = raw.slice(Math.max(0, idx - 60), idx + 90); const noteN = (notes.find((n) => n.text && String(n.text).includes(snippet.trim().slice(0, 12))) || {}).n;
     const k = kind + '|' + o.value + '|' + (o.tol || '') + '|' + p.n; if (seen.has(k)) return; seen.add(k);
-    const bb = locate(p, snippet); out[kind].push({ ...o, page: p.n, bbox: bb, zone: bb ? zoneOf(gridOf(p), bb) : null, sheets: pages.length, note: noteN || null, line: raw.split('\n')[LINE_AT(raw, idx)].replace(/\s+/g, ' ').trim().slice(0, 140), holeCtx: /\bHOLE|\bTHRU\b|\bTHROUGH\b|\bBORE\b|\bREAM|\bDRILL/i.test(ctx) });
+    const runs = Loc.findRuns(p.tokens, snippet); const bb = runs[0] || null;
+    out[kind].push({ ...o, page: p.n, bbox: bb, source: bb ? { page: p.n, bbox: runs } : undefined, zone: bb ? zoneOf(gridOf(p), bb) : null, sheets: pages.length, note: noteN || null, line: raw.split('\n')[LINE_AT(raw, idx)].replace(/\s+/g, ' ').trim().slice(0, 140), holeCtx: /\bHOLE|\bTHRU\b|\bTHROUGH\b|\bBORE\b|\bREAM|\bDRILL/i.test(ctx) });
   };
   for (const p of pages) {
     const raw = String(p.raw || '').replace(/[\u2212\u2013]/g, '-');
@@ -153,14 +161,14 @@ function readQuality(pages, textLen) {
 function buildChecklist(part, pages) {
   const lines = buildLines({ pages, notes: part.notes || [], route: part.route || [], bom: part.bom || [] });
   const { hits, neg } = scan(lines); const grids = new Map();
-  for (const b of [hits, neg]) for (const k of Object.keys(b)) for (const it of b[k]) { const pl = place(pages, it.needle, grids, (it.where.find((w) => w.t === 'page') || {}).n ? +(it.where.find((w) => w.t === 'page') || {}).n : null); if (pl) { it.page = pl.page; it.bbox = pl.bbox; it.zone = pl.zone; } it.sheets = pages.length; delete it.needle; }
+  for (const b of [hits, neg]) for (const k of Object.keys(b)) for (const it of b[k]) { const pl = place(pages, it.needle, grids, (it.where.find((w) => w.t === 'page') || {}).n ? +(it.where.find((w) => w.t === 'page') || {}).n : null); if (pl) { it.page = pl.page; it.bbox = pl.bbox; it.zone = pl.zone; if (pl.source) it.source = pl.source; } it.sheets = pages.length; delete it.needle; }
   const text = pages.map((p) => p.raw || '').join('\n'); const rq = readQuality(pages, text.length);
   const rows = {};
   const row = (id, items, negItems) => { rows[id] = items.length ? { state: 'yes', items } : negItems && negItems.length ? { state: 'no', excluded: true, items: negItems } : { state: rq.ok ? 'no' : 'notfound', items: [] }; };
-  const mat = materialRow(part, lines); for (const it of mat) { const pl = it.needle || it.line ? place(pages, it.needle || it.line.slice(0, 24), grids) : null; if (pl) { it.page = pl.page; it.bbox = pl.bbox; it.zone = pl.zone; } it.sheets = pages.length; delete it.needle; }
+  const mat = materialRow(part, lines); for (const it of mat) { const needle = it.needle || (it.line || '').slice(0, 24); const pl = needle ? place(pages, needle, grids) : null; if (pl) { it.page = pl.page; it.bbox = pl.bbox; it.zone = pl.zone; if (pl.source) it.source = pl.source; } it.sheets = pages.length; delete it.needle; }
   rows.material = mat.length ? { state: 'yes', items: mat } : { state: 'notfound', items: [] };
   for (const id of ['heat', 'engrave', 'laser', 'engfill', 'coating', 'paint', 'br127', 'inspect100', 'cleanroom', 'assembly', 'threads', 'gauges']) row(id, hits[id] || [], neg[id]);
   const c = candidates({ pages, notes: part.notes || [] });
   return { v: 1, read: rq, unit: c.unit, rows, cand: c.cand };
 }
-module.exports = { RULES, scan, buildLines, buildChecklist, candidates, unitOf, readQuality, PLASTIC };
+module.exports = { RULES, scan, buildLines, buildChecklist, candidates, unitOf, readQuality, PLASTIC, locate, place };

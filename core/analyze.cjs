@@ -12,6 +12,7 @@ const { findChart, materialFromChart, enrichRequirements, chartExtras } = requir
 const { detectProfile } = require('./customers/index.cjs');
 const { STAGE, stageOfRef, buildRouteCard } = require('./docs/stage.cjs');
 const { buildChecklist } = require('./checklist/detect.cjs');
+const Loc = require('./checklist/locate.cjs');
 
 const { normalizeMaterialTokens, isMaterialValue, materialFromTitleBlock } = require('./materials.cjs');
 const bb = (t) => [Math.round(t.x), Math.round(t.y), Math.round(t.w), Math.round(t.h)];
@@ -299,6 +300,7 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   if (chartX && chartX.machiningAfter) addK('Info', 'Routing chart', 'chart.after', { rc: chartX.machiningAfter.rc, sheet: chartX.machiningAfter.sheet }, [{ source: 'routing ' + chartX.machiningAfter.no, text: String(chartX.machiningAfter.text || '').slice(0, 120) }]);
   // threads vs inserts
   const vt = viewThreads(text);
+  for (const th of vt) { const pl = Loc.placeAll(pages, th.raw || th.thread); if (pl) th.source = { page: pl.page, bbox: pl.bbox }; }
   const inserts = bom.map((b) => ({ b, ins: insertFromBom(b) })).filter((x) => x.ins);
   for (const { b, ins } of inserts) {
     const calls = vt.filter((v) => v.insert);
@@ -335,6 +337,7 @@ function analyzePart({ drawing, partsList, models, settings, library, requiremen
   // references -> tasks
   const allText = text + '\n' + (partsList ? partsList.pages.map((p) => p.raw).join('\n') : '');
   const refs = findReferences(allText, customer);
+  for (const r of refs) { const pl = Loc.placeAll(pages, r.number); if (pl) r.source = { page: pl.page, bbox: pl.bbox }; }
   const special = [];
   if (/SEE SEPARATE PART LIST/.test(text) && !partsList) special.push({ number: 'SEPARATE PART LIST', kind: 'internal', owner: customer, description: `Separate part list for ${id.partNo}`, raw: 'SEE SEPARATE PART LIST', context: 'SEE' });
   const nha = text.match(/SEE NEXT HIGHER ASSEMBLY\s+([\w-]+)/);

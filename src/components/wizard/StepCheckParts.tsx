@@ -17,13 +17,21 @@ export function StepCheckParts({ parts, sel, open, onOpen, onBack, onGo, onLeave
       <div className="qr-panel">
         <div className="qr-tabs">{tabs.map((k: string) => <button key={k} className="qr-tab" data-active={cur === k} data-testid={'tab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('tab.' + k)}</button>)}</div>
         <div className="qr-scroll">
-          {cur === 'drawing' && <DrawingView part={part} focus={focus} details={details} />}
+          {cur === 'drawing' && <DrawingView part={part} focus={focus} details={details} onFocus={setFocus} onSelect={(id: string) => setFocus((f: any) => (f && f.id === id ? f : { ...f, id }))} />}
           {cur === 'route' && <RouteCard part={part} />}
           {cur === 'model' && <ModelView part={part} />}
           {cur === 'data' && <DataView part={part} />}
         </div>
       </div>
-      <PartCard part={part} n={parts.length} sel={sel} setSel={onGo} details={details} goStep={setStep} onFocus={(f: any) => { setTab('drawing'); setFocus(f); }} />
+      <PartCard part={part} n={parts.length} sel={sel} setSel={onGo} details={details} goStep={setStep} focus={focus} onFocus={(f: any) => { setTab('drawing'); setFocus((cur: any) => {
+        if (!f) return null;
+        if (cur && cur.id === f.id && (f.boxes || []).length > 1) {
+          const n = ((cur.boxIndex || 0) + 1) % f.boxes.length;
+          const b = f.boxes[n];
+          return { ...f, boxIndex: n, page: b.page || f.page, bbox: b };
+        }
+        return { ...f, boxIndex: 0, page: (f.boxes && f.boxes[0] && f.boxes[0].page) || f.page, bbox: (f.boxes && f.boxes[0]) || f.bbox };
+      }); }} />
     </div>
   </div>;
 }

@@ -149,7 +149,7 @@
 
 
 /* settings chips: never squeezed to a column at huge text */
-.qr-chip { flex: 0 0 auto; white-space: nowrap; max-width: 100%; }
+.qr-chip { flex: 0 0 auto; white-space: nowrap; max-width: none; overflow: visible; text-overflow: clip; width: max-content; }
 
 
 /* project tabs (MRT workspace tab strip; MRT's tailwind layout classes written out) and one mounted view per project */
@@ -324,9 +324,15 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root th, .qr-root button, .qr-root summary, .qr-root .qr-stat-l, .qr-root .qr-stat-n, .qr-root .qr-chip, .qr-root .qr-pcard-tag, .qr-root .qr-pcard-badge, .qr-root .qr-brand-badge, .qr-root .qr-lbl, .qr-root .qr-warnbar button { white-space: nowrap; }
 /* Part card checklist: one item = one line (what + where); a too-long item is shortened with an ellipsis, the full text is the tooltip. */
 .qr-root .qr-ck-items li { display: flex; align-items: baseline; gap: 4px; }
-.qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.qr-root .qr-ck-items li > .qr-ck-link, .qr-root .qr-ck-items li > span { flex: 0 1 auto; overflow: hidden; text-overflow: clip; }
 .qr-root .qr-ck-items li > .qr-ck-link { display: block !important; max-width: 100%; }
 .qr-root .qr-ck-items li > .qr-ck-where { flex: 0 100 auto; }
+.qr-root .qr-ck-loc { flex: 0 0 auto !important; width: 1.25rem !important; min-width: 1.25rem !important; max-width: 1.25rem !important; height: 1.25rem !important; min-height: 0 !important; padding: 0 !important; margin-inline-start: auto !important; border: 0 !important; background: none !important; box-shadow: none !important; color: var(--mrt-text-muted); cursor: pointer; font: inherit; line-height: 1; display: inline-grid !important; place-items: center; }
+.qr-root .qr-ck-loc:hover { color: var(--mrt-text); }
+.qr-root .qr-ck-items li[data-active='true'] { outline: 1px solid var(--mrt-accent); outline-offset: 1px; }
+.qr-root .qr-route-card .qr-table { table-layout: auto; }
+.qr-root .qr-route-card .qr-rc-flags, .qr-root .qr-rc-flags { width: auto; min-width: max-content; white-space: nowrap; overflow: visible; }
+.qr-root .qr-route-card .qr-chip { overflow: visible; text-overflow: clip; max-width: none; width: max-content; }
 
 /* Summary: expandable row (full checklist in full words). The expanded cell never widens the table. */
 .qr-cks-r { cursor: pointer; }

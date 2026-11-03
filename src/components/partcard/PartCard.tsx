@@ -12,7 +12,7 @@ import { ChecklistSection } from '../../checklist/Checklist';
 
 const api = () => (window as any).qr || {};
 
-export function PartCard({ part, n, sel, setSel, details, onFocus, goStep }: any) {
+export function PartCard({ part, n, sel, setSel, details, onFocus, goStep, focus }: any) {
   const card = usePartCard(part, onFocus);
   const [table, setTable] = useState(false);
   const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
@@ -35,9 +35,9 @@ export function PartCard({ part, n, sel, setSel, details, onFocus, goStep }: any
     <div className="qr-scroll qr-card" data-testid="processes-panel">
       {good && <div className="qr-allgood" data-testid="all-good"><i className="qr-dot" data-s="ok" aria-hidden="true" />{t('blk.allGood')}</div>}
       <div className="qr-blocks" data-testid="blocks">
-        {blocks.map((b: any) => <BlockCard key={b.id} block={b} part={part} open={!!openIds[b.id]} onToggle={() => toggle(b)} onAction={act} state={stateOf(b)} />)}
+        {blocks.map((b: any) => <BlockCard key={b.id} block={b} part={part} open={!!openIds[b.id]} onToggle={() => toggle(b)} onAction={act} state={stateOf(b)} onFocus={onFocus} />)}
       </div>
-      <ChecklistSection part={part} onFocus={onFocus} />
+      <ChecklistSection part={part} onFocus={onFocus} focusId={focus && focus.id} />
       <RouteCardSection part={part} />
       {pages.some((p: any) => p.rows.length) && <button type="button" className={MRT_BTN + ' qr-sec-table'} data-testid="btn-bd-table" title={t('tip.bdTable')} onClick={() => setTable(true)}>{t('bd.table')}</button>}
     </div>

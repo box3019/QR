@@ -80,6 +80,13 @@ async function extractPdf(file) {
 }
 function c0(v) { return v || 0; }
 
+/** Tesseract word box (tile pixels) -> page points. rot = the tile was recognised after a 90° clockwise turn. */
+function ocrWordBox(bb, tileX, tileY, scale, rot, tileW, tileH) {
+  let x0 = bb.x0, y0 = bb.y0, x1 = bb.x1, y1 = bb.y1;
+  if (rot) { x0 = bb.y0; x1 = bb.y1; y0 = tileH - bb.x1; y1 = tileH - bb.x0; }
+  return { x: (x0 + tileX) / scale, y: (y0 + tileY) / scale, w: (x1 - x0) / scale, h: (y1 - y0) / scale };
+}
+
 // Render one page at `dpi` as tiles and OCR every tile. OCR words that overlap a real text token are dropped
 // (real text wins); the rest are added with source:'ocr' and the Tesseract confidence.
 async function ocrPage(file, pageNo, existingTokens, opts = {}) {
@@ -162,10 +169,8 @@ async function ocrPage(file, pageNo, existingTokens, opts = {}) {
         for (const b of data.blocks || []) for (const p of b.paragraphs) for (const l of p.lines) for (const wd of l.words) {
           const t = wd.text.trim();
           if (!t || wd.confidence < 30 || !/[A-Z0-9]/i.test(t)) continue;
-          const bb = wd.bbox;
-          let x0 = bb.x0, y0 = bb.y0, x1 = bb.x1, y1 = bb.y1;
-          if (rot) { x0 = bb.y0; x1 = bb.y1; y0 = h - bb.x1; y1 = h - bb.x0; }
-          out.push({ text: t, x: (x0 + tx) / scale, y: (y0 + ty) / scale, w: (x1 - x0) / scale, h: (y1 - y0) / scale, source: 'ocr', conf: +(wd.confidence / 100).toFixed(2), rot });
+          const p = ocrWordBox(wd.bbox, tx, ty, scale, rot, w, h);
+          out.push({ text: t, x: p.x, y: p.y, w: p.w, h: p.h, source: 'ocr', conf: +(wd.confidence / 100).toFixed(2), rot });
         }
       }
       results[idx] = out;
@@ -205,6 +210,6 @@ async function renderPreview(file, pageNo, maxPx = 2400) {
   return { png: buf, scale, width: v1.width, height: v1.height, pages: doc.numPages };
 }
 
-module.exports = { extractPdf, ocrPage, renderPreview, openPdf };
+module.exports = { extractPdf, ocrPage, renderPreview, openPdf, ocrWordBox };
 
 

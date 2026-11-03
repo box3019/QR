@@ -177,7 +177,7 @@ async function runPipeline(paths, settings, emit = () => {}) {
         const part = await withLock(() => {
           const dup = parts.find((q) => q.partNo && q.partNo === a.partNo && q.rev === a.rev && q.customer === a.customer);
           if (dup) { (dup.duplicates = dup.duplicates || []).push(drawing.name); emit({ type: 'status', text: `${drawing.name}: same drawing as ${dup.drawing.name}, skipped` }); return null; }
-          const next = { id: 'part' + (parts.length + 1), drawing: { path: drawing.path, name: drawing.name, sha256: drawing.sha256, pages: drawing.pages.map((p) => ({ n: p.n, width: p.width, height: p.height, quality: p.quality, ocr: p.ocr ? { dpi: p.ocr.dpi, tiles: p.ocr.tiles, seconds: p.ocr.seconds, words: p.ocr.words } : null, ocrError: p.ocrError })) }, partsList: pl ? { path: pl.path, name: pl.name } : null, ...a };
+          const next = { id: 'part' + (parts.length + 1), drawing: { path: drawing.path, name: drawing.name, sha256: drawing.sha256, pages: drawing.pages.map((p) => ({ n: p.n, width: p.width, height: p.height, quality: p.quality, tokens: (p.tokens || []).map((t) => ({ text: t.text, x: t.x, y: t.y, w: t.w, h: t.h, source: t.source, conf: t.conf, rot: t.rot })), ocr: p.ocr ? { dpi: p.ocr.dpi, tiles: p.ocr.tiles, seconds: p.ocr.seconds, words: p.ocr.words } : null, ocrError: p.ocrError })) }, partsList: pl ? { path: pl.path, name: pl.name } : null, ...a };
           parts.push(next);
           return next;
         });

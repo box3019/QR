@@ -1,10 +1,10 @@
 /* fit.css — loaded last. Controls size to their text: no fixed px heights/widths on buttons, chips, tabs, selects.
-   Buttons wrap and grow; chips/badges stay on one line with an ellipsis (full text in the title tooltip). */
+   Buttons, chips and badges stay on one line and grow to the text (no ellipsis, no clip). */
 button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
-  height: auto !important; min-height: 2.1em !important; min-width: 0 !important; max-width: 100%;
+  height: auto !important; min-height: 2.1em !important; min-width: max-content !important; max-width: none;
   line-height: normal !important; font-size: var(--qr-fs-sm) !important;
   padding-block: 0.3em !important; padding-inline: 0.75em !important;
-  white-space: normal !important; overflow-wrap: anywhere; text-align: center; box-sizing: border-box;
+  white-space: nowrap !important; overflow-wrap: normal; overflow: visible; text-overflow: clip; text-align: center; box-sizing: border-box;
 }
 .qr-settings-tab { text-align: start; font-size: var(--qr-fs-sm) !important; }
 .qr-tab { font-size: 0.875rem !important; }
@@ -40,8 +40,8 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 .qr-topbar .mrt-topbar-cmd .ico { font-size: 1.15em; line-height: 1; }
 .qr-brand-badge { width: 1.75em; height: 1.75em; }
 .qr-chip, .qr-status, .qr-badge {
-  height: auto !important; line-height: normal !important; max-width: 100%; min-width: 0;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-block: 0.12em !important; box-sizing: border-box;
+  height: auto !important; line-height: normal !important; max-width: none; min-width: max-content; width: max-content;
+  white-space: nowrap; overflow: visible; text-overflow: clip; padding-block: 0.12em !important; box-sizing: border-box; flex: 0 0 auto;
 }
 select, .qr-input, select.qr-input {
   height: auto !important; min-height: 2.1em; line-height: normal !important; font: inherit; font-size: 0.875rem;

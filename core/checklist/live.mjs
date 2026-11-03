@@ -23,7 +23,7 @@ const u2 = (unit) => (unit === 'in' ? 'in' : unit === 'mm' ? 'mm' : '');
 /** Tight / unusual precise dimensions with their place: [{ kind, value, tol, unit, page, sheets, zone:{label,estimated}, bbox, note, line, ratio }]. ratio = value / limit (smaller = tighter). */
 export function tightItems(chk, th) {
   const out = []; if (!chk || !chk.cand) return out; const unit = chk.unit || null; const c = chk.cand;
-  const keep = (kind, x, tolText, ratio, extra = {}) => out.push({ kind, value: x.value || '', tol: tolText, unit: u2(unit), page: x.page, sheets: x.sheets, zone: x.zone || null, bbox: x.bbox || null, note: x.note, line: x.line, ratio, ...extra });
+  const keep = (kind, x, tolText, ratio, extra = {}) => out.push({ kind, value: x.value || '', tol: tolText, unit: u2(unit), page: x.page, sheets: x.sheets, zone: x.zone || null, bbox: x.bbox || null, source: x.source || (x.bbox ? { page: x.page, bbox: [x.bbox] } : undefined), note: x.note, line: x.line, ratio, ...extra });
   for (const x of c.tol || []) {
     // unknown drawing unit: only what is tight in BOTH readings (<= the inch limit); never a guess
     const lim = unit === 'in' ? th.tolIn : unit === 'mm' ? th.tolMm : th.tolIn;
@@ -79,8 +79,8 @@ export function evaluate(part, settings) {
     if (r.id === 'tight') return { ...r, state: tight.length ? 'yes' : ok ? 'no' : 'notfound', items: tight };
     if (r.id === 'gauges') {
       const items = [...((base && base.items) || [])];
-      for (const x of (chk.rows.threads && chk.rows.threads.items) || []) items.push({ key: 'gauge-thread', spec: x.spec, where: x.where, page: x.page, sheets: x.sheets, zone: x.zone, bbox: x.bbox, derived: 'threads', line: x.line });
-      for (const x of tight.filter((t) => t.hole && t.dia)) items.push({ key: 'gauge-bore', spec: '\u00D8' + x.dia + ' ' + x.tol, where: [{ t: 'page', n: String(x.page) }], page: x.page, sheets: x.sheets, zone: x.zone, bbox: x.bbox, derived: 'fit', line: x.line });
+      for (const x of (chk.rows.threads && chk.rows.threads.items) || []) items.push({ key: 'gauge-thread', spec: x.spec, where: x.where, page: x.page, sheets: x.sheets, zone: x.zone, bbox: x.bbox, source: x.source, derived: 'threads', line: x.line });
+      for (const x of tight.filter((t) => t.hole && t.dia)) items.push({ key: 'gauge-bore', spec: '\u00D8' + x.dia + ' ' + x.tol, where: [{ t: 'page', n: String(x.page) }], page: x.page, sheets: x.sheets, zone: x.zone, bbox: x.bbox, source: x.source, derived: 'fit', line: x.line });
       return { ...r, state: items.length ? 'yes' : (base ? base.state : 'notfound'), items };
     }
     return { ...r, ...(base || { state: 'notfound', items: [] }) };

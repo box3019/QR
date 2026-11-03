@@ -101,6 +101,7 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   assert.ok(/step menu centred/.test(lay) && /tab chip font/.test(lay) && /tab close hit area/.test(lay));
   assert.ok(/\[4, 8, 15\]/.test(lay) && /1366, 768, 1/.test(lay) && /1920, 1080, 2/.test(lay));
   assert.ok(/tab-more-close/.test(lay));
+  assert.ok(/clipSel/.test(lay) && /labelNarrower/.test(lay) && /clipScreens/.test(lay) && /route-card/.test(lay));
   const main = src('electron/main.cjs') + src('electron/preload.cjs');
   assert.ok(/qr:importCache:release/.test(main) && /releaseImportCache/.test(main) && /jobId: job/.test(main));
 });
@@ -120,7 +121,7 @@ test('disabled buttons: white fill, dark text, dashed border, no grey fade, tool
   assert.ok(/nw \? t\(nw\)/.test(foot));
 });
 
-test('i18n: close / overflow / disabled keys in EN and HE; HE tab keys have no Latin; version 0.1.13', () => {
+test('i18n: close / overflow / disabled keys in EN and HE; HE tab keys have no Latin; version 0.1.14', () => {
   const en = JSON.parse(src('src/i18n/en.json').replace(/^\uFEFF/, ''));
   const he = JSON.parse(src('src/i18n/he.json').replace(/^\uFEFF/, ''));
   for (const k of ['tab.close', 'tab.closeAll', 'tab.closeOthers', 'tab.more', 'tab.discard', 'tab.closeUnsaved', 'tab.closeAllUnsaved', 'st.closeAll', 'st.closeAllTip', 'tip.tabMore', 'dis.nothingToPdf']) {
@@ -131,5 +132,5 @@ test('i18n: close / overflow / disabled keys in EN and HE; HE tab keys have no L
   assert.strictEqual(en['tab.more'], 'More jobs');
   assert.strictEqual(en['tab.discard'], 'Do not save');
   for (const k of Object.keys(he).filter((k) => k.startsWith('tab.'))) assert.doesNotMatch(he[k], /[A-Za-z]/, k);
-  assert.strictEqual(JSON.parse(src('package.json')).version, '0.1.13');
+  assert.strictEqual(JSON.parse(src('package.json')).version, '0.1.14');
 });

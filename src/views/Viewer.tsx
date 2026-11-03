@@ -4,12 +4,12 @@ import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Chip } from '../ui/common';
 import { t, getLang } from '../i18n';
 import { PlainStatusBadge } from '../ui/simple';
-import { zoomStep, fitSheet, centerScroll, panTo } from '../wizard/dropGuard.mjs';
+import { zoomStep, fitSheet, centerScroll, panTo, zoomToBox } from '../wizard/dropGuard.mjs';
 
 const qr = () => (window as any).qr;
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
 
-export function DrawingView({ part, focus, details }: any) {
+export function DrawingView({ part, focus, details, onFocus, onSelect }: any) {
   const [page, setPage] = useState(focus?.page || 1);
   const [img, setImg] = useState<any>(null);
   const [showOcr, setShowOcr] = useState(true);
@@ -25,7 +25,7 @@ export function DrawingView({ part, focus, details }: any) {
   const refit = () => { const el = ref.current; const im = imgRef.current; if (!el || !im) return; setZoom(fitSheet(el.clientWidth, el.clientHeight, im.width, im.height)); };
   const recenter = () => { const el = ref.current; if (!el) return; const c = centerScroll(el.clientWidth, el.clientHeight, el.scrollWidth, el.scrollHeight); el.scrollLeft = c.left; el.scrollTop = c.top; };
   // a new part / sheet / image: fit the whole sheet again
-  useEffect(() => { setAuto(true); autoRef.current = true; if (img) refit(); }, [img, part.drawing.path, page]);
+  useEffect(() => { if (focus && (focus.bbox || (focus.boxes && focus.boxes.length))) { setAuto(false); autoRef.current = false; return; } setAuto(true); autoRef.current = true; if (img) refit(); }, [img, part.drawing.path, page]);
   // the pane changes size (window resize, panel toggle, details): keep the fit (or the centre when zoomed by hand)
   useEffect(() => { const el = ref.current; if (!el || typeof ResizeObserver === 'undefined') return; const ro = new ResizeObserver(() => { if (autoRef.current) refit(); else recenter(); }); ro.observe(el); return () => ro.disconnect(); }, [img]);
   // wheel (and Ctrl+wheel) = zoom; passive:false so the page does not scroll instead
@@ -37,13 +37,40 @@ export function DrawingView({ part, focus, details }: any) {
   const onUp = () => { drag.current = null; };
   // end pan
   const k = img ? W / img.width : 1;
-  useEffect(() => { if (img && focus && ref.current) { const el = ref.current.querySelector('[data-kind="focus"]') as HTMLElement; el?.scrollIntoView({ block: 'center', inline: 'center' }); } }, [img, focus]);
+  const boxes = (focus && (focus.boxes || (focus.bbox ? [focus.bbox] : []))) || [];
+  const boxIndex = Math.min(focus && focus.boxIndex != null ? focus.boxIndex : 0, Math.max(0, boxes.length - 1));
+  const activeBox = boxes[boxIndex] || focus?.bbox;
+  const activePage = (activeBox && activeBox.page) || focus?.page;
+  useEffect(() => { if (activePage) setPage(activePage); }, [activePage]);
+  useEffect(() => {
+    if (!img || !activeBox || !ref.current || activePage !== page) return;
+    setAuto(false); autoRef.current = false;
+    const z = zoomToBox(ref.current.clientWidth, ref.current.clientHeight, img.width, img.height, activeBox);
+    setZoom(z);
+  }, [img, focus && focus.id, boxIndex, page]);
+  useEffect(() => {
+    if (!img || !activeBox || !ref.current || activePage !== page) return;
+    const el = ref.current;
+    const mark = el.querySelector('[data-kind="focus"][data-active="true"]') as HTMLElement || el.querySelector('[data-kind="focus"]') as HTMLElement;
+    if (!mark) return;
+    const vr = el.getBoundingClientRect(), mr = mark.getBoundingClientRect();
+    el.scrollLeft += (mr.left + mr.width / 2) - (vr.left + vr.width / 2);
+    el.scrollTop += (mr.top + mr.height / 2) - (vr.top + vr.height / 2);
+  }, [zoom, img, focus && focus.id, boxIndex, page]);
+  useEffect(() => {
+    if (!onFocus) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onFocus(null); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onFocus]);
   const marks = part.problems.filter((p: any) => p.loc && p.loc.page === page);
   const ocrWords = ocrOn && pg?.ocr ? pg.ocr.words : [];
   return <div className="qr-draw" dir="ltr">
     <div className="qr-row" dir={getLang() === 'he' ? 'rtl' : 'ltr'} style={{ padding: '6px 10px', borderBottom: '1px solid var(--mrt-border-strong)', position: 'sticky', top: 0, background: 'var(--mrt-surface)', zIndex: 2 }}>
       <b className="qr-ltr">{part.drawing.name}</b>
       {part.drawing.pages.map((p: any) => <button key={p.n} className={MRT_ACTION_BTN} data-active={p.n === page} title={t('tip.sheet')} onClick={() => setPage(p.n)} style={p.n === page ? { fontWeight: 700 } : {}}>{t('dw.sheet', { n: p.n })}</button>)}
+      <button type="button" className={MRT_ACTION_BTN} data-testid="dw-fit" title={t('dw.fitPage')} onClick={() => { setAuto(true); autoRef.current = true; refit(); }}>{t('dw.fitPage')}</button>
+      {focus && boxes.length > 1 && <span className="qr-muted" data-testid="dw-of">{t('ck.of', { n: boxIndex + 1, total: boxes.length })}</span>}
       {details && <span className="qr-muted">{t('dw.text', { mode: pg?.quality?.mode })}{pg?.quality?.reasons?.length ? ` (${pg.quality.reasons.join(', ')})` : ''}{pg?.ocr ? ' · ' + t('dw.ocrInfo', { dpi: pg.ocr.dpi, words: pg.ocr.words.length, sec: pg.ocr.seconds }) : ''}{pg?.ocrError ? ' · ' + t('dw.ocrError', { text: pg.ocrError }) : ''}</span>}
       {details && <label className="qr-row" style={{ marginInlineStart: 'auto' }}><input type="checkbox" checked={showOcr} onChange={(e) => setShowOcr(e.target.checked)} /> {t('dw.ocrWords')}</label>}
     </div>
@@ -52,8 +79,8 @@ export function DrawingView({ part, focus, details }: any) {
         <div className="qr-sheet" style={{ width: W }} data-testid="drawing-sheet">
           <img src={img.png} style={{ width: W }} draggable={false} />
           {ocrWords.map((w: any, i: number) => <div key={'o' + i} className="qr-mark" data-kind="ocr" title={`OCR "${w.text}" ${Math.round(w.conf * 100)}%`} style={{ left: w.x * k, top: w.y * k, width: w.w * k, height: w.h * k, opacity: w.conf < 0.6 ? 1 : 0.5 }} />)}
-          {marks.map((m: any) => <div key={m.id} className="qr-mark" data-kind={focus && focus.id === m.id ? 'focus' : m.severity} title={m.message} style={{ left: m.loc.x * k - 4, top: m.loc.y * k - 4, width: m.loc.w * k + 8, height: m.loc.h * k + 8 }} />)}
-          {focus && focus.bbox && focus.page === page && <div className="qr-mark" data-kind="focus" style={{ left: focus.bbox.x * k - 4, top: focus.bbox.y * k - 4, width: focus.bbox.w * k + 8, height: focus.bbox.h * k + 8 }} />}
+          {marks.map((m: any) => <div key={m.id} className="qr-mark" data-kind={focus && focus.id === m.id ? 'focus' : m.severity} data-tone={focus && focus.id === m.id ? (focus.tone || 'accent') : undefined} title={m.message} style={{ left: m.loc.x * k - 4, top: m.loc.y * k - 4, width: m.loc.w * k + 8, height: m.loc.h * k + 8 }} onClick={(e) => { e.stopPropagation(); onSelect && onSelect(m.id); }} />)}
+          {boxes.filter((b: any) => (b.page || focus.page) === page).map((b: any, i: number) => <div key={'f' + i} className="qr-mark" data-kind="focus" data-tone={focus.tone || 'accent'} data-active={i === boxIndex ? 'true' : undefined} data-testid="dw-mark" style={{ left: b.x * k - 4, top: b.y * k - 4, width: b.w * k + 8, height: b.h * k + 8 }} onClick={(e) => { e.stopPropagation(); onSelect && onSelect(focus.id); }} />)}
         </div>}
     </div>
   </div>;
@@ -66,12 +93,12 @@ export function RouteCard({ part }: any) {
       <div style={{ gridColumn: 'span 2' }}><b>{t('rc.title')}</b>{part.title}</div><div><b>{t('rc.source')}</b>{L(part, 'routeSource')}</div><div><b>{t('rc.status')}</b><PlainStatusBadge part={part} /> · {t('rc.readOnly')}</div>
     </div>
     <table className="qr-table">
-      <thead><tr><th style={{ width: 50 }}>{t('rc.step')}</th><th style={{ width: 120 }}>{t('rc.operation')}</th><th>{t('rc.instructions')}</th><th style={{ width: 170 }}>{t('rc.specs')}</th><th style={{ width: 110 }}>{t('rc.src')}</th><th style={{ width: 90 }}>{t('rc.flags')}</th></tr></thead>
+      <thead><tr><th style={{ width: 50 }}>{t('rc.step')}</th><th style={{ width: 120 }}>{t('rc.operation')}</th><th>{t('rc.instructions')}</th><th style={{ width: 170 }}>{t('rc.specs')}</th><th style={{ width: 110 }}>{t('rc.src')}</th><th className="qr-rc-flags">{t('rc.flags')}</th></tr></thead>
       <tbody>{part.route.map((s: any, i: number) => <tr key={i} style={s.blocked ? { background: '#fff7ed' } : {}}>
         <td>{s.seq}</td><td style={{ textTransform: 'capitalize' }}>{L(s, 'type')}{s.title ? <div className="qr-muted">{L(s, 'title')}</div> : null}</td>
         <td>{s.items.map((it: any, j: number) => <div key={j}>{it.seq && it.seq !== s.seq ? <b>{it.seq} </b> : null}<bdi>{L(it, 'text')}</bdi></div>)}</td>
         <td>{(s.specRefs || []).join(', ')}</td><td>{L(s, 'source')}</td>
-        <td>{s.outsourced && <Chip t="info">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></tr>)}</tbody>
+        <td className="qr-rc-flags">{s.outsourced && <Chip t="info">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></tr>)}</tbody>
     </table>
     {!part.route.length && <div className="qr-muted" style={{ padding: 10 }}>{t('rc.none')}</div>}
   </div>;

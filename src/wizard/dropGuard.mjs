@@ -24,3 +24,17 @@ export const fitSheet = (viewW, viewH, imgW, imgH, pad = 16, base = 1500) => { i
 export const centerScroll = (viewW, viewH, contentW, contentH) => ({ left: Math.max(0, (contentW - viewW) / 2), top: Math.max(0, (contentH - viewH) / 2) });
 /** Left-drag pan: new scroll position from the drag start (only scroll moves, nothing else). */
 export const panTo = (start, dx, dy) => ({ left: start.left - dx, top: start.top - dy });
+/** Zoom so a PDF box fills `fill` of the viewport (default 40 %). zoom 1 = 1500 px wide. */
+export const zoomToBox = (viewW, viewH, imgW, imgH, bbox, fill = 0.4, base = 1500, pad = 16) => {
+  if (!(viewW > 0) || !(viewH > 0) || !(imgW > 0) || !(imgH > 0) || !bbox) return 1;
+  const bw = Math.max(+bbox.w || 0, 1), bh = Math.max(+bbox.h || 0, 1);
+  const z = Math.min((fill * Math.max(viewW - pad, 1) * imgW) / (bw * base), (fill * Math.max(viewH - pad, 1) * imgH) / (bh * base));
+  return Math.min(8, Math.max(0.1, +z.toFixed(4)));
+};
+/** Scroll offsets that put the box centre in the viewport centre (never negative). */
+export const scrollToBox = (viewW, viewH, imgW, imgH, zoom, bbox, base = 1500) => {
+  if (!bbox) return { left: 0, top: 0 };
+  const k = (base * zoom) / imgW;
+  const cx = (bbox.x + bbox.w / 2) * k, cy = (bbox.y + bbox.h / 2) * k;
+  return { left: Math.max(0, cx - viewW / 2), top: Math.max(0, cy - viewH / 2) };
+};

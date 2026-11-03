@@ -1,5 +1,5 @@
 ﻿// Part card: the Alex checklist in route-card order, plus the Precision level and Complexity indicators. Colours only for yes / no / not found.
-import React from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { t } from '../i18n';
 import { evaluate, ROWS } from '../../core/checklist/live.mjs';
 import { getCkSettings } from './store';
@@ -10,13 +10,27 @@ export const stateLabel = (s: string) => t('ck.' + s);
 export function State({ s }: any) { return <span className="qr-ck-s" data-s={s} data-testid="ck-state">{GLYPH[s]} {stateLabel(s)}</span>; }
 const MAXI = 8;
 
-function Items({ row, onFocus, pid }: any) {
+function LocateBtn({ f, onFocus }: { f: any; onFocus?: (x: any) => void }) {
+  if (!f) return null;
+  return <button type="button" className="qr-ck-loc" data-testid="ck-locate" title={t('ck.show')} onClick={(e) => { e.stopPropagation(); onFocus && onFocus(f); }}>{'\u2316'}</button>;
+}
+
+function Items({ row, onFocus, pid, focusId }: any) {
   const items: any[] = row.items || []; if (!items.length) return <span className="qr-muted">{row.state === 'notfound' ? t('ck.nfWhy') : ''}</span>;
   const rows = items.slice(0, MAXI);
-  return <ul className="qr-ck-items">{rows.map((i: any, n: number) => { const f = onFocus ? focusOf(i, 'ck-' + pid + '-' + row.id + n) : null; const w = whereText(i);
+  return <ul className="qr-ck-items">{rows.map((i: any, n: number) => {
+    const id = 'ck-' + pid + '-' + row.id + n;
+    const f = onFocus ? focusOf(i, id, row) : null;
+    const w = whereText(i);
     const body = <><span data-testid="ck-what">{itemWhat(i)}</span>{i.derived ? <span className="qr-muted"> ({t('ck.derived', { x: t('ck.r.' + (i.derived === 'fit' ? 'tight' : 'threads')) })})</span> : null}{row.excluded ? <span className="qr-muted"> ({t('ck.excluded')})</span> : null}</>;
     const full = itemWhat(i) + (w ? ' \u2014 ' + w : '');
-    return <li key={n} data-testid="ck-item" data-zone={i.zone ? i.zone.label : ''} title={full}>{f ? <button type="button" className="qr-ck-link" title={t('ck.show') + ': ' + full} onClick={() => onFocus(f)}>{body}</button> : body}{w ? <span className="qr-ck-where qr-muted" data-testid="ck-where"> {'\u2014'} {w}</span> : null}</li>; })}
+    const locTip = f ? t('ck.show') : t('ck.locateMissing');
+    const click = () => { if (!f || !onFocus) return; onFocus(f); };
+    return <li key={n} data-testid="ck-item" data-zone={i.zone ? i.zone.label : ''} data-id={id} data-active={focusId === id ? 'true' : undefined} data-loc={f ? '1' : '0'} title={f ? full : locTip} onClick={click}>
+      <span className="qr-ck-body" title={full}>{body}</span>
+      {w ? <span className="qr-ck-where qr-muted" data-testid="ck-where"> {'\u2014'} {w}</span> : null}
+      <LocateBtn f={f} onFocus={onFocus} />
+    </li>; })}
     {items.length > MAXI && <li className="qr-muted">{t('ck.more', { n: items.length - MAXI })}</li>}</ul>;
 }
 export function Indicators({ ev }: any) {
@@ -29,22 +43,45 @@ export function Indicators({ ev }: any) {
     <div title={t('ck.cx.title') + ': ' + t('ck.cx.' + c.level) + ' \u2014 ' + whyC + '\n' + t('tip.ckCx')}><b>{t('ck.cx.title')}</b> <span className="qr-ck-lvl" data-lvl={c.level} data-testid="ck-cx-level">{t('ck.cx.' + c.level)}</span> <span className="qr-muted" data-testid="ck-cx-why">{whyC}</span></div>
   </div>;
 }
-export function ChecklistBody({ part, onFocus }: any) {
+export function ChecklistBody({ part, onFocus, focusId }: any) {
   const ev = evaluate(part, getCkSettings()); const R: any = Object.fromEntries(ev.rows.map((r: any) => [r.id, r]));
+  const locatable = useMemo(() => {
+    const out: any[] = [];
+    for (const g of ev.order) for (const r of ROWS.filter((x: any) => x.group === g)) {
+      const row = R[r.id];
+      (row.items || []).slice(0, MAXI).forEach((i: any, n: number) => { const f = focusOf(i, 'ck-' + (part.id || part.partNo) + '-' + r.id + n, row); if (f) out.push(f); });
+    }
+    return out;
+  }, [ev, part]);
+  const box = useRef<HTMLTableElement>(null);
+  useEffect(() => {
+    const el = box.current; if (!el || !onFocus) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (!locatable.length) return;
+        e.preventDefault();
+        const i = Math.max(0, locatable.findIndex((x) => x.id === focusId));
+        const n = e.key === 'ArrowDown' ? Math.min(locatable.length - 1, i + 1) : Math.max(0, (i < 0 ? 0 : i - 1));
+        onFocus(locatable[n]);
+      }
+    };
+    el.addEventListener('keydown', onKey);
+    return () => el.removeEventListener('keydown', onKey);
+  }, [locatable, focusId, onFocus]);
   return <>
     <Indicators ev={ev} />
     {ev.read && !ev.read.ok && <div className="qr-ck-warn" data-testid="ck-lowread">{t('ck.lowRead')}</div>}
     {ev.zoneEstimated && <div className="qr-muted qr-ck-zn" data-testid="ck-zone-note">{t('ck.zoneNote')}</div>}
-    <table className="qr-ck-tab"><tbody>{ev.order.map((g: string) => <React.Fragment key={g}>
+    <table className="qr-ck-tab" ref={box} tabIndex={0} data-testid="ck-list"><tbody>{ev.order.map((g: string) => <React.Fragment key={g}>
       <tr className="qr-ck-gh"><th colSpan={2}>{t('ck.g.' + g)}</th></tr>
       {ROWS.filter((r: any) => r.group === g).map((r: any) => { const row = R[r.id]; return <tr key={r.id} data-testid={'ck-row-' + r.id} data-s={row.state} className={r.sub ? 'qr-ck-sub' : ''}>
-        <td className="qr-ck-l">{t('ck.r.' + r.id)}</td><td className="qr-ck-w"><State s={row.state} /><Items row={row} onFocus={onFocus} pid={part.id || part.partNo} /></td></tr>; })}
+        <td className="qr-ck-l">{t('ck.r.' + r.id)}</td><td className="qr-ck-w"><State s={row.state} /><Items row={row} onFocus={onFocus} pid={part.id || part.partNo} focusId={focusId} /></td></tr>; })}
     </React.Fragment>)}</tbody></table>
   </>;
 }
-export function ChecklistSection({ part, onFocus }: any) {
+export function ChecklistSection({ part, onFocus, focusId }: any) {
   if (!part || !part.checklist) return <div className="qr-ck qr-muted" data-testid="checklist-none">{t('ck.none')}</div>;
   return <details className="qr-ck" open data-testid="checklist"><summary title={t('tip.checklist')}>{t('ck.title')}</summary>
-    <ChecklistBody part={part} onFocus={onFocus} />
+    <ChecklistBody part={part} onFocus={onFocus} focusId={focusId} />
   </details>;
 }

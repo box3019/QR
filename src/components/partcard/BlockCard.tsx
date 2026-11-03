@@ -5,6 +5,7 @@ import { t, getLang } from '../../i18n';
 import { localized } from '../../i18n/localized';
 import { MRT_BTN } from '../../ui/mrtButtons';
 import { Fields } from './Fields';
+import { locate } from '../../parts/breakdown.mjs';
 
 const ACTION: Record<string, { label: string; tip: string }> = {
   confirm: { label: 'bd.a.confirm', tip: 'tip.bd.confirm' },
@@ -61,7 +62,7 @@ export function lineText(b: any, state: any, part: any): React.ReactNode {
   return t(L.key, vars);
 }
 
-export function BlockCard({ block: b, open, onToggle, onAction, state, part }: BlockViewProps) {
+export function BlockCard({ block: b, open, onToggle, onAction, state, part, onFocus }: BlockViewProps & { onFocus?: (f: any) => void }) {
   const done = state && (state.confirmed || state.file);
   const status = done ? 'ok' : b.status;
   const act = done ? null : b.action;
@@ -69,7 +70,13 @@ export function BlockCard({ block: b, open, onToggle, onAction, state, part }: B
   const val = b.kind === 'material' ? <bdi data-testid="mat-line">{localized(part && part.material, 'line') || b.value}{b.ours === true ? ` — ${t('blk.mat.ours')}` : b.ours === false ? ` — ${t('blk.mat.notOurs')}` : ''}</bdi>
     : b.kind === 'field' && b.status === 'ok' && b.value ? <bdi>{String(b.value)}</bdi> : null;
   const confirmedField = b.kind === 'field' && b.action && b.action.kind === 'confirm' && state && state.ok;
-  return <section className="qr-block" data-testid="block" data-block={b.id} data-kind={b.kind} data-status={status} data-open={open}>
+  const needle = (b.kind === 'standard' && b.title) || (b.details && b.details.raw) || b.value || '';
+  const pgN = (b.pg && b.pg.page) || (b.page) || 1;
+  const tokens = ((part && part.drawing && part.drawing.pages) || []).flatMap((p: any) => (p.tokens || []).map((tk: any) => ({ ...tk, _p: p.n })));
+  const pageToks = ((part && part.drawing && part.drawing.pages) || []).find((p: any) => p.n === pgN)?.tokens || tokens;
+  const bbox = needle ? locate(String(needle), pageToks) : null;
+  const loc = bbox ? { page: pgN, bbox, boxes: [bbox], id: 'bd-' + b.id, tone: status === 'ok' || done ? 'checked' : status === 'bad' ? 'critical' : 'accent' } : null;
+  return <section className="qr-block" data-testid="block" data-block={b.id} data-kind={b.kind} data-status={status} data-open={open} title={loc ? undefined : t('ck.locateMissing')}>
     <div className="qr-block-h">
       <i className="qr-dot" data-s={status} aria-hidden="true" />
       <div className="qr-block-main">
@@ -77,6 +84,7 @@ export function BlockCard({ block: b, open, onToggle, onAction, state, part }: B
         <div className="qr-block-line" data-testid="block-line">{val || lineText(b, state, part)}</div>
       </div>
       {act && <button type="button" className={MRT_BTN} data-testid={'block-act-' + act.kind} title={t(ACTION[act.kind].tip)} onClick={() => onAction(b)}>{confirmedField ? '✓ ' : ''}{t(ACTION[act.kind].label)}</button>}
+      {loc ? <button type="button" className="qr-ck-loc" data-testid="block-locate" title={t('ck.show')} onClick={(e) => { e.stopPropagation(); onFocus && onFocus(loc); }}>{'\u2316'}</button> : null}
       {!b.details && <span className="qr-block-chev" aria-hidden="true" />}
       {b.details && <button type="button" className="qr-block-chev" data-testid="block-chev" aria-expanded={open} title={t('tip.blkDetails')} onClick={onToggle}>{open ? '▾' : '▸'}</button>}
     </div>

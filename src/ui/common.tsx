@@ -4,7 +4,7 @@ import { useFloat } from './useFloat';
 import { t } from '../i18n';
 
 const textOf = (c: any): string => (c == null || c === false ? '' : typeof c === 'string' || typeof c === 'number' ? String(c) : Array.isArray(c) ? c.map(textOf).join('') : '');
-/** Chip: one line; long text ends with an ellipsis and the full text is in the tooltip. */
+/** Chip: one line that grows to the text; no ellipsis, no clip. */
 export function Chip({ t, children, testid, title }: { t: string; children: any; testid?: string; title?: string }) { return <span className="qr-chip" data-tone={t} data-testid={testid} title={title || textOf(children) || undefined}>{children}</span>; }
 
 export function Modal({ title, children, footer, onClose, testid, wide }: any) {

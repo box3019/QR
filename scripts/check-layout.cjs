@@ -138,6 +138,40 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       if (r.top > tb.top + 16) res.issues.push(id + ' dropped below topbar row');
     });
   }
+  // Every button, chip, tag, toggle, tab and menu item: no clipped text, no ellipsis, no wrap inside the control
+  const clipSel = 'button, [role="button"], [role="menuitem"], [role="tab"], [role="switch"], .qr-chip, .qr-tag, .qr-pcard-tag, .qr-pcard-badge, .qr-status, .qr-badge, .qr-tab, .qr-settings-tab, .mrt-workspace-tab, .qr-menu-item, .mrt-btn, summary.qr-rc-sum, summary.qr-ck > summary, .qr-cks-x';
+  const clips = [];
+  document.querySelectorAll(clipSel).forEach((e) => {
+    if (e.closest('.qr-proj-off')) return;
+    const cs = getComputedStyle(e);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
+    const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!t) return;
+    if (e.matches('[data-testid=tab-close],[data-testid=tab-more-close],[data-testid=ck-locate],[data-testid=block-locate],[data-testid=block-chev],[data-testid=cks-expand]') || /^[\u00D7\u2715\u25BE\u25B8\u2316]$/.test(t)) return;
+    const lab = [...e.querySelectorAll('span')].find((s) => !s.classList.contains('ico') && (s.textContent || '').trim());
+    if (e.matches('.mrt-topbar-cmd') && lab && (getComputedStyle(lab).display === 'none' || getComputedStyle(lab).visibility === 'hidden')) return;
+    const sw = e.scrollWidth, cw = e.clientWidth, sh = e.scrollHeight, ch = e.clientHeight;
+    const found = [];
+    if (sw > cw + 1) found.push('scrollWidth ' + sw + '>' + cw);
+    if (sh > ch + 1) found.push('scrollHeight ' + sh + '>' + ch);
+    if (cs.textOverflow === 'ellipsis' && cs.overflow !== 'visible' && sw > cw + 1) found.push('ellipsis');
+    const rg = document.createRange();
+    try { if (lab) rg.selectNodeContents(lab); else rg.selectNodeContents(e); } catch { return; }
+    const rects = [...rg.getClientRects()].filter((r) => r.width > 2 && r.height > 4);
+    const tops = [...new Set(rects.map((r) => Math.round(r.top)))].sort((a, b) => a - b);
+    if (tops.length > 1 && tops[tops.length - 1] - tops[0] > 6) found.push('wrap');
+    const br = e.getBoundingClientRect();
+    const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    const tw = rects.length ? Math.max(...rects.map((r) => r.width)) : 0;
+    if (tw > br.width - pad + 1) found.push('labelNarrower ' + Math.round(tw) + '>' + Math.round(br.width - pad));
+    if (found.length) {
+      const step = (document.querySelector('[data-testid=project]:not(.qr-proj-off)') || {}).getAttribute?.('data-step') || '';
+      const dlg = e.closest('[data-testid]') && e.closest('.qr-modal, .qr-settings, [data-testid=history], [role=menu]');
+      clips.push({ screen: dlg ? (dlg.getAttribute('data-testid') || dlg.className || 'dialog') : ('step' + step), sel: (e.getAttribute('data-testid') || e.className || e.tagName).toString().slice(0, 56), text: t.slice(0, 56), issues: found });
+    }
+  });
+  res.clips = clips;
+  clips.forEach((c) => res.issues.push('clip ' + c.screen + ' ' + c.sel + ' "' + c.text + '" @' + innerWidth + 'x' + innerHeight + ' ' + c.issues.join(',')));
   // Check header height (should be <=56px)
   const header = document.querySelector('.qr-wiz-head');
   if (header) {
@@ -267,6 +301,36 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       if (!m.savePdfButton) { (report.scan[report.scan.length - 1].issues || (report.scan[report.scan.length - 1].issues = [])).push('Save PDF button not visible'); fail++; }
     }
   }
+  // settings, history, route card, part card: same clip scan at 1920 and 4K, 100% and 200%, both languages
+  report.clipScreens = [];
+  const CLIP_SIZES = QUICK ? [[1920, 1080, 1]] : [[1920, 1080, 1], [1920, 1080, 2], [3840, 2160, 1]];
+  for (const lang of ['en', 'he']) for (const [w, h, dpi] of CLIP_SIZES) {
+    await size(w, h, dpi); await set('industrial-steel', lang); await sleep(400);
+    const closeUi = async () => {
+      await win.evaluate(() => { document.querySelectorAll('.qr-modal-bg').forEach((e) => e.click()); });
+      await win.keyboard.press('Escape').catch(() => {});
+      await sleep(200);
+    };
+    const runClip = async (screen, open) => {
+      await closeUi();
+      await open(); await sleep(500);
+      const m = await win.evaluate(MEASURE);
+      const issues = (m.issues || []).filter((x) => /^clip /.test(x));
+      const r = { screen, lang, size: w + 'x' + h, dpi, clips: m.clips, issues };
+      report.clipScreens.push(r); if (issues.length) fail++;
+      await closeUi();
+    };
+    await runClip('settings', async () => { const b = await win.$('[data-testid=btn-settings]'); if (b) await b.click({ force: true }); });
+    await runClip('history', async () => { const b = await win.$('[data-testid=btn-history]'); if (b) await b.click({ force: true }); });
+    await runClip('file-menu', async () => { const b = await win.$('[data-testid=btn-file]'); if (b) await b.click({ force: true }); });
+    await win.evaluate(() => { window.__qrStep(2); window.__qrSelect && window.__qrSelect(0, 'route'); });
+    await sleep(700);
+    await runClip('route-card', async () => {});
+    await win.evaluate(() => { window.__qrSelect && window.__qrSelect(0, 'drawing'); });
+    await sleep(500);
+    await runClip('part-card', async () => {});
+  }
+
   // job tabs: 4 / 8 / 15 chips at 1366×768 @100% and 1920×1080 @200% — one-row header, visible ×, overflow to More
   report.tabs = [];
   await set('industrial-steel', 'en');
@@ -327,7 +391,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     minContrast: Math.min(...report.idle.concat(report.busy).filter((r) => r.minContrast).map((r) => r.minContrast)),
     scanBad: scanBad.slice(0, 8).map((s) => ({ lang: s.lang, size: s.size, step: s.step, issues: s.issues, hscroll: s.hscroll.length, wraps: s.wraps.length, overlaps: (s.overlaps || []).length })),
     printButtonVisible: report.scan.every((s) => s.printButton),
-    savePdfButtonVisible: report.scan.every((s) => s.savePdfButton)
+    savePdfButtonVisible: report.scan.every((s) => s.savePdfButton),
+    clipScreens: (report.clipScreens || []).length,
+    clipFails: (report.clipScreens || []).filter((r) => r.issues && r.issues.length).length
   }, null, 1));
   await app.close().catch(() => {}); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error(e); process.exit(2); });
