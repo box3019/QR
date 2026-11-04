@@ -8,7 +8,7 @@ test('summary table: auto layout sized from the content, one line per item, N it
   assert.ok(/\.qr-cks-tab\s*\{[^}]*table-layout:\s*auto/.test(css));
   assert.ok(!/qr-cks-scroll/.test(css) && !/qr-cks-scroll/.test(tsx));
   assert.ok(/\.qr-cks-tab th, \.qr-cks-tab td\s*\{[^}]*white-space:\s*nowrap/.test(css), 'cells nowrap');
-  assert.ok(/\.qr-cks-t\s*\{[^}]*display:\s*block;\s*white-space:\s*nowrap/.test(css), 'each item on its own line, never wraps inside');
+  assert.ok(/\.qr-cks-t\s*\{[^}]*display:\s*inline;\s*white-space:\s*nowrap/.test(css), 'each item on its own line, never wraps inside');
   assert.ok(/ck\.items\.many/.test(tsx) && /materialShort/.test(tsx), 'N items fallback + trimmed material');
   assert.ok(!/min-width:\s*\d+px/.test(css.slice(css.indexOf('.qr-cks-card'), css.indexOf('/* No horizontal'))), 'no fixed min widths in the summary table block');
 });

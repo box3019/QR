@@ -19,8 +19,8 @@ export function PartsList({ parts, sel, onOpen, unknown, details }: any) {
       {filter && !rows.length && <div className="qr-muted qr-empty" data-testid="tile-empty">{t('tile.empty')}</div>}
       <MrtTable className="qr-plist-tab">
         <MrtHead cells={details
-          ? [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value'), t('parts.qty'), t('rc.customer'), '']
-          : [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value'), '']} />
+          ? [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value'), t('parts.qty'), t('rc.customer')]
+          : [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value')]} />
         <tbody>
           {rows.map(({ part: p, index: i }: any) => { const r = reasonFor(p); const txt = String(r.prob ? L(r.prob, 'message') : r.text || t(r.key as string, r.vars) || '');
             return <MrtRow key={p.id || i} className="qr-prow" active={i === sel} data-status={r.status} data-testid="part-item" title={t('pl.open', { pn: p.partNo || p.drawing.name })} onClick={() => onOpen(i)}>
@@ -30,9 +30,8 @@ export function PartsList({ parts, sel, onOpen, unknown, details }: any) {
               <td><OverflowLine className="qr-prow-why" testid="part-reason" text={txt}><bdi>{txt}</bdi></OverflowLine></td>
               {details ? <td>{p.rfq ? <Chip t="neutral" testid="part-qty">{t('parts.qty')} {p.rfq.qty ?? '?'}</Chip> : ''}</td> : null}
               {details ? <td><Chip t="neutral">{p.customer}</Chip></td> : null}
-              <td className="qr-chev" aria-hidden="true">{'\u203a'}</td>
             </MrtRow>; })}
-          {details && unknown.length > 0 && <MrtRow className="qr-prow qr-muted"><td colSpan={details ? 7 : 5}>{t('parts.other', { list: unknown.join(', ') })}</td></MrtRow>}
+          {details && unknown.length > 0 && <MrtRow className="qr-prow qr-muted"><td colSpan={details ? 6 : 4}>{t('parts.other', { list: unknown.join(', ') })}</td></MrtRow>}
         </tbody>
       </MrtTable>
     </div></div>

@@ -1,7 +1,8 @@
 // Step 1 once parts are loaded: stat tiles (parts, files, drawings, models), the files grouped by part in a compact list, Next, and Add files / Add folder.
 import React from 'react';
 import { t } from '../../i18n';
-import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
+import { MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
+import { MoreMenu } from '../MoreMenu';
 import { loadedSummary } from '../../wizard/loaded.mjs';
 import { RfqBar } from './RfqBar';
 import { MrtTable, MrtHead, MrtRow, OverflowLine } from '../../ui/MrtTable';
@@ -36,9 +37,11 @@ export function LoadedSummary({ rfqs, parts, files, unknown, details, onNext, on
     </div>
     {details && s.unknown.length > 0 && <div className="qr-muted">{t('drop.notDrawings', { list: s.unknown.join(', ') })}</div>}
     <div className="qr-loaded-btns">
-      <button type="button" className={MRT_BTN_PRIMARY} data-testid="btn-loaded-next" title={t('wz.tipNext')} onClick={onNext}>{t('wz.next')} <span aria-hidden className="qr-chev">{'\u203a'}</span></button>
-      <button type="button" className={MRT_BTN} data-testid="btn-loaded-files" title={t('tip.addFiles')} onClick={onFiles}>{t('top.addFiles')}</button>
-      <button type="button" className={MRT_BTN} data-testid="btn-loaded-folder" title={t('tip.addFolder')} onClick={onFolder}>{t('top.addFolder')}</button>
+      <button type="button" className={MRT_BTN_PRIMARY} data-testid="btn-loaded-next" title={t('wz.tipNext')} onClick={onNext}>{t('wz.next')}</button>
+      <MoreMenu testid="loaded-more" items={[
+        { testid: 'btn-loaded-files', label: t('top.addFiles'), tip: t('tip.addFiles'), onClick: onFiles },
+        { testid: 'btn-loaded-folder', label: t('top.addFolder'), tip: t('tip.addFolder'), onClick: onFolder },
+      ]} />
     </div>
   </div>;
 }

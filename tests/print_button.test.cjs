@@ -13,9 +13,9 @@ test('Print button is in the topbar next to FileMenu', () => {
   const printPos = bar.indexOf('btn-print');
   assert.ok(fileMenuPos < printPos, 'Print button should come after FileMenu');
   const savePdfPos = bar.indexOf('btn-save-pdf');
-  const historyPos = bar.indexOf('btn-history');
-  assert.ok(printPos < historyPos, 'Print button should come before History button');
-  assert.ok(printPos < savePdfPos && savePdfPos < historyPos, 'Save PDF button should be next to Print, before History');
+  const morePos = bar.indexOf('TopMore');
+  assert.ok(printPos < savePdfPos, 'Save PDF button should come after Print');
+  assert.ok(savePdfPos < morePos, 'More (History) should come after Save PDF');
   assert.ok(/top\.savePdf/.test(bar), 'top.savePdf translation key should be used');
   assert.ok(/tip\.savePdf/.test(bar), 'tip.savePdf tooltip key should be used');
 });

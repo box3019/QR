@@ -76,7 +76,7 @@ export function lineText(b: any, state: any, part: any): React.ReactNode {
   return t(L.key, vars);
 }
 
-export function BlockCard({ block: b, open, onToggle, onAction, state, part, onFocus }: BlockViewProps & { onFocus?: (f: any) => void }) {
+export function BlockCard({ block: b, open, onToggle, onAction, state, part, onFocus, hideAction }: BlockViewProps & { onFocus?: (f: any) => void; hideAction?: boolean }) {
   const done = state && (state.confirmed || state.file);
   const status = done ? 'ok' : b.status;
   const act = done ? null : b.action;
@@ -99,7 +99,7 @@ export function BlockCard({ block: b, open, onToggle, onAction, state, part, onF
         <div className="qr-block-title" data-testid="block-title">{title}{compact && (val || lineText(b, state, part)) ? <> <span className="qr-block-line" data-testid="block-line">{val || lineText(b, state, part)}</span></> : null}</div>
         {!compact && <div className="qr-block-line" data-testid="block-line">{val || lineText(b, state, part)}</div>}
       </div>
-      {act && !compact && <button type="button" className={MRT_BTN} data-testid={'block-act-' + act.kind} title={t(ACTION[act.kind].tip)} onClick={() => onAction(b)}>{confirmedField ? '✓ ' : ''}{t(ACTION[act.kind].label)}</button>}
+      {act && !compact && !hideAction && <button type="button" className={MRT_BTN} data-testid={'block-act-' + act.kind} title={t(ACTION[act.kind].tip)} onClick={() => onAction(b)}>{confirmedField ? '✓ ' : ''}{t(ACTION[act.kind].label)}</button>}
       {loc ? <button type="button" className="qr-ck-loc" data-testid="block-locate" title={t('ck.show')} onClick={(e) => { e.stopPropagation(); onFocus && onFocus(loc); }}>{'\u2316'}</button> : null}
       {!b.details && <span className="qr-block-chev" aria-hidden="true" />}
       {b.details && <button type="button" className="qr-block-chev" data-testid="block-chev" aria-expanded={open} title={t('tip.blkDetails')} onClick={onToggle}>{open ? '▾' : '▸'}</button>}

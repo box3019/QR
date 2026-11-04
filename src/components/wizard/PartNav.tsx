@@ -12,11 +12,11 @@ export function PartNav({ parts, sel, step, onBack, onGo, onLeave, rtl }: any) {
     if (e.key === 'Escape') { e.preventDefault(); onBack(); return; } const d = arrowMove(e.key, rtl); if (!d) return; e.preventDefault(); if (d > 0) doNext(); else doPrev(); };
     window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h); });
   return <div className="qr-pnav" data-testid="part-nav">
-    <button type="button" className={MRT_BTN} data-testid="btn-back-list" title={t('pv.tipBack')} onClick={onBack}><span aria-hidden className="qr-chev qr-chev-back">{'\u2039'}</span> {t('pv.back')}</button>
+    <button type="button" className={MRT_BTN} data-testid="btn-back-list" title={t('pv.tipBack')} onClick={onBack}>{t('pv.back')}</button>
     <span className="qr-pnav-title"><span className="qr-pn qr-ltr" data-testid="card-pn">{part.partNo || (part.drawing && part.drawing.name)}</span>{part.rev ? <span className="qr-muted"> {t('bd.rev')} <bdi className="qr-ltr">{part.rev}</bdi></span> : null}
       <span className="qr-muted qr-card-of" data-testid="card-of"> {t('pv.of', { i: sel + 1, n })}</span></span>
     <span style={{ flex: 1 }} />
-    <button type="button" className={MRT_BTN} data-testid="btn-prev-part" disabled={sel === 0} title={sel === 0 ? t('dis.firstPart') : t('pv.tipPrev')} onClick={doPrev}><span aria-hidden className="qr-chev qr-chev-back">{'\u2039'}</span> {t('pv.prev')}</button>
-    <button type="button" className={MRT_BTN_PRIMARY} data-testid="btn-next-part" title={nx >= 0 ? t('pv.tipNext') : t(step === 3 ? 'pv.tipToSummary' : 'pv.tipToDocs')} onClick={doNext}>{nx >= 0 ? t('pv.next') : t(step === 3 ? 'pv.toSummary' : 'pv.toDocs')} <span aria-hidden className="qr-chev">{'\u203a'}</span></button>
+    <button type="button" className={MRT_BTN} data-testid="btn-prev-part" disabled={sel === 0} title={sel === 0 ? t('dis.firstPart') : t('pv.tipPrev')} onClick={doPrev}>{t('pv.prev')}</button>
+    <button type="button" className={MRT_BTN_PRIMARY} data-testid="btn-next-part" title={nx >= 0 ? t('pv.tipNext') : t(step === 3 ? 'pv.tipToSummary' : 'pv.tipToDocs')} onClick={doNext}>{nx >= 0 ? t('pv.next') : t(step === 3 ? 'pv.toSummary' : 'pv.toDocs')}</button>
   </div>;
 }

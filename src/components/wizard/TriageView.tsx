@@ -1,25 +1,27 @@
 // Package list: Suitable / Not suitable / Material not detected. Move, include, Print and Save PDF per part; package PDF actions.
 import React, { useState } from 'react';
 import { t } from '../../i18n';
-import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
+import { MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import { MrtTable, MrtHead, MrtGroup, MrtRow, OverflowLine } from '../../ui/MrtTable';
 import { triageLists, triageCounts, triageReason, isIncluded, moveTriage, setInclude } from '../../parts/triage.mjs';
 import { SaveEachChoice } from './SaveEachChoice';
+import { MoreMenu } from '../MoreMenu';
 
 function Row({ part, index, sel, list, onOpen, onPatch, onPrint, onSave }: any) {
   const r = triageReason(part);
   const why = [r.material || t('tri.noMat'), r.zone].filter(Boolean).join(' · ');
-  const stop = (e: any, fn: () => void) => { e.stopPropagation(); fn(); };
   return <MrtRow className="qr-tri-row" data-testid="tri-row" data-list={list} active={index === sel}>
     <td className="qr-tri-inc"><label title={t('tri.include')}><input type="checkbox" data-testid="tri-include" checked={isIncluded(part)} onChange={(e) => onPatch(index, setInclude(part, e.target.checked))} /></label></td>
     <td><button type="button" className="qr-tri-open" data-testid="tri-open" title={t('pl.open', { pn: part.partNo || '' })} onClick={() => onOpen(index)}><bdi className="qr-ltr">{part.partNo || (part.drawing && part.drawing.name) || ''}</bdi></button></td>
     <td><OverflowLine className="qr-tri-why" testid="tri-why" text={why}><bdi>{why}</bdi></OverflowLine></td>
     <td>{r.moved ? <span className="qr-tri-moved" data-testid="tri-moved">{t('tri.moved')}</span> : <span className="qr-muted">{'\u2013'}</span>}</td>
     <td className="qr-tri-acts">
-      {list !== 'suitable' && <button type="button" className={MRT_BTN} data-testid="tri-to-suit" title={t('tri.toSuit')} onClick={(e) => stop(e, () => onPatch(index, moveTriage(part, 'suitable')))}>{t('tri.toSuit')}</button>}
-      {list !== 'notSuitable' && <button type="button" className={MRT_BTN} data-testid="tri-to-not" title={t('tri.toNot')} onClick={(e) => stop(e, () => onPatch(index, moveTriage(part, 'notSuitable')))}>{t('tri.toNot')}</button>}
-      <button type="button" className={MRT_BTN} data-testid="tri-print" title={t('tip.printPart')} onClick={(e) => stop(e, () => onPrint(index))}>{t('top.print')}</button>
-      <button type="button" className={MRT_BTN} data-testid="tri-save" title={t('tip.savePdfPart')} onClick={(e) => stop(e, () => onSave(index))}>{t('top.savePdf')}</button>
+      <MoreMenu testid={'tri-more-' + index} items={[
+        list !== 'suitable' && { testid: 'tri-to-suit', label: t('tri.toSuit'), onClick: () => onPatch(index, moveTriage(part, 'suitable')) },
+        list !== 'notSuitable' && { testid: 'tri-to-not', label: t('tri.toNot'), onClick: () => onPatch(index, moveTriage(part, 'notSuitable')) },
+        { testid: 'tri-print', label: t('top.print'), tip: t('tip.printPart'), onClick: () => onPrint(index) },
+        { testid: 'tri-save', label: t('top.savePdf'), tip: t('tip.savePdfPart'), onClick: () => onSave(index) },
+      ]} />
     </td>
   </MrtRow>;
 }
@@ -32,12 +34,14 @@ export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPri
   return <div className="qr-triage" data-testid="triage">
     <div className="qr-tri-bar">
       <span className="qr-tri-done" data-testid="tri-processed">{t('tri.processed', { d: c.processed, n: c.total })}</span>
-      <button type="button" className={MRT_BTN} data-testid="tri-print-pack" title={t('tip.printPack')} onClick={onPrintPack}>{t('tri.printPack')}</button>
-      <button type="button" className={MRT_BTN} data-testid="tri-save-pack" title={t('tip.savePack')} onClick={onSavePack}>{t('tri.savePack')}</button>
       <button type="button" className={MRT_BTN_PRIMARY} data-testid="tri-save-each" title={t('tip.saveEach')} onClick={() => setAsk(true)}>{t('tri.saveEach')}</button>
+      <MoreMenu testid="tri-pack-more" items={[
+        { testid: 'tri-print-pack', label: t('tri.printPack'), tip: t('tip.printPack'), onClick: onPrintPack },
+        { testid: 'tri-save-pack', label: t('tri.savePack'), tip: t('tip.savePack'), onClick: onSavePack },
+      ]} />
     </div>
-    <MrtTable className="qr-tri-tab" cols={<colgroup><col style={{ width: '5.2rem' }} /><col style={{ width: '22%' }} /><col /><col style={{ width: '7rem' }} /><col style={{ width: '28%' }} /></colgroup>}>
-      <MrtHead cells={[t('tri.includeCol'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), '']} />
+    <MrtTable className="qr-tri-tab" cols={<colgroup><col style={{ width: '5.2rem' }} /><col style={{ width: '22%' }} /><col /><col style={{ width: '7rem' }} /><col style={{ width: '8rem' }} /></colgroup>}>
+      <MrtHead cells={[t('tri.includeCol'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), t('gd.more')]} />
       <tbody>
         {(['suitable', 'notSuitable', 'unknown'] as const).map((k) => <React.Fragment key={k}>
           <MrtGroup colSpan={COLS} testid={'tri-' + k}>{t('tri.' + k)} · {lists[k].length}</MrtGroup>

@@ -41,7 +41,7 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
   };
   const COLS = 5;
   return <div className="qr-panel" data-testid="problems-panel">
-    <div className="qr-panel-h"><span className="pn">{part.partNo || part.drawing.name}</span></div>
+    <div className="qr-panel-h">{t('gd.docsNow')}</div>
     <div className="qr-scroll qr-boxes">
       <Box title={t('wz.secUploads') + ' (' + uploads.filter((x: any) => x.status !== 'done').length + ')'} testid="box-uploads">
         <MrtTable className="qr-prob-tab">
