@@ -135,7 +135,7 @@ test('disabled buttons: white fill, dark text, dashed border, no grey fade, tool
   assert.ok(/nw \? t\(nw\)/.test(foot));
 });
 
-test('i18n: close / overflow / disabled keys in EN and HE; HE tab keys have no Latin; version 0.1.14', () => {
+test('i18n: close / overflow / disabled keys in EN and HE; HE tab keys have no Latin; version 0.1.15', () => {
   const en = JSON.parse(src('src/i18n/en.json').replace(/^\uFEFF/, ''));
   const he = JSON.parse(src('src/i18n/he.json').replace(/^\uFEFF/, ''));
   for (const k of ['tab.close', 'tab.closeAll', 'tab.closeOthers', 'tab.more', 'tab.discard', 'tab.closeUnsaved', 'tab.closeAllUnsaved', 'st.closeAll', 'st.closeAllTip', 'tip.tabMore', 'dis.nothingToPdf']) {
@@ -146,5 +146,5 @@ test('i18n: close / overflow / disabled keys in EN and HE; HE tab keys have no L
   assert.strictEqual(en['tab.more'], 'More jobs');
   assert.strictEqual(en['tab.discard'], 'Do not save');
   for (const k of Object.keys(he).filter((k) => k.startsWith('tab.'))) assert.doesNotMatch(he[k], /[A-Za-z]/, k);
-  assert.strictEqual(JSON.parse(src('package.json')).version, '0.1.14');
+  assert.strictEqual(JSON.parse(src('package.json')).version, '0.1.15');
 });
