@@ -259,7 +259,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   res.ckHidden = { count: hiddenCells.length, sample: hiddenCells.slice(0, 8).map((x) => x.text) };
   const partPanel = document.querySelector('[data-testid=step2-part] [data-testid=breakdown-panel]');
   const ckTab = document.querySelector('table.qr-ck-tab');
-  const ckVisible = !!(partPanel && partPanel.getBoundingClientRect().width > 8 && ckTab && ckTab.getBoundingClientRect().width > 8 && getComputedStyle(ckTab).display !== 'none');
+  const ckVisible = !!(partPanel && partPanel.getBoundingClientRect().width >= 650 && ckTab && ckTab.getBoundingClientRect().width > 8 && getComputedStyle(ckTab).display !== 'none');
   if (strictClip && ckVisible) {
     const val = ckTab.querySelector('td.qr-ck-val');
     const src = ckTab.querySelector('td.qr-ck-src-cell') || ckTab.querySelector('.qr-ck-where');
