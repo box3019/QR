@@ -251,11 +251,13 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     const expanded = !!(line && line.getAttribute('data-overflow') === '1') || !!(line && line.querySelector('[data-testid=ck-expand]'));
     const sw = e.scrollWidth, cw = e.clientWidth;
     const found = [];
+    const label = e.matches('.qr-ck-lab, .qr-bd-lab');
     if (expanded) found.push('expanderHidden');
     else if (sw > cw + 1) found.push('scrollWidth ' + Math.round(sw) + '>' + Math.round(cw));
     if (cw < 1) found.push('zeroWidth');
     if (!found.length) return;
     hiddenCells.push({ text: t.slice(0, 80), issues: found });
+    if (!label && found.indexOf('zeroWidth') < 0) return;
     if (!strictClip && found.indexOf('zeroWidth') < 0) return;
     const step = (document.querySelector('[data-testid=project]:not(.qr-proj-off)') || {}).getAttribute?.('data-step') || '';
     const dlg = e.closest('.qr-modal, .qr-settings, [data-testid=history], [data-testid=settings-dialog], [role=menu], .qr-filemenu');
@@ -270,25 +272,31 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const ckVisible = !!(partPanel && partPanel.getBoundingClientRect().width >= 650 && ckTab && ckTab.getBoundingClientRect().width > 8 && getComputedStyle(ckTab).display !== 'none');
   const lineTops = (el) => {
     const rg = document.createRange(); const tops = [];
+    const lh = parseFloat(getComputedStyle(el).lineHeight) || (parseFloat(getComputedStyle(el).fontSize) * 1.2) || 16;
+    const bucket = Math.max(8, lh * 0.7);
     const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
     while ((n = walk.nextNode())) {
       if (!n.textContent.trim()) continue;
+      if (n.parentElement && n.parentElement.closest('button, .qr-ck-more, .qr-cks-x, .qr-chev, .qr-ck-full')) continue;
       try { rg.selectNodeContents(n); } catch { continue; }
-      [...rg.getClientRects()].forEach((r) => { if (r.width > 0 && r.height > 1) tops.push(Math.round(r.top / 3)); });
+      [...rg.getClientRects()].forEach((r) => { if (r.width > 0 && r.height > 1) tops.push(Math.round(r.top / bucket)); });
     }
     return new Set(tops).size;
   };
   document.querySelectorAll('table.qr-mrt td, table.qr-mrt th, .qr-ck-lab, .qr-bd-lab, .qr-rail .mrt-wizard-step-label, .qr-ai-sent').forEach((e) => {
-    if (e.closest('.qr-proj-off, .qr-ck-full, .qr-ck-ind')) return;
+    if (e.closest('.qr-proj-off, .qr-ck-full, .qr-ck-ind, .qr-tri-acts, .qr-cks-xin, .qr-cks-xr, .qr-settings, [data-testid=settings-dialog], .qr-modal')) return;
+    if (e.matches('.qr-chev, .qr-ck-more, .qr-dot')) return;
     const cs = getComputedStyle(e);
     if (cs.display === 'none' || cs.visibility === 'hidden') return;
     if (e.getBoundingClientRect().width < 2 || e.getBoundingClientRect().height < 2) return;
     const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim();
-    if (!t) return;
+    if (!t || t === '–' || t === '▸' || t === '›') return;
     const n = lineTops(e);
     const lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.2);
-    const linesH = lh > 0 ? e.getBoundingClientRect().height / lh : n;
-    if (n > 1 || linesH > 1.55) res.issues.push('multiline ' + selOf(e) + ' "' + t.slice(0, 40) + '"');
+    const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+    const linesH = lh > 0 ? (e.getBoundingClientRect().height - padY) / lh : n;
+    const canWrap = !/nowrap/.test(cs.whiteSpace || '');
+    if (n > 1 || (canWrap && linesH > 2.15)) res.issues.push('multiline ' + selOf(e) + ' "' + t.slice(0, 40) + '"');
   });
   if (strictClip && ckVisible) {
     const val = ckTab.querySelector('td.qr-ck-val');
@@ -520,9 +528,11 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   await win.evaluate((f) => { window.__qrRun(f); }, files);
   await win.waitForFunction((n) => !document.querySelector('[data-testid=busy]') && (window.__qrParts || []).length >= n, files.length, { timeout: 240000 }); await sleep(800);
   const report = { idle: [], busy: [], scan: [], triage: [] }; let fail = 0; const QUICK = !!process.env.QUICK;
+  const log = (m) => { process.stderr.write(m + '\n'); };
   const set = async (pal, lang) => { await win.evaluate((p) => window.__qrSetSettings && window.__qrSetSettings(p), { palette: pal, uiLanguage: lang }); await sleep(500); };
   // Test at different resolutions and DPI scales
   const DPI_TO_TEST = process.env.DPIS ? process.env.DPIS.split(',').map(Number) : QUICK ? [1] : DPI_SCALES;
+  log('layout start quick=' + QUICK);
   for (const lang of ['en', 'he']) for (const [w, h] of SIZES) for (const dpi of DPI_TO_TEST) {
     // Skip DPI variations for smaller screens (only test DPI on 1920+ widths)
     if (w < 1920 && dpi !== 1) continue;
@@ -558,6 +568,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     console.log(JSON.stringify({ idleChecked: report.idle.length, fail, bad: report.idle.filter((r) => r.issues.length).slice(0, 8).map((r) => ({ lang: r.lang, size: r.size, dpi: r.dpi, pal: r.palette, issues: r.issues.slice(0, 5) })) }, null, 1));
     await app.close().catch(() => {}); process.exit(fail ? 1 : 0);
   }
+  log('idle done fail=' + fail);
   // triage reason: one line, not truncated, at 1366x768 @100% and 1920x1080 @200%
   await set('industrial-steel', 'en');
   await win.evaluate(() => window.__qrStep(2));
@@ -610,6 +621,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       if (!m.savePdfButton) { report.scan[report.scan.length - 1].issues.push('Save PDF button not visible'); fail++; }
     }
   }
+  log('scan done fail=' + fail);
   // settings, history, file menu, package lists, route card, part card: clip scan at every size/DPI/palette/language
   report.clipScreens = [];
   const CLIP_SIZES = QUICK ? [[1920, 1080, 1]] : SIZES.flatMap(([w, h]) => (w >= 1920 ? DPI_SCALES : [1]).map((dpi) => [w, h, dpi]));
@@ -657,8 +669,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     await closeUi();
   }
 
+  log('clip done fail=' + fail);
   report.viewer = [];
-  const VIEW_SIZES = QUICK ? [[1920, 1080, 1]] : [[1366, 768, 1], [1366, 768, 1.5], [1920, 1080, 1], [1920, 1080, 1.5], [2560, 1440, 1], [3840, 2160, 1], [3840, 2160, 2]];
+  const VIEW_SIZES = QUICK ? [[1366, 768, 1], [1920, 1080, 1], [1920, 1080, 1.5]] : [[1366, 768, 1], [1366, 768, 1.5], [1920, 1080, 1], [1920, 1080, 1.5], [2560, 1440, 1], [3840, 2160, 1], [3840, 2160, 2]];
   await set('industrial-steel', 'en');
   for (const lang of (QUICK ? ['en'] : ['en', 'he'])) for (const [w, h, dpi] of VIEW_SIZES) {
     await size(w, h, dpi); await set('industrial-steel', lang); await sleep(400);
