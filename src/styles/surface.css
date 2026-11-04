@@ -23,10 +23,10 @@
 .qr-root .qr-step-help:focus-visible { outline: 2px solid var(--mrt-focus); outline-offset: 1px; }
 
 /* footer: light strip, compact buttons, legible disabled state */
-.qr-root .qr-wiz-footer { background: var(--mrt-header-bg); border-top: 1px solid var(--mrt-chrome-border); padding: 0.625rem 1rem; }
+.qr-root .qr-wiz-footer { background: var(--mrt-header-bg); border-top: 1px solid var(--mrt-chrome-border); padding: 0.75rem 1rem; }
 
-/* stepper: 22px markers, 40px rows, a connector that stops short of the circles (never through them) */
-.qr-root .qr-rail .mrt-wizard-step { min-height: 40px !important; height: 40px !important; max-height: 40px !important; align-items: center; gap: 0.625rem; padding: 0 0.6rem !important; border-radius: var(--qr-radius); }
+/* stepper: MRT liquid-glass padding (not a locked 40px chip) */
+.qr-root .qr-rail .mrt-wizard-step { min-height: 0; height: auto; max-height: none; align-items: center; gap: 0.625rem; padding: 0.55rem 0.6rem; border-radius: var(--mrt-radius, 6px); }
 .qr-root .qr-rail .mrt-wizard-step-item { position: relative; }
 .qr-root .qr-rail .mrt-wizard-step-text { justify-content: center; }
 .qr-root .qr-rail .mrt-wizard-step-marker { width: 22px; height: 22px; min-width: 22px; min-height: 22px; font-size: 11px; font-weight: 700; line-height: 1; border-radius: 50% /* circle */; border: 1px solid var(--mrt-border-strong); background: var(--mrt-surface); color: var(--mrt-text-muted); }

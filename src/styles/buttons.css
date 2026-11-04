@@ -19,11 +19,12 @@
   --qr-btn-bg-hover: #f2f2f7;
   --qr-btn-border-hover: rgba(60, 60, 67, 0.75);
   /* primary: filled with the default slate accent (themes.css retints to --mrt-accent) */
-  --qr-btn-primary-bg: #48484a;
+  --qr-btn-primary-h: 42px;
+  --qr-btn-primary-bg: #87878c;
   --qr-btn-primary-fg: #ffffff;
-  --qr-btn-primary-border: #48484a;
-  --qr-btn-primary-bg-hover: #3a3a3c;
-  --qr-btn-primary-border-hover: #1c1c1e;
+  --qr-btn-primary-border: #757578;
+  --qr-btn-primary-bg-hover: #9e9ea1;
+  --qr-btn-primary-border-hover: #9e9ea1;
   /* states */
   --qr-btn-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #1c1c1e;
   --qr-btn-disabled-opacity: 1;
@@ -46,10 +47,17 @@
   transition-duration: var(--qr-btn-transition);
   cursor: pointer;
 }
-.qr-btn, .qr-root .mrt-btn:is(.mrt-action-btn--row, .mrt-action-btn--dialog-secondary, .mrt-action-btn--dialog-primary) {
+.qr-btn, .qr-root .mrt-btn:is(.mrt-action-btn--row, .mrt-action-btn--dialog-secondary) {
   height: auto !important; min-height: var(--qr-btn-h) !important; max-height: none;
   padding-block: 0 !important; padding-inline: var(--qr-btn-pad-x) !important;
   font-size: var(--qr-btn-fs) !important; line-height: var(--qr-btn-lh) !important;
+}
+.qr-btn-primary, .qr-root .mrt-btn.mrt-action-btn--dialog-primary, .qr-root .mrt-btn.mrt-btn-primary:not(.mrt-action-btn--row):not(.mrt-topbar-cmd) {
+  height: var(--qr-btn-primary-h) !important; min-height: var(--qr-btn-primary-h) !important; max-height: var(--qr-btn-primary-h);
+  padding-block: 0 !important; padding-inline: 1.25rem !important;
+  font-size: 14px !important; line-height: 1.2 !important;
+  border-radius: var(--mrt-radius, 6px) !important;
+  border-width: 1px !important;
 }
 .qr-root .mrt-btn:not(.mrt-topbar-cmd) { font-size: var(--qr-btn-fs) !important; line-height: var(--qr-btn-lh) !important; }
 .qr-btn:hover:not(:disabled), .qr-btn:active:not(:disabled),
@@ -62,13 +70,21 @@
 }
 .qr-btn-primary:hover:not(:disabled), .qr-btn-primary:active:not(:disabled),
 .qr-root .mrt-btn.mrt-btn-primary:hover:not(:disabled), .qr-root .mrt-btn.mrt-btn-primary:active:not(:disabled) {
-  background: var(--qr-btn-primary-bg-hover) !important; border-color: var(--qr-btn-primary-border-hover) !important;
+  background: var(--qr-btn-primary-bg-hover) !important; border-color: var(--qr-btn-primary-bg-hover) !important;
+  color: var(--qr-btn-primary-fg) !important;
 }
 .qr-btn:focus-visible, .qr-root .mrt-btn:not(.mrt-action-btn--dialog-secondary):focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--qr-btn-focus-ring) !important; }
 .qr-btn:disabled, .qr-root .mrt-btn:disabled, .qr-root button:disabled {
   opacity: var(--qr-btn-disabled-opacity) !important; cursor: default !important; pointer-events: auto !important; filter: none !important;
   background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important;
   border-color: var(--qr-btn-disabled-border) !important; border-style: dashed !important;
+}
+.qr-btn-primary:disabled, .qr-root .mrt-btn.mrt-btn-primary:disabled, .qr-root button.mrt-btn-primary:disabled {
+  opacity: 0.48 !important; filter: grayscale(0.12) !important; cursor: default !important;
+  background: var(--mrt-btn-primary-bg, var(--qr-btn-primary-bg)) !important;
+  color: var(--mrt-btn-primary-fg, var(--qr-btn-primary-fg)) !important;
+  border-color: var(--mrt-btn-primary-border, var(--qr-btn-primary-border)) !important;
+  border-style: solid !important;
 }
 /* Same shape for badges, chips and status labels (colored fills allowed). */
 .qr-chip, .qr-badge, .qr-status, .qr-brand-badge {

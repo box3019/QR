@@ -21,8 +21,8 @@ export function QuestionsDialog({ parts, lang0, onClose }: any) {
     <span className="qr-muted" data-testid="export-lang">{t('q.exportLang', { lang: lang === 'he' ? t('q.he') : t('q.en') })}</span>
     <button className={MRT_BTN_PRIMARY} data-testid="export-questions" title={t('tip.export')} onClick={async () => { const r = await qr().exportQuestions(parts, lang); if (r) { setMsg(t('q.saved', { path: r.pdf })); qr().openPath(r.pdf); } }}>{t('q.export')}</button></>}>
     <div className="qr-row" style={{ marginBottom: 8 }}>{t('q.language')}
-      <button className={lang === 'he' ? MRT_BTN_PRIMARY : MRT_BTN} data-testid="lang-he" title={t('tip.lang')} onClick={() => setLang('he')}>עברית</button>
-      <button className={lang === 'en' ? MRT_BTN_PRIMARY : MRT_BTN} data-testid="lang-en" title={t('tip.lang')} onClick={() => setLang('en')}>English</button></div>
+      <button className={MRT_BTN} data-testid="lang-he" title={t('tip.lang')} onClick={() => setLang('he')}>עברית</button>
+      <button className={MRT_BTN} data-testid="lang-en" title={t('tip.lang')} onClick={() => setLang('en')}>English</button></div>
     <iframe title="questions" srcDoc={html} style={{ width: '100%', height: '62vh', border: '1px solid #cbd5e1', borderRadius: 6, background: '#fff' }} />
   </Modal>;
 }

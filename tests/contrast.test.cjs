@@ -37,13 +37,21 @@ test('text tokens are >= 4.5:1 on every surface and on the canvas, in every them
   assert.deepStrictEqual(bad, []);
 });
 test('button text/background pairs, including hover and disabled, are >= 4.5:1 in every theme (fills composited over the card)', () => {
-  const P = [['--qr-btn-fg', '--qr-btn-bg'], ['--qr-btn-fg', '--qr-btn-bg-hover'], ['--qr-btn-primary-fg', '--qr-btn-primary-bg'], ['--qr-btn-primary-fg', '--qr-btn-primary-bg-hover'],
+  const P = [['--qr-btn-fg', '--qr-btn-bg'], ['--qr-btn-fg', '--qr-btn-bg-hover'],
     ['--qr-btn-disabled-fg', '--qr-btn-disabled-bg'], ['--qr-disabled-fg', '--qr-disabled-bg'], ['--mrt-btn-secondary-fg', '--mrt-btn-neutral-fill'], ['--mrt-btn-secondary-fg', '--mrt-btn-neutral-fill-hover']];
   const bad = [];
   for (const th of THEMES) for (const base of ['--mrt-surface', '--mrt-surface-muted', '--mrt-bg']) { const under = col(th, base);
     for (const [f, b] of P) { const r = ratio(col(th, f), col(th, b, under)); if (r < 4.5) bad.push(`${th.id} ${f} on ${b} over ${base}: ${r.toFixed(2)}`); } }
   assert.deepStrictEqual(bad, []);
   assert.strictEqual(tokens('buttons.css')['--qr-btn-disabled-opacity'], '1', 'disabled controls must not fade below AA with opacity');
+});
+test('primary command buttons use MRT filled mixHex tokens (white label)', () => {
+  const L = THEMES.find((x) => x.id === 'aris-glass/slate');
+  assert.strictEqual(L.T['--mrt-btn-primary-bg'], '#87878c');
+  assert.strictEqual(L.T['--mrt-btn-primary-fg'], '#ffffff');
+  assert.strictEqual(L.T['--mrt-btn-primary-border'], '#757578');
+  assert.strictEqual(L.T['--mrt-btn-primary-bg-hover'], '#9e9ea1');
+  for (const th of THEMES) assert.strictEqual(th.T['--qr-btn-primary-fg'], '#ffffff', th.id);
 });
 test('status dots, button borders and input borders are >= 3:1 on the card in every theme (non-text contrast)', () => {
   const bad = [];

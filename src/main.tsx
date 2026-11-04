@@ -20,4 +20,5 @@ import './styles/surface.css';
 import './styles/themes.css';
 import './styles/layers.css';
 import './styles/mrtTable.css';
+import './styles/mrtChrome.css';
 import './styles/video.css';

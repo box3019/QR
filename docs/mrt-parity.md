@@ -1,64 +1,61 @@
-# QR ↔ MRT visual mapping
+# QR ↔ MRT visual mapping (MRT v9.0.60, commit b4daa1b)
 
-Sister app: [MRT-Inspect](https://github.com/box3019/MRT-Inspect). That repository is private from this environment, so this mapping is from QR’s already-measured MRT tokens (`docs/design-tokens.md`), the reimplemented stylesheet `src/styles/mrtLiquidGlass.css` (report-card / feature-report tables, wizard chrome), and the screenshot of QR v0.1.16. No MRT modules were copied.
+Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimplements the same numbers and patterns in its own files. No ERP, PIN, user/profile, or price modules.
 
-QR reimplements the same patterns in `src/ui/MrtTable.tsx` and `src/styles/mrtTable.css`.
+## Source → QR
 
-## Shared tokens
-
-| Token | MRT (measured / liquid-glass) | QR |
+| MRT (v9.0.60) | Role | QR reimplementation |
 |---|---|---|
-| Canvas | `--mrt-bg` `#ebebed` | same |
-| Surface / table body | `--mrt-surface` `#ffffff` | same |
-| Header / group / chrome | `--mrt-surface-muted` / `--mrt-header-bg` `#f5f5f7` | same |
-| Rail | `--qr-rail-bg` `#fafafb` | same |
-| Text / muted | `#1c1c1e` / `#636366` | same |
-| Grid line | `--mrt-grid-border` | 1px on every cell + one outer shell |
-| Cell padding | `--mrt-report-cell-px/py` (8/4; density via `--qr-cell-px` / `--qr-row-py`) | same |
-| Radius | panels 8–10px, buttons 6px | same |
-| Type | SF Pro / Segoe, table 0.875rem, group 1rem/700 | `--qr-fs-sm` / `--qr-fs-md` |
-| Status | red critical, green checked, never a filled row | `--qr-st-bad` / `--qr-st-ok` |
+| `MRT_UI_STANDARDS.md` | Dialog: fixed header, scroll body, fixed footer; no sky-blue focus; no horizontal scroll | `src/styles/mrtChrome.css`, `src/ui/common.tsx` |
+| `src/styles/tokens.ts` | Geometry: radius 6px, button 40px, topbar 60px, sidebar 240px; table type 11/13/14px | `src/styles/mrtTable.css`, `src/styles/buttons.css` |
+| `src/tokens.ts` | Re-export of `styles/tokens` | (not copied as a module) |
+| `src/theme/mrtBuiltinPaletteTokens.ts` | Light glass: canvas `#ebebed`, surface `#fff`, muted `#f5f5f7`, grid `#64748b` / `#334155`, text `#1c1c1e` / `#636366` | `src/styles/qrPalette.css` |
+| `src/theme/mrtPaletteTokens.ts` `derivePrimaryButtonCssVars` | mixHex graphite `#8e8e93` + accent; fg `#ffffff`; hover/border mix; disabled opacity 0.48 | `qrPalette.css` / `themes.css` / `.mrt-btn-primary` |
+| `src/index.css` | `--mrt-radius: 6px`; report thead sticky, header-bg, muted, weight 700 | `src/styles/mrtTable.css` |
+| `src/styles/mrtTableFocus.ts` | Report TH: min-h 42px, px-2 py-1, 15px bold uppercase tracking 0.04em, grid-border-strong; TD: 15px semibold, 1px grid | `src/styles/mrtTable.css` (`.qr-mrt`) |
+| `src/ui/mrtUtilityShell.ts` | Utility wrap + TH/TD (11px uppercase / 13px semibold, px-2 py-2 / py-1.5); footer min-h 3.25rem; header 17px/52px | `.qr-mrt.qr-wsum-table`, `.qr-modal-*` |
+| `src/ui/mrtButtons.ts` | Command `h-10` 13px; row `h-8`; topbar column | `src/ui/mrtButtons.ts` |
+| `src/ui/mrtDialogButtonStandard.tsx` | Dialog/wizard buttons 42px / 14px / px-5; wizard nav 120×42; wizard action 40×148 | `MRT_BTN_PRIMARY` + `mrtChrome.css` |
+| `src/ui/WizardHeaderSummaryTable.tsx` | Rail key/value: label `th`, value `td`, em-dash when empty | `src/components/wizard/RailContext.tsx` |
+| `src/components/MrtCmmProgramWizard.tsx` | Rail + steps + main header + body + footer; no PIN/ERP | `ProjectView` / `Stepper` / `StepHeader` / `WizardFooter` |
+| `mrtLiquidGlass.css` `.mrt-wizard-*` | Rail 280px; header pad 0.875/1.25rem; title 1rem/600; body pad 1.25rem; footer 34px buttons, flex-end | `src/styles/mrtChrome.css`, `src/styles/wizard.css` |
+| `src/components/MrtFeatureGroupHeaderRow.tsx` | Group cells: min-h 42px, 1px `--mrt-grid-border`, px-2 py-1, 15px/600; chevron 34px | `.qr-mrt-gh`, `.qr-row-menu` |
+| `src/components/FeatureReportTable.tsx` | Empty body: `py-8 text-center`; `border-collapse` + card radius 6px | `.qr-mrt-empty`, `.qr-mrt-shell` |
+| `src/components/MrtReportTableRowsMenu.tsx` | Compact overflow for row actions (not a labelled button column) | `MoreMenu row` |
+| `src/constants/liveReportLayout.ts` | One card shell, one border (`mrt-report-card`) | `.qr-mrt-shell` |
+| `src/ui/MrtScreenShell.tsx` | Cover/gateway only (login). **Not used** — PIN/session chrome stays out of QR | — |
+| `src/ui/MrtPinInput.tsx`, ERP/user APIs | **Excluded** | — |
 
-## Table (the defect in v0.1.16)
+## Copied numeric values
 
-MRT report tables sit in a **card shell** with **one outer border**. Inner cells use `border-collapse` and a **uniform 1px grid**. First/last cell drop the outer edge so it does not double the shell. Group rows are a muted band across all columns — **no extra inset bar** (that bar is what stepped the left edge in Hebrew RTL). Selection is a **tint only**, never `outline` (outline drew a second, shorter rectangle on some rows).
-
-QR v0.1.16 used `table-layout: fixed; width: 100%`, a 5.2rem first column, `box-shadow: inset 3px 0` on group rows (physical left, so RTL left edge broke), and `outline` on the active row. Status / More were pinned to the far inline-end, leaving a hollow value column.
-
-| Pattern | MRT | QR now |
+| Item | MRT | QR |
 |---|---|---|
-| Outer frame | `.mrt-report-card` 1px `--mrt-grid-border` | `.qr-mrt-shell` |
-| Grid | collapse, 1px every side | `.qr-mrt th, td` |
-| Column sizing | content; leftover width after the last real column | `fit="content"` + `width: max-content; max-width: 100%` |
-| Group row | muted band, same edge as data rows | `.qr-mrt-gh` — no inset bar |
-| Empty group | muted empty-sample fill | `.qr-mrt-empty` / `MrtEmpty` |
-| Row actions | one overflow menu, not a labelled button column | `MoreMenu row` (icon only, no “עוד” header) |
-| Active row | fill / `--mrt-grid-selection-fill` | background tint, `outline: none` |
+| Grid line | `--mrt-grid-border` `#64748b`, strong `#334155` | same in `qrPalette.css` |
+| Report header | 42px min, 15px/700, uppercase, tracking 0.04em, `#f3f4f6` / `--mrt-header-bg` | `.qr-mrt thead th` |
+| Report / group cell | 42px min, 15px/600, 1px grid, px-2 py-1 | `th`/`td` / `.qr-mrt-gh` |
+| Utility cell | 13px/600, px-2 py-1.5 | rail / compact tables |
+| Card | 1px grid, radius `--mrt-radius` (6px default) | `.qr-mrt-shell` |
+| Wizard rail | 280px | `--mrt-wizard-rail-width` |
+| Wizard header | 0.875rem 1.25rem, title 1rem/600 | `.qr-wiz-head` |
+| Wizard body | 1.25rem pad, surface | `.qr-wiz-main` |
+| Wizard footer | header-bg, top border, 34px / 6px 12px / 13px buttons, end-aligned | `.qr-wiz-footer` |
+| Dialog header | min-h 52px, 17px/700 | `.qr-modal-h` |
+| Dialog footer | min-h 3.25rem, px-6 py-4 | `.qr-modal-f` |
+| Row menu | 34×34, radius 6px | `.qr-row-menu` |
+| Primary button | mixHex `#8e8e93`+`#48484a`@0.1 → fill `#87878c`, text `#ffffff`, border `#757578`, hover `#9e9ea1`; radius `var(--mrt-radius,6px)`; height 42px; disabled opacity 0.48 / grayscale 0.12 | `.mrt-btn-primary` |
+| Secondary button | fill `#ffffff` / `--mrt-btn-neutral-fill`, text `#1c1c1e`, hover `#f2f2f7` | `.mrt-btn-secondary` |
+| History empty | Feature report empty: table + `py-8` centered cell | `HistoryDialog` `MrtEmpty` |
 
-## Chrome and screen flow
-
-| Surface | MRT | QR |
-|---|---|---|
-| Page header | title 16px/600, header fill, 1px bottom | `.qr-wiz-head` |
-| Side rail | muted rail, 22px circle step, 40px row, current = inline-start accent | `.qr-rail` / `.mrt-wizard-step` |
-| Footer | chrome fill, top border, Cancel / Next / Close | `.qr-wiz-footer` |
-| Buttons | 32px, 6px radius, 2px border, light fill | `.mrt-btn` / `src/styles/buttons.css` |
-| Dialogs | surface + strong border + shadow | `.qr-modal` |
-
-Guided flow stays v0.1.16 (package triage → one-part check → documents → summary). Only the skin changes.
+QR keeps: guided check, locate, per-part PDF, package sort, auto-update, Hebrew RTL + English LTR, no ellipsis, no horizontal scroll, 4K@200%. Exactly one filled primary command per screen/dialog.
 
 ## Screen checklist
 
-| Screen | Table / chrome | Notes |
+| Screen | MRT pattern | QR |
 |---|---|---|
-| Package list (step 2 list) | `TriageView` + `MrtShell` + content columns | Row menu: move / print / save PDF |
-| Guided check | `Checklist` `qr-ck-tab` fill + locate | Locate and overflow expander unchanged |
-| Documents | `ProblemsPanel` `qr-prob-tab` | Empty rows use `MrtEmpty` |
-| Summary | `qr-cks-tab` auto, tokens | Tiles + cards unchanged in flow |
-| Settings | catalog / customers tables | Same grid skin |
-| History | `qr-hist-t` + row menu for remove | Search and reopen unchanged |
-| Dialogs / import / loaded / rail | `MrtTable` | Rail stays a compact key/value card |
-
-## Rules that must not regress
-
-No abbreviations, no ellipsis or wrapping in labels, no horizontal scroll, 4K@200%, Hebrew RTL + English LTR, red critical / green checked. Locate, per-part PDF, package sort, and auto-update stay as in v0.1.16.
+| Package list | Report card + utility/report grid + row menu | `TriageView` + `MrtTable` |
+| Guided check | Report columns, 42px rows, locate stays QR | `Checklist` `qr-ck-tab` |
+| Documents | Same grid, empty `py-8` | `ProblemsPanel` |
+| Summary | Card + auto table | `ChecklistSummary` |
+| Settings | Utility table wrap | catalog / customers |
+| History / dialogs | Utility header/footer + grid; empty `py-8` in table | `HistoryDialog` `MrtEmpty`, `Modal` |
+| Rail / footer / header | CMM wizard chrome | `RailContext`, `Stepper`, `StepHeader`, `WizardFooter` |
