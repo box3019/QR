@@ -166,7 +166,7 @@ test('per-part PDF file name is the part number plus date; package print uses mo
   assert.match(proj, /savePdfEach/);
 });
 
-test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.16', () => {
+test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.17', () => {
   const tri = src('src/components/wizard/TriageView.tsx');
   assert.match(tri, /tri-print/);
   assert.match(tri, /tri-save/);
@@ -183,7 +183,7 @@ test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.16',
   assert.match(main, /partPdfFileName/);
   assert.match(main, /mode === 'package'/);
   const pkg = JSON.parse(src('package.json'));
-  assert.equal(pkg.version, '0.1.16');
+  assert.equal(pkg.version, '0.1.17');
   assert.ok(pkg.dependencies['node-unrar-js']);
   const en = JSON.parse(src('src/i18n/en.json')); const he = JSON.parse(src('src/i18n/he.json'));
   for (const k of ['tri.suitable', 'tri.notSuitable', 'tri.unknown', 'tri.toSuit', 'tri.toNot', 'tri.saveEach', 'tri.saveEachAsk', 'tri.saveChecked', 'tri.saveSuitable', 'tri.saveAll', 'st.mat.shopHelp', 'pdf.savedEach']) {
