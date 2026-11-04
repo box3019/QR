@@ -32,8 +32,8 @@ test('route card table uses MrtTable and hides a repeated source column', () => 
   assert.match(v, /qr-rcard-c-ins/);
 });
 
-test('footer actions sit on the start side (left in LTR, right in RTL)', () => {
-  assert.match(rd('src', 'styles', 'wizard.css'), /\.qr-wiz-footer \{[^}]*justify-content:\s*flex-start/);
+test('footer actions sit on the end side (MRT wizard footer)', () => {
+  assert.match(rd('src', 'styles', 'wizard.css'), /\.qr-wiz-footer \{[^}]*justify-content:\s*flex-end/);
 });
 
 test('job tabs keep one chip border; assistant avatar has no frame', () => {

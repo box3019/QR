@@ -113,7 +113,7 @@ export function ChecklistBody({ part, onFocus, focusId }: any) {
     {ev.read && !ev.read.ok && <div className="qr-ck-warn" data-testid="ck-lowread">{t('ck.lowRead')}</div>}
     {ev.zoneEstimated && <div className="qr-muted qr-ck-zn" data-testid="ck-zone-note">{t('ck.zoneNote')}</div>}
     {noCount > 0 && <div className="qr-ck-all"><button type="button" className={MRT_BTN} data-testid="ck-show-all" title={showAll ? t('ck.hideNo') : t('ck.showAll')} onClick={() => setShowAll((v) => !v)}>{showAll ? t('ck.hideNo') : t('ck.showAll')}</button></div>}
-    <MrtTable className="qr-ck-tab" tableRef={box} tabIndex={0} testid="ck-list" cols={<colgroup>
+    <MrtTable shell className="qr-ck-tab" tableRef={box} tabIndex={0} testid="ck-list" cols={<colgroup>
         <col className="qr-ck-c-item" />
         <col className="qr-ck-c-st" />
         <col className="qr-ck-c-val" />

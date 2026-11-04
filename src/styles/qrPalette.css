@@ -7,6 +7,7 @@
   --mrt-workspace-canvas: #ebebed;
   --mrt-surface: #ffffff;
   --mrt-surface-glass: #ffffff;
+  --mrt-radius: 6px;
   --mrt-surface-muted: #f5f5f7;
   --mrt-surface-hover: #f2f2f7;
   --mrt-header-bg: #f5f5f7;
@@ -19,8 +20,8 @@
   --mrt-ui-border-strong: rgba(60, 60, 67, 0.22);
   --mrt-border: rgba(60, 60, 67, 0.14);
   --mrt-border-strong: rgba(60, 60, 67, 0.22);
-  --mrt-grid-border: #636366;
-  --mrt-grid-border-strong: #3a3a3c;
+  --mrt-grid-border: #64748b;
+  --mrt-grid-border-strong: #334155;
   --mrt-info-value-bg: #ffffff;
   --mrt-image-pad-bg: #ffffff;
   --mrt-text: #1c1c1e;

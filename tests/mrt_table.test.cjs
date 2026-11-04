@@ -2,15 +2,18 @@
 const test = require('node:test'); const assert = require('node:assert'); const fs = require('fs'); const path = require('path');
 const R = (...p) => fs.readFileSync(path.join(__dirname, '..', ...p), 'utf8');
 
-test('MRT table skin: one grid, no row outline, no inset bar on table groups', () => {
+test('MRT table skin: report TH/TD 42px 15px, grid #64748b, no row outline, no inset on groups', () => {
   const css = R('src/styles/mrtTable.css');
   assert.match(css, /\.qr-mrt-shell \{/);
   assert.match(css, /border-collapse:\s*collapse/);
-  assert.match(css, /table\.qr-mrt th,\s*\n\.qr-root table\.qr-mrt td \{[^}]*border:\s*1px solid/);
+  assert.match(css, /min-height:\s*42px/);
+  assert.match(css, /font-size:\s*15px/);
+  assert.match(css, /#64748b/);
+  assert.match(css, /border-radius:\s*var\(--mrt-radius, 6px\)/);
   assert.match(css, /qr-mrt-row\[data-active='true'\] \{[^}]*outline:\s*none/);
   assert.match(css, /tr\.qr-mrt-gh th[^}]*box-shadow:\s*none/);
-  assert.match(css, /tr\.qr-mrt-empty td/);
-  assert.match(css, /\.qr-row-menu \{/);
+  assert.match(css, /tr\.qr-mrt-empty td[^}]*padding:\s*2rem/);
+  assert.match(css, /\.qr-row-menu \{[^}]*34px/);
   assert.match(css, /qr-mrt-fit \{[^}]*width:\s*max-content/);
 });
 
@@ -37,6 +40,34 @@ test('MrtTable exposes shell, fit, empty row', () => {
   assert.match(t, /shell \? <div className="qr-mrt-shell">/);
 });
 
-test('stylesheet is loaded after layers so the grid wins', () => {
-  assert.match(R('src/main.tsx'), /layers\.css['"];\s*import '\.\/styles\/mrtTable\.css'/);
+test('stylesheets load last: mrtTable then mrtChrome', () => {
+  const main = R('src/main.tsx');
+  assert.match(main, /layers\.css['"];\s*import '\.\/styles\/mrtTable\.css'/);
+  assert.match(main, /mrtTable\.css['"];\s*import '\.\/styles\/mrtChrome\.css'/);
+});
+
+test('wizard chrome: 280px rail, 34px footer, 52px/17px dialog header, 42px dialog buttons', () => {
+  const chrome = R('src/styles/mrtChrome.css');
+  assert.match(chrome, /--mrt-wizard-rail-width:\s*280px/);
+  assert.match(chrome, /height:\s*34px !important/);
+  assert.match(chrome, /min-height:\s*52px/);
+  assert.match(chrome, /font-size:\s*17px/);
+  assert.match(chrome, /min-height:\s*42px/);
+  assert.match(chrome, /justify-content:\s*flex-end/);
+});
+
+test('palette grid matches MRT light glass', () => {
+  const pal = R('src/styles/qrPalette.css');
+  assert.match(pal, /--mrt-grid-border:\s*#64748b/);
+  assert.match(pal, /--mrt-grid-border-strong:\s*#334155/);
+});
+
+test('docs map real MRT v9.0.60 files onto QR files', () => {
+  const doc = R('docs/mrt-parity.md');
+  assert.match(doc, /mrtTableFocus\.ts/);
+  assert.match(doc, /mrtUtilityShell\.ts/);
+  assert.match(doc, /MrtCmmProgramWizard/);
+  assert.match(doc, /src\/styles\/mrtTable\.css/);
+  assert.match(doc, /src\/styles\/mrtChrome\.css/);
+  assert.match(doc, /MrtPinInput[\s\S]*\*\*Excluded\*\*/);
 });

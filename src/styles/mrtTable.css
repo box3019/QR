@@ -1,5 +1,6 @@
-/* MRT-parity item tables. Loaded last. One continuous shell + uniform 1px grid.
-   Group rows are a muted band (no physical inset bar). Selection is a tint, never outline. */
+/* Values from MRT v9.0.60: src/styles/mrtTableFocus.ts, src/ui/mrtUtilityShell.ts,
+   src/components/MrtFeatureGroupHeaderRow.tsx, src/constants/liveReportLayout.ts.
+   Reimplemented — not imported. */
 
 .qr-mrt-shell {
   flex: 1 1 auto;
@@ -8,11 +9,12 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--mrt-grid-border, var(--mrt-border-strong, rgba(60, 60, 67, 0.22)));
-  border-radius: var(--mrt-radius, 8px);
+  border: 1px solid var(--mrt-grid-border, #64748b);
+  border-radius: var(--mrt-radius, 6px);
   background: var(--mrt-surface, #fff);
   overflow: auto;
   box-sizing: border-box;
+  box-shadow: none;
 }
 .qr-mrt-shell > table.qr-mrt {
   flex: 0 0 auto;
@@ -27,10 +29,11 @@
   table-layout: auto;
   border-collapse: collapse;
   border-spacing: 0;
-  border: 1px solid var(--mrt-grid-border, var(--mrt-border-strong, #64748b));
+  border: 1px solid var(--mrt-grid-border, #64748b);
   background: var(--mrt-surface, #fff);
   color: var(--mrt-text, #1c1c1e);
-  font-size: var(--qr-fs-sm);
+  font-family: var(--mrt-font-family);
+  -webkit-font-smoothing: antialiased;
 }
 .qr-root table.qr-mrt.qr-mrt-fit {
   width: max-content;
@@ -40,71 +43,100 @@
 .qr-root table.qr-mrt thead { display: table-header-group; }
 .qr-root table.qr-mrt tbody { display: table-row-group; }
 .qr-root table.qr-mrt tr { display: table-row; }
-.qr-root table.qr-mrt th,
-.qr-root table.qr-mrt td {
-  display: table-cell;
+
+/* MRT_REPORT_TABLE_TH */
+.qr-root table.qr-mrt thead th {
   box-sizing: border-box;
-  padding: var(--qr-row-py, var(--mrt-report-cell-py, 4px)) var(--qr-cell-px, var(--mrt-report-cell-px, 8px));
+  min-height: 42px;
+  height: 42px;
+  padding: 4px 8px;
   vertical-align: middle;
-  text-align: start;
-  border: 1px solid var(--mrt-grid-border, var(--mrt-border, #64748b));
+  text-align: center;
+  border: 1px solid var(--mrt-grid-border-strong, var(--mrt-grid-border, #334155));
+  background: var(--mrt-header-bg, #f3f4f6);
+  color: var(--mrt-text-muted, #64748b);
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: clip;
-  min-width: 0;
-  font-size: var(--qr-fs-sm);
-  outline: none;
-}
-.qr-root table.qr-mrt thead th {
-  font-size: var(--qr-fs-sm) !important;
-  font-weight: 600 !important;
-  background: var(--mrt-surface-muted, #f5f5f7);
-  color: var(--mrt-text);
+  hyphens: none;
   box-shadow: none !important;
   margin-block-start: 0;
+  user-select: none;
 }
+
+/* Report body + utility body: 42px row, 1px --mrt-grid-border, 15px/600 (mrtTableFocus TD + group cells). */
+.qr-root table.qr-mrt td {
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 4px 8px;
+  vertical-align: middle;
+  text-align: start;
+  border: 1px solid var(--mrt-grid-border, #64748b);
+  background: var(--mrt-surface, #fff);
+  color: var(--mrt-text, #1c1c1e);
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  outline: none;
+}
+
 .qr-root table.qr-mrt tr.qr-mrt-gh th,
 .qr-root table.qr-mrt tr.qr-ck-gh th {
-  font-size: var(--qr-fs-md) !important;
-  font-weight: 700 !important;
-  background: var(--mrt-surface-muted, #f5f5f7) !important;
-  color: var(--mrt-text) !important;
+  min-height: 42px;
+  padding: 4px 8px;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.25;
+  text-align: start;
+  text-transform: none;
+  letter-spacing: 0;
+  background: var(--mrt-header-bg, #f3f4f6) !important;
+  color: var(--mrt-text, #1c1c1e) !important;
+  border: 1px solid var(--mrt-grid-border, #64748b);
   box-shadow: none !important;
-  text-align: start;
 }
+
 .qr-root table.qr-mrt tr.qr-mrt-empty td {
-  color: var(--mrt-sample-empty-text, var(--mrt-text-muted, #636366));
-  background: var(--mrt-sample-empty-bg, color-mix(in srgb, var(--mrt-text-muted) 8%, var(--mrt-surface)));
-  font-weight: 400;
-  font-style: normal;
-  text-align: start;
-  padding-block: 0.45em;
+  min-height: 42px;
+  padding: 2rem 8px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: #475569;
+  background: var(--mrt-surface, #fff);
 }
-.qr-root table.qr-mrt tbody tr.qr-mrt-row:nth-child(even of .qr-mrt-row) {
-  background: color-mix(in srgb, var(--mrt-text-muted) 5%, var(--mrt-surface));
+
+.qr-root table.qr-mrt tbody tr.qr-mrt-row:nth-child(even of .qr-mrt-row) td {
+  background: color-mix(in srgb, var(--mrt-text-muted) 4%, var(--mrt-surface));
 }
-.qr-root table.qr-mrt tbody tr.qr-mrt-row:hover {
+.qr-root table.qr-mrt tbody tr.qr-mrt-row:hover td {
   background: color-mix(in srgb, var(--mrt-accent) 8%, var(--mrt-surface));
 }
+.qr-root table.qr-mrt tbody tr.qr-mrt-row[data-active='true'] td {
+  background: var(--mrt-grid-selection-fill, color-mix(in srgb, var(--mrt-text-muted) 3%, var(--mrt-surface)));
+}
 .qr-root table.qr-mrt tbody tr.qr-mrt-row[data-active='true'] {
-  background: var(--mrt-grid-selection-fill, color-mix(in srgb, var(--mrt-accent) 14%, var(--mrt-surface)));
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Shell: drop the table's outer edges so the card frame is a single line (MRT report-card). */
 .qr-mrt-shell table.qr-mrt thead tr:first-child > th { border-top: 0 !important; }
 .qr-mrt-shell table.qr-mrt tr > *:first-child { border-inline-start: 0 !important; }
 .qr-mrt-shell table.qr-mrt tr > *:last-child { border-inline-end: 0 !important; }
 
-/* Content-sized columns: never stretch a hollow middle and park status/menu at the far end. */
 .qr-root table.qr-mrt col.qr-mrt-c-check { width: 2.1rem; }
 .qr-root table.qr-mrt col.qr-mrt-c-menu { width: 2.1rem; }
 .qr-root table.qr-mrt col.qr-mrt-c-id,
 .qr-root table.qr-mrt col.qr-mrt-c-status { width: 1%; }
 .qr-root table.qr-mrt.qr-mrt-fit col.qr-mrt-c-text { width: auto; }
 
-/* Fill tables that must use the pane (checklist, route card, block details). */
 .qr-root table.qr-mrt.qr-ck-tab,
 .qr-root table.qr-mrt.qr-bd-tab,
 .qr-root table.qr-mrt.qr-rcard-tab {
@@ -113,15 +145,42 @@
   max-width: 100%;
 }
 
-/* Package / parts / history / rail: hug content; leftover space is the shell, not a gap between columns. */
+/* Rail / wizard facts: MRT_UTILITY_TH / MRT_UTILITY_TD + WizardHeaderSummaryTable */
+.qr-root table.qr-mrt.qr-wsum-table,
+.qr-root table.mrt-wizard-summary-table {
+  table-layout: auto;
+  width: 100%;
+}
+.qr-root table.qr-mrt.qr-wsum-table thead th,
+.qr-root table.qr-mrt.qr-wsum-table td:first-child,
+.qr-root table.mrt-wizard-summary-table th {
+  text-align: start;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  background: var(--mrt-surface-muted, #f5f5f7);
+  min-height: 0;
+  height: auto;
+  padding: 0.28rem 0.45rem;
+}
+.qr-root table.qr-mrt.qr-wsum-table td,
+.qr-root table.mrt-wizard-summary-table td {
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 0;
+  padding: 0.28rem 0.45rem;
+  text-overflow: clip;
+}
+
 .qr-root table.qr-mrt.qr-tri-tab,
 .qr-root table.qr-mrt.qr-plist-tab,
 .qr-root table.qr-mrt.qr-hist-t,
 .qr-root table.qr-mrt.qr-recent-tab,
 .qr-root table.qr-mrt.qr-cust-tab,
 .qr-root table.qr-mrt.qr-import-files,
-.qr-root table.qr-mrt.qr-loaded-list,
-.qr-root table.qr-mrt.qr-wsum-table {
+.qr-root table.qr-mrt.qr-loaded-list {
   table-layout: auto;
   width: max-content;
   max-width: 100%;
@@ -133,7 +192,6 @@
   width: 100%;
 }
 
-/* Rows that used to be CSS grids must stay real table rows. */
 .qr-root table.qr-mrt tr.qr-prow,
 .qr-root table.qr-mrt tr.qr-tri-row,
 .qr-root table.qr-mrt tr.qr-prob,
@@ -149,10 +207,11 @@
 }
 
 .qr-root .qr-tri-open {
-  background: none;
-  border: 0;
+  background: none !important;
+  border: 0 !important;
   font: inherit;
   font-weight: 600;
+  font-size: 15px !important;
   text-align: start;
   cursor: pointer;
   color: inherit;
@@ -173,42 +232,41 @@
   white-space: nowrap;
 }
 
-/* Compact row overflow (MRT row menu): icon only, no labelled More column. */
+/* MrtFeatureGroupHeaderRow chevron: 34×34, radius 6px */
 .qr-root .qr-row-menu {
-  width: 1.75rem !important;
-  min-width: 1.75rem !important;
-  max-width: 1.75rem !important;
-  height: 1.75rem !important;
-  min-height: 1.75rem !important;
+  width: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
   padding: 0 !important;
   margin: 0;
   display: inline-grid !important;
   place-items: center;
-  border: 1px solid transparent !important;
-  background: transparent !important;
+  border: 1px solid var(--mrt-ui-border, #d1d5db) !important;
+  background: var(--mrt-surface, #fff) !important;
   box-shadow: none !important;
-  color: var(--mrt-text) !important;
+  color: #475569 !important;
   cursor: pointer;
-  border-radius: var(--qr-btn-radius, 6px);
+  border-radius: var(--mrt-radius, 6px);
 }
 .qr-root .qr-row-menu:hover,
 .qr-root .qr-row-menu[aria-expanded='true'] {
-  border-color: var(--mrt-border-strong, rgba(60, 60, 67, 0.22)) !important;
   background: var(--mrt-surface-muted, #f5f5f7) !important;
 }
 
 .qr-triage {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.75rem;
   flex: 1;
   min-height: 0;
   min-width: 0;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 1.25rem;
   box-sizing: border-box;
 }
 .qr-tri-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.55rem; min-width: 0; }
-.qr-plist { display: flex; flex-direction: column; gap: 0.75rem; flex: 1; min-height: 0; padding: 0.75rem 1rem; box-sizing: border-box; }
+.qr-plist { display: flex; flex-direction: column; gap: 0.75rem; flex: 1; min-height: 0; padding: 1.25rem; box-sizing: border-box; }
 .qr-plist-box { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 .qr-plist-box > .qr-scroll { flex: 1; min-height: 0; }

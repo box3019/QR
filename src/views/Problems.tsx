@@ -44,7 +44,7 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
     <div className="qr-panel-h">{t('gd.docsNow')}</div>
     <div className="qr-scroll qr-boxes">
       <Box title={t('wz.secUploads') + ' (' + uploads.filter((x: any) => x.status !== 'done').length + ')'} testid="box-uploads">
-        <MrtTable className="qr-prob-tab">
+        <MrtTable shell className="qr-prob-tab">
           <MrtHead cells={[t('ck.col.item'), t('ck.col.status'), t('ck.col.value'), t('ck.col.source'), '']} />
           <tbody>
             {!uploads.length && <MrtEmpty colSpan={COLS}>{t('wz.noUploads')}</MrtEmpty>}
@@ -64,7 +64,7 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
         </MrtTable>
       </Box>
       <Box title={t('wz.secQuestions') + ' (' + main.filter((p: any) => p.status !== 'resolved').length + ')'} testid="box-questions">
-        <MrtTable className="qr-prob-tab">
+        <MrtTable shell className="qr-prob-tab">
           <MrtHead cells={[t('ck.col.item'), t('ck.col.status'), t('ck.col.value'), t('ck.col.source'), '']} />
           <tbody>
             {!main.length && <MrtEmpty colSpan={COLS} testid="no-problems">{t('pr.none')}</MrtEmpty>}
@@ -74,7 +74,7 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
       </Box>
       <div className="qr-more"><button className={MRT_BTN} data-testid="btn-refs" aria-expanded={more} title={t('wz.tipRefs')} onClick={() => setMore(!more)}>{more ? t('wz.hideRefs') : t('wz.showRefs')}</button></div>
       {more && <Box title={t('pr.refs')} testid="box-refs">
-        <MrtTable className="qr-prob-tab">
+        <MrtTable shell className="qr-prob-tab">
           <MrtHead cells={[t('ck.col.item'), t('ck.col.status'), t('ck.col.value'), t('ck.col.source'), '']} />
           <tbody>
             <MrtGroup colSpan={COLS}>{t('pr.refs')}</MrtGroup>

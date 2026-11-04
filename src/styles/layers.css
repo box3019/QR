@@ -171,7 +171,7 @@
 .qr-root .qr-tour-dot { background: var(--mrt-surface) !important; border-color: var(--mrt-border-strong) !important; }
 
 /* Check parts at 1280-1500px: narrower side column, a wider card pane, buttons never wrap letter by letter */
-@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: 13.5rem minmax(0, 1fr); } }
+@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: var(--mrt-wizard-rail-width, 280px) minmax(0, 1fr); } }
 @media (min-width: 1101px) { .qr-root .qr-body:not([data-cols='2']) { grid-template-columns: minmax(230px, 21%) minmax(240px, 1fr) minmax(350px, 34%); } }
 .qr-root .qr-body button:not(.qr-sec-main):not(.qr-tab):not(.qr-pgroup-h), .qr-root .qr-warnbar button { white-space: nowrap !important; overflow-wrap: normal; flex: 0 0 auto; }
 .qr-root .qr-pgroup-h { white-space: nowrap !important; } .qr-root .qr-pgroup-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -237,7 +237,7 @@
 
 /* layers.css loads after wizard.css. Keep the rail at full label width at every DPI; only trim table padding. */
 @media (max-width: 1300px) {
-  .qr-root .qr-wiz { grid-template-columns: 13.5rem minmax(0, 1fr); }
+  .qr-root .qr-wiz { grid-template-columns: var(--mrt-wizard-rail-width, 280px) minmax(0, 1fr); }
   .qr-root[data-step="1"] .qr-wiz-main, .qr-root[data-step="4"] .qr-wiz-main { padding-inline: 0; }
   .qr-root .qr-sum-wrap { padding-inline: 0; }
   .qr-root .qr-cks-card { padding-inline: 4px; }
@@ -316,12 +316,14 @@
 }
 
 /* Section headings (MRT): larger/bolder than the rows, tinted band + accent bar, compact space above. */
-.qr-root .qr-ck-gh th, .qr-root .qr-pgroup-h, .qr-root .qr-sec, .qr-root .qr-panel-h,
-.qr-root .qr-cks > summary, .qr-root .qr-ck > summary, .qr-root .qr-field > label, .qr-root .qr-rc-sum, .qr-root .qr-tri-sec .qr-panel-h,
-.qr-root .qr-modal-h {
+.qr-root .qr-pgroup-h, .qr-root .qr-sec, .qr-root .qr-panel-h,
+.qr-root .qr-cks > summary, .qr-root .qr-ck > summary, .qr-root .qr-field > label, .qr-root .qr-rc-sum, .qr-root .qr-tri-sec .qr-panel-h {
   font-size: var(--qr-fs-md) !important; font-weight: 700 !important; color: var(--mrt-text) !important;
   background: var(--mrt-surface-muted); box-shadow: inset 3px 0 0 var(--mrt-accent);
   padding-block: 0.28em 0.18em; margin-block-start: 0.35em;
+}
+.qr-root .qr-ck-gh th, .qr-root table.qr-mrt tr.qr-mrt-gh th, .qr-root .qr-modal-h {
+  box-shadow: none !important;
 }
 /* Document cards: no grey band and no accent bar on the title line. */
 .qr-root .qr-block-title {
@@ -333,9 +335,8 @@
 .qr-root .qr-block[data-status='none'] .qr-block-title { font-weight: 700 !important; }
 .qr-root .qr-hist-t th, .qr-root .qr-cks-tab th, .qr-root .qr-catalog th, .qr-root .qr-wsum-table th,
 .qr-root table.qr-mrt thead th {
-  margin-block-start: 0; font-size: var(--qr-fs-sm) !important; font-weight: 600 !important; box-shadow: none;
+  margin-block-start: 0; box-shadow: none;
 }
-.qr-root table.qr-mrt td { font-size: var(--qr-fs-sm) !important; }
 .qr-root .qr-modal-h { margin-block-start: 0; }
 
 /* Clickable chrome: pointer wins over MRT topbar cursor:default !important. */
@@ -357,7 +358,7 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 }
 
 .qr-root .mrt-wizard-step, .qr-root .qr-rail .mrt-wizard-step {
-  background: var(--qr-btn-bg) !important; border: 2px solid var(--qr-btn-border) !important; cursor: pointer !important;
+  cursor: pointer !important;
 }
 .qr-root .qr-ck-link, .qr-root .qr-cks-x, .qr-root [data-testid='btn-questions'], .qr-root [data-testid='btn-summary'],
 .qr-root [data-testid='btn-cancel'], .qr-root [data-testid='btn-close'],

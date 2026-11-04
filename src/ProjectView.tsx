@@ -92,7 +92,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   // Cancel clears the RFQ without a question: a toast offers Undo instead (nothing is lost)
   const clearAll = () => { const snap = { parts, rfqs, unknown, lastRun, sel, step }; reset(); notify({ code: 'cleared', undo: () => { setParts(snap.parts); setRfqs(snap.rfqs); setUnknown(snap.unknown); setLastRun(snap.lastRun); setSel(snap.sel); setStep(snap.step); setDirty(false); } }); };
   return <div className={'qr-proj' + (active ? '' : ' qr-proj-off')} data-testid="project" data-id={id} data-step={step} data-provisional={!!busy && has} aria-hidden={!active}>
-    <div className="qr-wiz">
+    <div className="qr-wiz mrt-wizard-shell">
       <RailContext rfqs={rfqs} parts={parts} files={lastRun?.files || []} />
       <StepHeader step={step} hint={hint} assistant={assistant} next={nextLine} onGo={goNext} />
       <Stepper step={step} setStep={stepTo} hasParts={has} />
