@@ -17,7 +17,7 @@ export function ProcessesPanel({ part }: any) {
     {!req.length && <div className="qr-muted">{t('pp.none')}</div>}
     {req.map((p: any, i: number) => <div key={i} style={{ marginTop: '0.6rem' }}>
       {req.length > 1 && <div className="qr-muted">{t('pp.page')} {p.page}</div>}
-      <MrtTable className="qr-table" fit="content">
+      <MrtTable className="qr-table">
         <MrtHead cells={[t('ck.col.item'), t('ck.col.value')]} />
         <tbody>
         <MrtRow><td>{t('pp.material')}</td><td><bdi>{p.material ? [L(p.material, 'family'), p.material.alloy, p.material.temper, p.material.form].filter(Boolean).join(' ') : '—'}</bdi>{p.material && p.material.stds ? <div className="qr-muted qr-ltr">{p.material.stds}</div> : null}</td></MrtRow>
@@ -28,7 +28,7 @@ export function ProcessesPanel({ part }: any) {
         <MrtRow><td>{t('pp.flow')}</td><td><bdi>{L(p.summary, 'flow') || '—'}</bdi></td></MrtRow>
         </tbody>
       </MrtTable>
-      {p.procs.length > 0 && <MrtTable className="qr-table" fit="content">
+      {p.procs.length > 0 && <MrtTable className="qr-table">
         <MrtHead cells={[t('pp.no'), t('pp.process'), t('pp.specs'), t('pp.details')]} />
         <tbody>{p.procs.map((q: any, j: number) => <MrtRow key={j}><td>{q.no}</td><td><bdi>{L(q, 'subtype')}</bdi>{q.layer ? <span className="qr-muted"> ({q.layer})</span> : null}</td>
           <td className="qr-ltr">{[q.stds, q.typecls].filter(Boolean).join(' · ')}</td><td className="qr-ltr">{[q.thick, q.color, q.coats, q.hard, q.temp, q.case].filter(Boolean).join(' · ')}</td></MrtRow>)}</tbody>

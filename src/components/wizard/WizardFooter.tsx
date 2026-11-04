@@ -1,4 +1,4 @@
-// Wizard footer bar, bottom end: Cancel (new RFQ), Next, Close (MRT wizard footer look).
+// Wizard footer bar: Cancel (new RFQ), Next, Finish check. Buttons sit on the rail (inline-start) side.
 import React from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
@@ -10,6 +10,6 @@ export function WizardFooter({ step, partOpen, setStep, hasParts, busy, onCancel
   return <footer className="qr-wiz-footer mrt-wizard-footer" data-testid="wiz-footer">
     <button type="button" className={MRT_BTN} data-testid="btn-cancel" title={cw ? t(cw) : t('tip.wzCancel')} disabled={!hasParts} onClick={onCancel}>{t('wz.cancel')}</button>
     <button type="button" className={(step === 2 || step === 3) && !partOpen ? MRT_BTN_PRIMARY : MRT_BTN} data-testid="btn-next" title={nw ? t(nw) : t('wz.tipNext')} disabled={!nextOk} onClick={() => setStep(nextStep(step))}>{t('wz.next')}</button>
-    <button type="button" className={MRT_BTN} data-testid="btn-close" title={t('tip.wzClose')} onClick={onClose}>{t('wz.close')}</button>
+    <button type="button" className={MRT_BTN} data-testid="btn-close" title={t('tip.wzFinish')} onClick={onClose}>{t('wz.finish')}</button>
   </footer>;
 }

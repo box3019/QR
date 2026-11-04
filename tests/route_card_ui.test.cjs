@@ -32,8 +32,14 @@ test('route card table uses MrtTable and hides a repeated source column', () => 
   assert.match(v, /qr-rcard-c-ins/);
 });
 
-test('footer actions sit on the end side (MRT wizard footer)', () => {
-  assert.match(rd('src', 'styles', 'wizard.css'), /\.qr-wiz-footer \{[^}]*justify-content:\s*flex-end/);
+test('footer actions sit on the rail (inline-start) side', () => {
+  assert.match(rd('src', 'styles', 'wizard.css'), /\.qr-wiz-footer \{[^}]*justify-content:\s*flex-start/);
+});
+
+test('instruction seq is not bold; empty route uses MrtEmpty', () => {
+  const v = rd('src', 'views', 'RouteCardView.tsx');
+  assert.doesNotMatch(v, /<b>\{it\.seq/);
+  assert.match(v, /MrtEmpty/);
 });
 
 test('job tabs keep one chip border; assistant avatar has no frame', () => {

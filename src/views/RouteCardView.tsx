@@ -3,7 +3,7 @@ import React from 'react';
 import { Chip } from '../ui/common';
 import { t, getLang } from '../i18n';
 import { PlainStatusBadge } from '../ui/simple';
-import { MrtTable, MrtHead, MrtRow, OverflowLine } from '../ui/MrtTable';
+import { MrtTable, MrtHead, MrtEmpty, MrtRow, OverflowLine } from '../ui/MrtTable';
 import { opLabel, sameRouteSource } from './routeCard.mjs';
 
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
@@ -24,14 +24,13 @@ export function RouteCard({ part }: any) {
     </div>
     <MrtTable className="qr-rcard-tab" data-same-src={hideSrc ? '1' : undefined} cols={cols}>
       <MrtHead cells={heads} />
-      <tbody>{part.route.map((s: any, i: number) => {
+      <tbody>{!part.route.length ? <MrtEmpty colSpan={hideSrc ? 5 : 6}>{t('rc.none')}</MrtEmpty> : part.route.map((s: any, i: number) => {
         const op = opLabel(L(s, 'type'), L(s, 'title')); const specs = (s.specRefs || []).join(', '); const src = L(s, 'source') || '';
         return <MrtRow key={i} className={s.blocked ? 'qr-rcard-blocked' : undefined}><td>{s.seq}</td><td>{OL(op)}</td>
-          <td>{s.items.map((it: any, j: number) => { const line = (it.seq && it.seq !== s.seq ? it.seq + ' ' : '') + (L(it, 'text') || ''); return <span key={j}>{OL(line, <>{it.seq && it.seq !== s.seq ? <b>{it.seq} </b> : null}<bdi>{L(it, 'text')}</bdi></>)}</span>; })}</td>
+          <td className="qr-mrt-wrap">{s.items.map((it: any, j: number) => { const line = (it.seq && it.seq !== s.seq ? it.seq + ' ' : '') + (L(it, 'text') || ''); return <span key={j}>{OL(line, <>{it.seq && it.seq !== s.seq ? <span>{it.seq} </span> : null}<bdi>{L(it, 'text')}</bdi></>)}</span>; })}</td>
           <td>{OL(specs)}</td>{hideSrc ? null : <td>{OL(src)}</td>}
           <td className="qr-rc-flags">{s.outsourced && <Chip t="info" testid="rc-outsourced">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></MrtRow>;
       })}</tbody>
     </MrtTable>
-    {!part.route.length && <div className="qr-muted" style={{ padding: 10 }}>{t('rc.none')}</div>}
   </div>;
 }

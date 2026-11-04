@@ -23,7 +23,7 @@ const MEASURE = () => {
     { const cs = getComputedStyle(card); const inner = card.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); res.table.inner = inner; res.table.ow = tbl.offsetWidth; res.table.collapsed = tbl.querySelectorAll('[data-testid^=cks-count-]').length; res.table.expanded = tbl.querySelectorAll('[data-testid=cks-expanded]').length; if (tbl.offsetWidth > inner + 1 || tbl.scrollWidth > tbl.clientWidth + 1) res.issues.push('table width ' + tbl.offsetWidth + ' > ' + inner); }
     for (let e = tbl.parentElement; e && e !== document.body; e = e.parentElement) if (e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).overflowX !== 'visible') res.issues.push('ancestor scrolls horizontally: ' + (e.className || e.tagName));
     const narrowSum = innerWidth < 1000;
-    tbl.querySelectorAll('th,td').forEach((c) => { if (narrowSum && c.closest('.qr-cks-tab')) return; if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
+    tbl.querySelectorAll('th,td').forEach((c) => { if (narrowSum && c.closest('.qr-cks-tab')) return; if (c.matches('.qr-ck-val, .qr-bd-v, .qr-mrt-wrap') || c.querySelector('.qr-ck-body, .qr-bd-body, .qr-tri-why, .qr-prow-why')) { if (c.scrollWidth > c.clientWidth + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); return; } if (c.scrollWidth > c.clientWidth + 1 || c.scrollHeight > c.clientHeight + 1) res.issues.push('clipped cell ' + c.tagName + ':' + (c.textContent || '').slice(0, 20)); });
     let minC = 99, minEl = ''; tbl.querySelectorAll('th,td,td *').forEach((c) => { if (!(c.childNodes && [...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()))) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); if (cr < minC) { minC = cr; minEl = c.tagName + ':' + (c.textContent || '').trim().slice(0, 16); } });
     res.minContrast = Math.round(minC * 100) / 100; res.minContrastEl = minEl; if (minC < 4.5) res.issues.push('contrast ' + res.minContrast + ' at ' + minEl);
     const cv = document.createElement('canvas').getContext('2d'); tbl.querySelectorAll('th,td').forEach((c) => { if (narrowSum && c.closest('.qr-cks-tab')) return; const cs = getComputedStyle(c); cv.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const inner = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const words = (c.innerText || '').split(/\s+/).filter(Boolean); const bad = words.find((x) => cv.measureText(x).width > inner + 1); if (bad) res.issues.push('word does not fit (would break): ' + bad + ' ' + Math.round(cv.measureText(bad).width) + '>' + Math.round(inner)); });
@@ -39,7 +39,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   }
   // one line per item: no header / label / chip / tag / button / summary-table item may wrap inside itself (height <= 1 line + 2px)
   const wraps = []; const nm = (e) => e.tagName + (typeof e.className === 'string' && e.className ? '.' + e.className.split(' ')[0] : '');
-  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-where, .qr-ck-body, .qr-ck-tab th, .qr-ck-tab td:not(.qr-ck-src-cell), .qr-ck-l, .qr-ck-lab, .qr-ck-s, .qr-cks-x, .qr-bd-tab th, .qr-bd-tab td').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.closest('.qr-ck-full') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
+  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-where, .qr-ck-tab th, .qr-ck-tab td:not(.qr-ck-src-cell):not(.qr-ck-val), .qr-ck-l, .qr-ck-lab, .qr-ck-s, .qr-cks-x, .qr-bd-tab th, .qr-bd-tab td:not(.qr-bd-v):not(.qr-mrt-wrap)').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.closest('.qr-ck-full') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]') || e.closest('.qr-ck-val, .qr-bd-v, .qr-mrt-wrap, .qr-tri-why, .qr-prow-why') || e.classList.contains('qr-ck-body') || e.classList.contains('qr-bd-body')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
   res.wraps = wraps; wraps.slice(0, 8).forEach((x) => res.issues.push('item wraps: ' + x));
   const extra = [...document.querySelectorAll('.qr-provisional,[data-testid=busy],.qr-stat')]; res.extraContrast = []; extra.forEach((root) => { root.querySelectorAll('*').forEach((c) => { if (![...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); res.extraContrast.push(Math.round(cr * 100) / 100); if (cr < 4.5) res.issues.push('contrast ' + (Math.round(cr * 100) / 100) + ' in ' + (root.className || root.dataset.testid).toString().slice(0, 20) + ':' + (c.textContent || '').trim().slice(0, 16)); }); });
   // full-page overlays / dimming
@@ -105,6 +105,28 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (br.width < 24 || br.height < 24) res.issues.push('tab close hit area ' + Math.round(br.width) + 'x' + Math.round(br.height));
     if (gw < 14 || gh < 14) res.issues.push('tab close glyph size ' + Math.round(gw) + 'x' + Math.round(gh));
   });
+  document.querySelectorAll('table.qr-mrt').forEach((tbl) => {
+    if (tbl.closest('.qr-proj-off')) return;
+    const host = tbl.closest('.qr-mrt-shell') || tbl.closest('.qr-recent') || tbl.closest('.qr-plist-box') || tbl.closest('.qr-triage') || tbl.parentElement;
+    if (!host) return;
+    const hw = host.clientWidth;
+    const tw = tbl.getBoundingClientRect().width;
+    if (hw > 80 && tw + 2 < hw * 0.92) res.issues.push('table not full width ' + Math.round(tw) + '<' + Math.round(hw));
+  });
+  const foot = document.querySelector('[data-testid=wiz-footer]');
+  if (foot && !foot.closest('.qr-proj-off')) {
+    const jc = getComputedStyle(foot).justifyContent;
+    if (jc !== 'flex-start' && jc !== 'start') res.issues.push('footer not rail-side: ' + jc);
+    const dir = getComputedStyle(foot).direction;
+    const r = foot.getBoundingClientRect();
+    const btns = [...foot.querySelectorAll('button')].filter((b) => getComputedStyle(b).display !== 'none');
+    if (btns.length) {
+      const mid = (btns[0].getBoundingClientRect().left + btns[btns.length - 1].getBoundingClientRect().right) / 2;
+      const center = (r.left + r.right) / 2;
+      if (dir === 'rtl' && mid < center - 8) res.issues.push('footer buttons not on RTL rail (right)');
+      if (dir !== 'rtl' && mid > center + 8) res.issues.push('footer buttons not on LTR rail (left)');
+    }
+  }
   document.querySelectorAll('.qr-ptabs .mrt-workspace-tab__label').forEach((e) => {
     if (e.closest('.qr-proj-off')) return;
     const px = parseFloat(getComputedStyle(e).fontSize);

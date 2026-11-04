@@ -23,8 +23,8 @@ export function GuidePanel({ part, tasks, marks, setMarks, cursor, setCursor, ex
     <div className="qr-guide-head">
       <div className="qr-guide-of" data-testid="guide-of">{t('gd.of', { n: onSum ? n : cursor + 1, m: n })}</div>
       <div className="qr-gsteps" data-testid="guide-steps" role="tablist">
-        {tasks.map((b: any, i: number) => <button type="button" key={b.id} className="qr-gstep" data-testid="guide-step" data-s={taskState(b, marks)} data-current={i === cursor ? '1' : undefined} title={t('tip.gdStep')} onClick={() => { setExtra(null); setCursor(i); }}>{i + 1}</button>)}
-        <button type="button" className="qr-gstep qr-gstep-sum" data-testid="guide-sum-step" data-s={marked.length ? MARK_PROBLEM : (tasks.every((b: any) => taskState(b, marks) === MARK_DONE) ? MARK_DONE : 'todo')} data-current={onSum ? '1' : undefined} title={t('gd.summary')} onClick={() => { setExtra(null); setCursor(n); }}>{t('wz.s4')}</button>
+        {tasks.map((b: any, i: number) => <button type="button" key={b.id} className={'qr-gstep mrt-btn mrt-btn-ghost' + (i === cursor ? ' mrt-settings-segment-active' : '')} data-testid="guide-step" data-s={taskState(b, marks)} data-current={i === cursor ? '1' : undefined} title={t('tip.gdStep')} onClick={() => { setExtra(null); setCursor(i); }}>{i + 1}</button>)}
+        <button type="button" className={'qr-gstep qr-gstep-sum mrt-btn mrt-btn-ghost' + (onSum ? ' mrt-settings-segment-active' : '')} data-testid="guide-sum-step" data-s={marked.length ? MARK_PROBLEM : (tasks.every((b: any) => taskState(b, marks) === MARK_DONE) ? MARK_DONE : 'todo')} data-current={onSum ? '1' : undefined} title={t('gd.summary')} onClick={() => { setExtra(null); setCursor(n); }}>{t('wz.s4')}</button>
       </div>
     </div>
     <h3 className="qr-guide-title" data-testid="guide-title">{task && task.kind !== 'standard' ? t('gd.check', { what: title }) : title}</h3>

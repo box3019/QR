@@ -245,10 +245,10 @@
 }
 
 /* Every control looks like an MRT button: visible border + fill, hover/press, focus ring, pointer. */
-.qr-root button, .qr-root [role="button"], .qr-root [role="tab"], .qr-root [role="menuitem"], .qr-root [role="switch"],
+.qr-root button:not(.qr-gstep):not(.qr-hist-open):not(.qr-tri-open):not(.qr-loaded-part), .qr-root [role="button"]:not(.qr-recent-row), .qr-root [role="tab"]:not(.qr-gstep), .qr-root [role="menuitem"], .qr-root [role="switch"],
 .qr-root .qr-chip, .qr-root .qr-badge, .qr-root .qr-status, .qr-root .qr-tab, .qr-root .qr-settings-tab, .qr-root .qr-menu-item,
-.qr-root .qr-ck-link, .qr-root .qr-hist-open, .qr-root .qr-recent-row, .qr-root .qr-cks-x, .qr-root .qr-ck-loc, .qr-root .qr-chip-x,
-.qr-root .qr-block-chev, .qr-root .qr-tri-open, .qr-root .qr-loaded-part, .qr-root .qr-sec-main, .qr-root .qr-pgroup-h,
+.qr-root .qr-ck-link, .qr-root .qr-cks-x, .qr-root .qr-ck-loc, .qr-root .qr-chip-x,
+.qr-root .qr-block-chev, .qr-root .qr-sec-main, .qr-root .qr-pgroup-h,
 .qr-root summary {
   cursor: pointer;
   border: 2px solid var(--qr-btn-border) !important;
@@ -257,11 +257,11 @@
   border-radius: var(--qr-btn-radius) !important;
   box-shadow: none;
 }
-.qr-root button:hover:not(:disabled), .qr-root [role="button"]:hover, .qr-root [role="tab"]:hover, .qr-root [role="menuitem"]:hover,
-.qr-root [role="switch"]:hover, .qr-root .qr-ck-link:hover, .qr-root .qr-hist-open:hover, .qr-root .qr-recent-row:hover,
+.qr-root button:hover:not(:disabled):not(.qr-gstep):not(.qr-hist-open):not(.qr-tri-open):not(.qr-loaded-part), .qr-root [role="button"]:hover:not(.qr-recent-row), .qr-root [role="tab"]:hover:not(.qr-gstep), .qr-root [role="menuitem"]:hover,
+.qr-root [role="switch"]:hover, .qr-root .qr-ck-link:hover,
 .qr-root .qr-menu-item:hover, .qr-root .qr-tab:hover, .qr-root .qr-settings-tab:hover, .qr-root .qr-cks-x:hover,
-.qr-root .qr-ck-loc:hover, .qr-root .qr-chip-x:hover, .qr-root .qr-block-chev:hover, .qr-root .qr-tri-open:hover,
-.qr-root .qr-loaded-part:hover, .qr-root .qr-sec-main:hover, .qr-root .qr-pgroup-h:hover, .qr-root summary:hover {
+.qr-root .qr-ck-loc:hover, .qr-root .qr-chip-x:hover, .qr-root .qr-block-chev:hover,
+.qr-root .qr-sec-main:hover, .qr-root .qr-pgroup-h:hover, .qr-root summary:hover {
   background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important;
 }
 .qr-root button:active:not(:disabled), .qr-root [role="button"]:active, .qr-root [role="menuitem"]:active {
@@ -284,10 +284,20 @@
   cursor: default !important; background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important;
   border: 1px dashed var(--qr-btn-disabled-border) !important;
 }
-.qr-root .qr-ck-link, .qr-root .qr-hist-open, .qr-root .qr-recent-row, .qr-root .qr-cks-x, .qr-root .qr-tri-open, .qr-root .qr-loaded-part {
+.qr-root .qr-ck-link, .qr-root .qr-cks-x {
   display: inline-flex !important; align-items: center; text-decoration: none !important;
   padding: 0.12em 0.5em !important; min-height: 0 !important; height: auto !important; min-width: max-content !important;
   font: inherit; white-space: nowrap !important;
+}
+.qr-root .qr-hist-open, .qr-root .qr-tri-open, .qr-root .qr-loaded-part {
+  display: inline !important; align-items: unset; text-decoration: none !important;
+  padding: 0 !important; min-height: 0 !important; height: auto !important; min-width: 0 !important;
+  font: inherit; font-weight: 500; white-space: nowrap !important;
+  border: 0 !important; background: none !important; box-shadow: none !important; border-radius: 0 !important;
+}
+.qr-root tr.qr-recent-row, .qr-root .qr-recent-row {
+  border: 0 !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important;
+  padding: 0 !important;
 }
 .qr-root .qr-ck-loc, .qr-root .qr-chip-x, .qr-root .qr-block-chev, .qr-root .qr-cks-x {
   display: inline-grid !important; place-items: center; width: 1.5rem !important; min-width: 1.5rem !important; max-width: 1.5rem;
@@ -400,13 +410,12 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root table.qr-mrt tr.qr-prow, .qr-root table.qr-mrt tr.qr-tri-row, .qr-root table.qr-mrt tr.qr-prob, .qr-root table.qr-mrt tr.qr-cust-item, .qr-root table.qr-mrt tr.qr-recent-row {
   display: table-row !important; grid-template-columns: none; width: auto; padding: 0; border: 0; background: transparent;
 }
-.qr-root .qr-ck-body, .qr-root .qr-ck-where {
+.qr-root .qr-ck-where {
   overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%;
 }
 .qr-root .qr-ck-lab {
   overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; overflow-wrap: normal; word-break: keep-all; max-width: 100%;
 }
-.qr-root .qr-ck-tab td.qr-ck-val { white-space: nowrap !important; }
 .qr-root .qr-ck-tab td.qr-ck-src-cell { white-space: nowrap !important; overflow: hidden; }
 .qr-root .qr-ck-locc { overflow: visible !important; }
 .qr-root .qr-ck-full { overflow: visible !important; max-width: none !important; min-width: min-content !important; white-space: nowrap !important; }
@@ -415,4 +424,45 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root [data-testid='breakdown-panel'] .qr-scroll { overflow-x: visible; }
 @media (max-width: 1000px) {
   .qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { padding-inline: 1px; font-size: var(--qr-fs-sm); }
+}
+
+/* Value cells wrap (MRT group/report overflow-wrap:break-word). Labels/buttons stay nowrap. */
+.qr-root table.qr-mrt { width: 100% !important; max-width: 100%; }
+.qr-root table.qr-mrt td.qr-mrt-wrap,
+.qr-root table.qr-mrt td.qr-ck-val,
+.qr-root table.qr-mrt td.qr-bd-v,
+.qr-root table.qr-mrt td:has(.qr-tri-why),
+.qr-root table.qr-mrt td:has(.qr-prow-why),
+.qr-root table.qr-mrt td:has(.qr-ck-body),
+.qr-root table.qr-mrt td:has(.qr-bd-body) {
+  white-space: normal !important; overflow-wrap: break-word !important; word-break: normal;
+}
+.qr-root .qr-ck-body, .qr-root .qr-bd-body, .qr-root .qr-tri-why, .qr-root .qr-prow-why {
+  white-space: normal !important; overflow-wrap: break-word !important; overflow: hidden !important; text-overflow: clip !important; max-width: 100%;
+}
+
+.qr-root .qr-stats, .qr-root .qr-tiles { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; justify-content: flex-start !important; }
+.qr-root .qr-stat, .qr-root .qr-tile { flex: 0 0 auto !important; width: max-content !important; }
+
+.qr-root button.qr-gstep,
+.qr-root button.qr-gstep:hover:not(:disabled),
+.qr-root button.qr-gstep:focus-visible {
+  height: 40px !important; min-height: 40px !important; min-width: 2.5rem !important;
+  padding: 0 12px !important; font-size: 13px !important; font-weight: 600 !important;
+  border-width: 1px !important; border-radius: var(--mrt-radius, 6px) !important;
+  border-style: solid !important; box-shadow: none !important;
+}
+.qr-root button.qr-gstep { border-color: var(--mrt-ui-border, var(--mrt-border)) !important; background: var(--mrt-btn-neutral-fill, var(--mrt-surface)) !important; color: var(--mrt-text) !important; }
+.qr-root button.qr-gstep[data-s='done'] { background: var(--qr-st-ok) !important; color: #fff !important; border-color: var(--qr-st-ok) !important; }
+.qr-root button.qr-gstep[data-s='problem'] { background: var(--qr-st-bad) !important; color: #fff !important; border-color: var(--qr-st-bad) !important; }
+.qr-root button.qr-gstep[data-current='1'],
+.qr-root button.qr-gstep.mrt-settings-segment-active {
+  border-color: color-mix(in srgb, var(--mrt-accent) 44%, var(--mrt-border)) !important;
+  background: color-mix(in srgb, var(--mrt-accent) 12%, var(--mrt-surface)) !important;
+  color: color-mix(in srgb, var(--mrt-accent) 70%, var(--mrt-text)) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mrt-accent) 22%, transparent) !important;
+}
+.qr-root button.qr-gstep[data-s='done'][data-current='1'] {
+  background: var(--qr-st-ok) !important; color: #fff !important; border-color: var(--qr-st-ok) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mrt-accent) 22%, transparent) !important;
 }

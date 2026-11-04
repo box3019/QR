@@ -31,5 +31,5 @@ test('entry: groups summary, step, part numbers', async () => {
 test('History button, dialog and recent list: tooltips, EN/HE, HE without Latin', () => {
   const en = require('../src/i18n/en.json'), he = require('../src/i18n/he.json'); const ks = Object.keys(en).filter((k) => k.startsWith('hist.')).concat(['top.history', 'tip.history']);
   for (const k of ks) { assert.ok(he[k], k); assert.doesNotMatch(he[k].replace(/\{\w+\}/g, ''), /[A-Za-z]/, k); }
-  for (const f of ['HistoryDialog.tsx', 'RecentList.tsx']) { const s = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'history', f), 'utf8'); for (const b of s.match(/<button[^>]*>/g)) assert.match(b, /title=/, b); }
+  for (const f of ['HistoryDialog.tsx', 'RecentList.tsx']) { const s = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'history', f), 'utf8'); for (const b of s.match(/<button[^>]*>/g) || []) assert.match(b, /title=/, b); }
 });

@@ -40,7 +40,7 @@ export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPri
         { testid: 'tri-save-pack', label: t('tri.savePack'), tip: t('tip.savePack'), onClick: onSavePack },
       ]} />
     </div>
-    <MrtTable shell fit="content" className="qr-tri-tab" cols={<colgroup><col className="qr-mrt-c-check" /><col className="qr-mrt-c-id" /><col className="qr-mrt-c-text" /><col className="qr-mrt-c-status" /><col className="qr-mrt-c-menu" /></colgroup>}>
+    <MrtTable shell className="qr-tri-tab" cols={<colgroup><col className="qr-mrt-c-check" /><col className="qr-mrt-c-id" /><col className="qr-mrt-c-text" /><col className="qr-mrt-c-status" /><col className="qr-mrt-c-menu" /></colgroup>}>
       <MrtHead cells={[t('tri.includeCol'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), '']} />
       <tbody>
         {(['suitable', 'notSuitable', 'unknown'] as const).map((k) => <React.Fragment key={k}>

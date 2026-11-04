@@ -96,7 +96,7 @@ export default function App() {
       {upd.busy && <UpdateProgress version={upd.busy.version} notes={upd.busy.notes} frac={upd.busy.frac} phase={upd.busy.phase} onCancel={upd.cancel} />}
       <div className="qr-projs">
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
-          details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} />)}
+          details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} onCloseJob={P.close} />)}
       </div>
       <div className="qr-statusbar" data-testid="status-bar" role="status">{saveStatus(m) === 'saved' && <span data-testid="saved-at" title={t('tip.savedAt', { time: hhmm(m.savedAt) })}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}{saveStatus(m) === 'unsaved' && <span data-testid="unsaved-note" title={t('tab.unsaved')}>{t('top.unsaved')}</span>}</div>
       {notice && <Notice text={notice} action={noticeAction ? { label: noticeAction.label, run: () => { noticeAction.run(); setNotice(''); setNoticeAction(null); } } : null} onClose={() => { setNotice(''); setNoticeAction(null); }} />}

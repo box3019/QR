@@ -34,7 +34,7 @@ function afterPdf(notify: any, r: any, each?: boolean, counts?: any) {
   const vars = each ? { n: (r.files || []).length, path: r.dir, checked: counts?.checked ?? (r.files || []).length, suitable: counts?.suitable ?? 0, all: counts?.all ?? 0 } : { path: r.path };
   notify({ text: t(each ? 'pdf.savedEach' : 'pdf.saved', vars), action: { label: t('pdf.openFolder'), run: () => { qr().openPath(path); } } });
 }
-export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, notify, over, onMeta, register, recent, onReopen, onHistory }: any) {
+export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, notify, over, onMeta, register, recent, onReopen, onHistory, onCloseJob }: any) {
   setCkSettings(settings); // the checklist thresholds (Settings > Precision) for the screens below
   const I = initial || {};
   const [parts, setParts] = useState((I.parts || []) as Part[]); const [unknown, setUnknown] = useState((I.unknown || []) as string[]);
@@ -109,7 +109,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
         {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} open={partOpen} onOpen={(i: number) => openPart(i, 3)} onBack={() => setPartOpen(false)} onGo={pick} onLeave={() => stepTo(4)} rtl={getLang() === 'he'} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setPartOpen(true); setTab('drawing'); setFocus(loc); }} />}
         {step === 4 && has && <StepSummary parts={parts} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => openPart(i, 2)} />}
       </main>
-      <WizardFooter step={step} partOpen={partOpen} setStep={stepTo} hasParts={has} busy={!!busy} onCancel={clearAll} onClose={() => window.close()} />
+      <WizardFooter step={step} partOpen={partOpen} setStep={stepTo} hasParts={has} busy={!!busy} onCancel={clearAll} onClose={() => onCloseJob(id)} />
     </div>
     {active && ask && <DropChoice onChoose={(c: 'append' | 'new') => ask(c)} />}
     {active && busy && view?.active && step !== 1 && <ProgressToast busy={busy} details={details} />}

@@ -167,7 +167,7 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
   min-height: 3.25rem;
   border-top: 1px solid var(--mrt-ui-border, var(--mrt-border));

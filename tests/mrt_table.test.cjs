@@ -14,12 +14,15 @@ test('MRT table skin: report TH/TD 42px 15px, grid #64748b, no row outline, no i
   assert.match(css, /tr\.qr-mrt-gh th[^}]*box-shadow:\s*none/);
   assert.match(css, /tr\.qr-mrt-empty td[^}]*padding:\s*2rem/);
   assert.match(css, /\.qr-row-menu \{[^}]*34px/);
-  assert.match(css, /qr-mrt-fit \{[^}]*width:\s*max-content/);
+  assert.match(css, /table\.qr-mrt \{[^}]*width:\s*100%/);
+  assert.match(css, /font-weight:\s*500 !important/);
+  assert.doesNotMatch(css, /qr-mrt-fit \{[^}]*width:\s*max-content/);
 });
 
 test('package list: content columns, row menu, empty groups, no labelled More column', () => {
   const tri = R('src/components/wizard/TriageView.tsx');
-  assert.match(tri, /shell fit="content"/);
+  assert.match(tri, /<MrtTable shell className="qr-tri-tab"/);
+  assert.doesNotMatch(tri, /fit="content"/);
   assert.match(tri, /<MoreMenu row /);
   assert.match(tri, /MrtEmpty/);
   assert.doesNotMatch(tri, /gd\.more/);
@@ -33,10 +36,10 @@ test('MoreMenu row variant is icon-only', () => {
   assert.match(m, /row \? null : <span>\{label/);
 });
 
-test('MrtTable exposes shell, fit, empty row', () => {
+test('MrtTable exposes shell and empty row; tables are full width', () => {
   const t = R('src/ui/MrtTable.tsx');
   assert.match(t, /function MrtEmpty/);
-  assert.match(t, /fit === 'content' \? ' qr-mrt-fit'/);
+  assert.doesNotMatch(t, /qr-mrt-fit/);
   assert.match(t, /shell \? <div className="qr-mrt-shell">/);
 });
 
@@ -53,13 +56,59 @@ test('wizard chrome: 280px rail, 34px footer, 52px/17px dialog header, 42px dial
   assert.match(chrome, /min-height:\s*52px/);
   assert.match(chrome, /font-size:\s*17px/);
   assert.match(chrome, /min-height:\s*42px/);
-  assert.match(chrome, /justify-content:\s*flex-end/);
+  assert.match(chrome, /justify-content:\s*flex-start/);
 });
 
 test('palette grid matches MRT light glass', () => {
   const pal = R('src/styles/qrPalette.css');
   assert.match(pal, /--mrt-grid-border:\s*#64748b/);
   assert.match(pal, /--mrt-grid-border-strong:\s*#334155/);
+});
+
+test('wizard footer sits on the rail (inline-start) and Finish check closes the job tab', () => {
+  const foot = R('src/components/wizard/WizardFooter.tsx');
+  assert.match(foot, /wz\.finish/);
+  assert.match(foot, /tip\.wzFinish/);
+  assert.doesNotMatch(foot, /wz\.close/);
+  assert.match(R('src/styles/wizard.css'), /\.qr-wiz-footer \{[^}]*justify-content:\s*flex-start/);
+  assert.doesNotMatch(R('src/ProjectView.tsx'), /window\.close/);
+  assert.match(R('src/ProjectView.tsx'), /onCloseJob\(id\)/);
+  assert.match(R('src/App.tsx'), /onCloseJob=\{P\.close\}/);
+  assert.match(R('src/i18n/he.json'), /"wz\.finish": "סיום בדיקה"/);
+  assert.match(R('src/i18n/en.json'), /"wz\.finish": "Finish check"/);
+});
+
+test('Recent is one card, plain order text, row click', () => {
+  const r = R('src/components/history/RecentList.tsx');
+  assert.doesNotMatch(r, /shell/);
+  assert.doesNotMatch(r, /qr-hist-open/);
+  assert.match(r, /onClick=\{\(\) => onOpen\(e\.id\)\}/);
+  assert.match(r, /qr-recent-l/);
+});
+
+test('part navigator copies MRT settings segment; no double ring', () => {
+  const g = R('src/components/partcard/GuidePanel.tsx');
+  assert.match(g, /mrt-settings-segment-active/);
+  assert.match(g, /mrt-btn-ghost/);
+  const css = R('src/styles/wizard.css');
+  assert.match(css, /qr-gstep \{[^}]*border-radius:\s*var\(--mrt-radius, 6px\)/);
+  assert.doesNotMatch(css, /qr-gstep\[data-current='1'\] \{[^}]*box-shadow:\s*0 0 0 2px/);
+  assert.match(R('src/styles/layers.css'), /button\.qr-gstep[\s\S]*border-width:\s*1px !important/);
+});
+
+test('status chips stay grouped, not 1fr stretched', () => {
+  const wiz = R('src/styles/wizard.css');
+  const layers = R('src/styles/layers.css');
+  assert.match(wiz, /\.qr-root \.qr-stats \{ display: flex;/);
+  assert.doesNotMatch(wiz, /minmax\(100px,\s*1fr\)/);
+  assert.match(layers, /\.qr-root \.qr-stats, \.qr-root \.qr-tiles \{ display: flex !important/);
+});
+
+test('check-layout flags table width, footer side, and allows value wrap', () => {
+  const m = R('scripts/check-layout.cjs');
+  assert.match(m, /table not full width/);
+  assert.match(m, /footer not rail-side/);
+  assert.match(m, /qr-ck-val, \.qr-bd-v, \.qr-mrt-wrap/);
 });
 
 test('docs map real MRT v9.0.60 files onto QR files', () => {
