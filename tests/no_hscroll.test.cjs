@@ -28,7 +28,7 @@ test('section headings are larger and bolder than their rows (MRT hierarchy)', (
   assert.ok(/\.qr-ck-gh th \{[^}]*font-weight:\s*700/.test(css));
   const layers = rd('src/styles/layers.css');
   assert.ok(/qr-ck-gh th/.test(layers) && /font-weight:\s*700/.test(layers) && /--qr-fs-md/.test(layers));
-  assert.ok(/box-shadow:\s*inset 3px 0 0 var\(--mrt-accent\)/.test(layers));
+  assert.ok(/qr-cks > summary[\s\S]*box-shadow:\s*none !important/.test(layers));
 });
 test('route-card flags chip grows to the full label (no ellipsis, no clip)', () => {
   const fit = rd('src/styles/fit.css');

@@ -102,7 +102,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     const gw = Math.max(gr.width, svg ? svg.getBoundingClientRect().width : 0, b.scrollWidth);
     const gh = Math.max(gr.height, svg ? svg.getBoundingClientRect().height : 0, b.scrollHeight);
     const br = b.getBoundingClientRect();
-    if (br.width < 24 || br.height < 24) res.issues.push('tab close hit area ' + Math.round(br.width) + 'x' + Math.round(br.height));
+    if (br.width < 22 || br.height < 22) res.issues.push('tab close hit area ' + Math.round(br.width) + 'x' + Math.round(br.height));
+    const bw = parseFloat(cs.borderTopWidth) || 0;
+    if (bw > 0.5 && cs.borderTopStyle !== 'none') res.issues.push('tab close nested border ' + bw);
     if (gw < 14 || gh < 14) res.issues.push('tab close glyph size ' + Math.round(gw) + 'x' + Math.round(gh));
   });
   document.querySelectorAll('table.qr-mrt').forEach((tbl) => {
@@ -127,6 +129,37 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       if (dir !== 'rtl' && mid > center + 8) res.issues.push('footer buttons not on LTR rail (left)');
     }
   }
+  const visFrame = (el) => {
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return 0;
+    let n = 0, max = 0;
+    ['Top', 'Right', 'Bottom', 'Left'].forEach((s) => {
+      const w = parseFloat(cs['border' + s + 'Width']) || 0;
+      const st = cs['border' + s + 'Style'];
+      if (w < 0.5 || st === 'none' || st === 'hidden') return;
+      const c = rgba(cs['border' + s + 'Color']);
+      if (!c || c.a < 0.08) return;
+      n += 1; max = Math.max(max, w);
+    });
+    return n >= 2 ? max : 0;
+  };
+  const nestedOk = (el, p) => {
+    if ((el.tagName === 'TD' || el.tagName === 'TH') && p.tagName === 'TR') return true;
+    if (el.classList.contains('qr-chip') || el.classList.contains('qr-badge') || el.classList.contains('qr-status') || el.classList.contains('qr-dot')) return true;
+    if (el.classList.contains('mrt-wizard-step-marker')) return true;
+    if (el.classList.contains('qr-row-menu') && (p.tagName === 'TD' || p.closest('td'))) return true;
+    if (el.classList.contains('mrt-workspace-tab') && p.classList.contains('mrt-workspace-tab-strip')) return true;
+    if (el.classList.contains('mrt-workspace-tab__add') || el.classList.contains('qr-tab-more')) return true;
+    return false;
+  };
+  document.querySelectorAll('body *').forEach((el) => {
+    if (el.closest('.qr-proj-off')) return;
+    const bw = visFrame(el); if (!bw) return;
+    const p = el.parentElement; if (!p || p === document.body) return;
+    if (!visFrame(p)) return;
+    if (nestedOk(el, p)) return;
+    res.issues.push('nested border: ' + (typeof el.className === 'string' && el.className ? el.className.split(' ')[0] : el.tagName) + ' in ' + (typeof p.className === 'string' && p.className ? p.className.split(' ')[0] : p.tagName));
+  });
   document.querySelectorAll('.qr-ptabs .mrt-workspace-tab__label').forEach((e) => {
     if (e.closest('.qr-proj-off')) return;
     const px = parseFloat(getComputedStyle(e).fontSize);

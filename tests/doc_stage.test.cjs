@@ -61,7 +61,7 @@ test('old projects: upgradePart stages old tasks and builds the route card (idem
 });
 test('UI wiring: collapsed neutral section in the part card and the summary, tooltips, parity, no readiness chip, provisional counts', () => {
   assert.match(rd('src/components/partcard/PartCard.tsx'), /<RouteCardSection part=\{part\}/); assert.match(rd('src/components/wizard/StepSummary.tsx'), /<RouteCardSummary parts=\{parts\}/);
-  const c = rd('src/components/partcard/RouteCardSection.tsx'); assert.match(c, /<details className="qr-rc"/); assert.ok(!/<details[^>]* open=\{true\}/.test(c)); assert.match(c, /title=\{t\('tip\.routeCard'\)\}/); assert.ok(!/fontSize|font-size|qr-dot|data-s=/.test(c), 'neutral: no inline fonts, no status dots');
+  const c = rd('src/components/partcard/RouteCardSection.tsx'); assert.match(c, /<details className="qr-rc/); assert.ok(!/<details[^>]* open=\{true\}/.test(c)); assert.match(c, /title=\{t\('tip\.routeCard'\)\}/); assert.ok(!/fontSize|font-size|qr-dot|data-s=/.test(c), 'neutral: no inline fonts, no status dots');
   const en = JSON.parse(rd('src/i18n/en.json')), he = JSON.parse(rd('src/i18n/he.json')); for (const k of ['rcard.title', 'rcard.sumTitle', 'rcard.note', 'rcard.general', 'rcard.spec', 'tip.routeCard', 'prov.note', 'st.assistAuto']) { assert.ok(en[k] && he[k], k); }
   assert.strictEqual(en['rcard.title'], 'For route card'); assert.strictEqual(he['rcard.title'], 'לכרטיס מסלול');
   assert.ok(!/readiness/i.test(rd('src/views/Parts.tsx')), 'one status per part: no second readiness tag in the list'); assert.ok(!/tReadiness/.test(rd('src/views/Dialogs.tsx') + rd('src/views/Viewer.tsx')));

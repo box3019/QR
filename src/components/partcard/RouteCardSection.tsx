@@ -27,7 +27,7 @@ function Groups({ rc }: any) {
 /** One part: a collapsed details block; null when the part has nothing for the route card. */
 export function RouteCardSection({ part, open }: { part: any; open?: boolean }) {
   const rc = part && part.routeCard; if (!rc || !rc.count) return null;
-  return <details className="qr-rc" data-testid="route-card" open={open}>
+  return <details className="qr-rc mrt-report-card" data-testid="route-card" open={open}>
     <summary className="qr-rc-sum" title={t('tip.routeCard')}>{t('rcard.title')} <span className="qr-muted">({rc.count})</span></summary>
     <p className="qr-rc-note qr-muted">{t('rcard.note')}</p>
     <Groups rc={rc} />
@@ -39,7 +39,7 @@ export function RouteCardSummary({ parts }: { parts: any[] }) {
   const list = parts.filter((p) => p.routeCard && p.routeCard.count);
   if (!list.length) return null;
   const total = list.reduce((n, p) => n + p.routeCard.count, 0);
-  return <details className="qr-rc qr-rc-sum-all" data-testid="route-card-summary">
+  return <details className="qr-rc qr-rc-sum-all mrt-report-card" data-testid="route-card-summary">
     <summary className="qr-rc-sum" title={t('tip.routeCard')}>{t('rcard.sumTitle')} <span className="qr-muted">({total})</span></summary>
     <p className="qr-rc-note qr-muted">{t('rcard.note')}</p>
     {list.map((p, i) => <details className="qr-rc qr-rc-part" key={p.id || i} data-testid="route-card-part">

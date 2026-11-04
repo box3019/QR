@@ -17,7 +17,9 @@ Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimpl
 | Summary / loaded counters | MRT chips/cards grouped (`flex`, `flex: 0 0 auto`), not a stretching `1fr` grid. Closest: utility toolbar / toast chips. | `StepSummary.tsx`, `LoadedSummary.tsx`, `Tiles.tsx` |
 | Recent (step 1) | `MRT_UTILITY_TABLE_WRAP` **one** card (`.qr-recent`); table inside with no second shell; order number is table text, not a chip; row click opens. | `RecentList.tsx` |
 | History dialog | Utility header/footer + grid; empty `MrtEmpty` | `HistoryDialog` `MrtEmpty` |
-| Rail / header / stepper | `MrtCmmProgramWizard` + `WizardHeaderSummaryTable` | `RailContext`, `Stepper`, `StepHeader` |
+| Job tabs | `MrtWorkspaceTabStrip` + `mrtLiquidGlass.css` `.mrt-workspace-tab` (1px chip; label/close unframed; strip unframed; add is sibling 1px) | `TabsBar.tsx`, `layers.css` |
+| Collapsible summary (`רשימת בדיקה` / `לכרטיס מסלול`) | `.mrt-report-card` one 1px shell; header band fill only (`mrt-collapsible-nav-group-btn` transparent border) | `ChecklistSummary.tsx`, `RouteCardSection.tsx` |
+| Rail / header / stepper | `MrtCmmProgramWizard` + `WizardHeaderSummaryTable`; step `border: 1px solid transparent`, marker is the circle | `RailContext`, `Stepper`, `StepHeader` |
 | Dialogs | `MRT_UTILITY_HEADER` 52px/17px/700; footer `min-h 3.25rem` | `Modal`, `mrtChrome.css` |
 | Primary buttons | `derivePrimaryButtonCssVars` mixHex | `mrtButtons.ts`, `qrPalette.css` |
 | PIN / ERP / user | `MrtPinInput`, `MrtScreenShell` login | **Excluded** |
@@ -45,7 +47,8 @@ Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimpl
 | Group header | 42px min, 15px/600 | `.qr-mrt-gh` |
 | Body row | MRT report TD is 15px/600 (in-cell editors). QR list/read body is 15px/500 so only headers/group headers read as bold (Alex v0.1.18). | `.qr-mrt td` |
 | Value wrap | Group cells `whitespace-normal` `[overflow-wrap:break-word]` | `.qr-mrt-wrap`, `.qr-ck-val`, `.qr-bd-v`, why/body cells |
-| Card | 1px grid, radius `--mrt-radius` (6px) | `.qr-mrt-shell` |
+| Card | 1px grid, radius `--mrt-radius` (6px); one shell only | `.qr-mrt-shell`, `.qr-cks-card`, `.qr-rc` |
+| Workspace tab | 1px `--mrt-ui-border`, radius 6px, min-height 26px; close 22×22, no border | `.mrt-workspace-tab` |
 | Wizard rail | 280px | `--mrt-wizard-rail-width` |
 | Wizard footer buttons | 34px / 6px 12px / 13px; primary 42px | `.qr-wiz-footer` |
 | Segment | h-10, radius 6px, 13px/600, 1px border | `.qr-gstep` |

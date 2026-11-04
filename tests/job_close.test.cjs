@@ -92,7 +92,7 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   const fit = src('src/styles/fit.css');
   assert.ok(/flex-wrap:\s*nowrap !important/.test(fit));
   assert.ok(/^button, \.mrt-btn/m.test(fit) && !/button:not\(/.test(fit));
-  assert.ok(/\.mrt-workspace-tab__close/.test(fit) && /24px/.test(fit));
+  assert.ok(/\.mrt-workspace-tab__close/.test(fit) && /22px/.test(fit));
   const qr = src('src/styles/qr.css');
   assert.ok(/\.qr-topbar \{ flex-wrap: nowrap/.test(qr));
   const lay = src('scripts/check-layout.cjs');

@@ -13,10 +13,11 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 .qr-topbar .mrt-topbar-cmd[data-testid='btn-save-pdf'] { width: auto !important; min-width: 88px !important; max-width: none !important; flex-shrink: 0 !important; }
 /* Tab strip only — scoped after toolbar caps so the global button rule stays low-specificity. */
 .mrt-workspace-tab__close, .qr-more-job .mrt-workspace-tab__close {
-  height: 24px !important; min-height: 24px !important; max-height: 24px !important;
-  width: 24px !important; min-width: 24px !important; max-width: 24px !important;
+  height: 22px !important; min-height: 22px !important; max-height: 22px !important;
+  width: 22px !important; min-width: 22px !important; max-width: 22px !important;
   padding: 0 !important; font-size: 16px !important; line-height: 1 !important;
   white-space: nowrap !important; overflow-wrap: normal; text-align: center;
+  border: 0 !important; background: transparent !important;
 }
 .mrt-workspace-tab__label {
   height: auto !important; min-height: 0 !important; min-width: max-content !important; max-width: none;

@@ -43,7 +43,7 @@ export function ChecklistSummary({ parts, goPart }: any) {
     return <td key={g} className="qr-cks-g" data-s={st} title={tip} data-testid={'cks-g-' + g}>{body}</td>;
   };
   const ncol = 4 + LISTED.length;
-  return <details className="qr-cks qr-cks-card" open data-testid="checklist-summary"><summary title={t('tip.checklistSum')}>{t('ck.sumTitle')}</summary>
+  return <details className="qr-cks qr-cks-card mrt-report-card" open data-testid="checklist-summary"><summary title={t('tip.checklistSum')}>{t('ck.sumTitle')}</summary>
     <MrtTable className="qr-cks-tab" tableRef={tabRef}>
       <thead><tr><th>{t('ck.col.part')}</th><th>{t('ck.prec.title')}</th><th>{t('ck.cx.title')}</th>{GROUPS.map((g: string) => <th key={g}>{g === 'material' ? t('ck.g.material') : t('ck.g.' + g)}</th>)}</tr></thead>
       <tbody>{list.map((p: any, i: number) => { const e = evs[i]; const rk = String(p.id || i) + ':' + i; const isOpen = !!open[rk]; const flip = () => setOpen((o) => ({ ...o, [rk]: !o[rk] }));

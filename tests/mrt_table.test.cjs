@@ -43,6 +43,18 @@ test('MrtTable exposes shell and empty row; tables are full width', () => {
   assert.match(t, /shell \? <div className="qr-mrt-shell">/);
 });
 
+test('one MRT border level: tab chip 1px, close/label/summary 0, no strip frame', () => {
+  const layers = R('src/styles/layers.css');
+  assert.match(layers, /\.qr-root \.mrt-workspace-tab \{[\s\S]*border:\s*1px solid/);
+  assert.match(layers, /mrt-workspace-tab-strip[\s\S]*border:\s*0 !important/);
+  assert.match(layers, /mrt-workspace-tab__close[\s\S]*border:\s*0 !important/);
+  assert.match(layers, /qr-cks > summary[\s\S]*border:\s*0 !important/);
+  assert.match(layers, /qr-ck-link[\s\S]*border:\s*0 !important/);
+  assert.doesNotMatch(layers, /\.qr-root \.mrt-workspace-tab \{[^}]*border:\s*2px/);
+  assert.match(R('src/styles/wizard.css'), /qr-cks-card \{[^}]*border:\s*1px solid var\(--mrt-grid-border/);
+  assert.match(R('scripts/check-layout.cjs'), /nested border:/);
+});
+
 test('stylesheets load last: mrtTable then mrtChrome', () => {
   const main = R('src/main.tsx');
   assert.match(main, /layers\.css['"];\s*import '\.\/styles\/mrtTable\.css'/);

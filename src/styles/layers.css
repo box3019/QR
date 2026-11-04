@@ -39,22 +39,23 @@
 .qr-root .qr-rail .mrt-wizard-step-label { font-size: 0.8125rem !important; }
 .qr-root .qr-rail .mrt-wizard-step-label, .qr-root .qr-rail .mrt-wizard-step-text { min-width: 0; }
 .qr-root .qr-rail .mrt-wizard-step { justify-content: flex-start; }
-/* Close × always painted (never hover-only / never same colour as the chip). Tab-strip only. */
+/* Close ×: MRT workspace tab close — no own frame (one border on the tab chip). Always painted in QR. */
 .qr-root .mrt-workspace-tab__close, .qr-root .qr-more-job .mrt-workspace-tab__close {
   display: inline-flex !important; align-items: center; justify-content: center;
   visibility: visible !important; opacity: 1 !important;
-  width: 24px !important; min-width: 24px !important; max-width: 24px !important;
-  height: 24px !important; min-height: 24px !important; padding: 0 !important;
-  margin-inline-end: 4px; flex: 0 0 24px !important;
-  color: var(--mrt-text) !important; -webkit-text-fill-color: var(--mrt-text); background: var(--qr-btn-bg) !important;
-  border: 2px solid var(--qr-btn-border) !important; box-shadow: none !important; overflow: visible !important;
-  cursor: pointer !important; border-radius: var(--qr-btn-radius) !important;
+  width: 22px !important; min-width: 22px !important; max-width: 22px !important;
+  height: 22px !important; min-height: 22px !important; padding: 0 !important;
+  margin-inline-end: 2px; flex: 0 0 22px !important;
+  color: var(--mrt-text-muted, #6e6e73) !important; -webkit-text-fill-color: var(--mrt-text-muted, #6e6e73);
+  background: transparent !important; border: 0 !important; box-shadow: none !important; overflow: visible !important;
+  cursor: pointer !important; border-radius: var(--mrt-radius, 6px) !important;
   font-size: 16px !important; font-weight: 700 !important; line-height: 1 !important;
   white-space: nowrap !important;
 }
 .qr-root .mrt-workspace-tab__close .qr-tab-x { display: inline-block; font-size: 16px; line-height: 1; min-width: 14px; min-height: 14px; color: inherit; -webkit-text-fill-color: inherit; }
 .qr-root .mrt-workspace-tab__close:hover, .qr-root .qr-more-job .mrt-workspace-tab__close:hover {
-  color: #dc2626 !important; -webkit-text-fill-color: #dc2626; background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important;
+  color: #dc2626 !important; -webkit-text-fill-color: #dc2626;
+  background: color-mix(in srgb, var(--mrt-text-muted) 12%, transparent) !important; border: 0 !important;
 }
 .qr-root .qr-wiz > .qr-wiz-head { box-shadow: var(--qr-bar-shadow); position: relative; z-index: 2; }
 .qr-root .qr-wiz-footer { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
@@ -66,7 +67,7 @@
 .qr-root .qr-wiz-main > :not(.qr-wiz-head) { min-height: 0; }
 
 /* cards: white (or the dark card tone) + 1px border + subtle shadow */
-.qr-root .qr-panel, .qr-root .qr-box, .qr-root .qr-warnbar, .qr-root .qr-allgood, .qr-root .qr-import-files, .qr-root .qr-recent, .qr-root .qr-stat, .qr-root .qr-step-intake .qr-drop, .qr-root .qr-tile {
+.qr-root .qr-panel:not(.qr-plist-box), .qr-root .qr-box, .qr-root .qr-warnbar, .qr-root .qr-allgood, .qr-root .qr-recent, .qr-root .qr-stat, .qr-root .qr-step-intake .qr-drop, .qr-root .qr-tile {
   background: var(--mrt-surface); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r); box-shadow: var(--qr-card-shadow); color: var(--mrt-text);
 }
 .qr-root .qr-panel { overflow: hidden; }
@@ -245,11 +246,11 @@
 }
 
 /* Every control looks like an MRT button: visible border + fill, hover/press, focus ring, pointer. */
-.qr-root button:not(.qr-gstep):not(.qr-hist-open):not(.qr-tri-open):not(.qr-loaded-part), .qr-root [role="button"]:not(.qr-recent-row), .qr-root [role="tab"]:not(.qr-gstep), .qr-root [role="menuitem"], .qr-root [role="switch"],
-.qr-root .qr-chip, .qr-root .qr-badge, .qr-root .qr-status, .qr-root .qr-tab, .qr-root .qr-settings-tab, .qr-root .qr-menu-item,
-.qr-root .qr-ck-link, .qr-root .qr-cks-x, .qr-root .qr-ck-loc, .qr-root .qr-chip-x,
-.qr-root .qr-block-chev, .qr-root .qr-sec-main, .qr-root .qr-pgroup-h,
-.qr-root summary {
+.qr-root button:not(.qr-gstep):not(.qr-hist-open):not(.qr-tri-open):not(.qr-loaded-part):not(.mrt-workspace-tab__label):not(.mrt-workspace-tab__close):not(.mrt-workspace-tab__add):not(.qr-ck-link):not(.qr-cks-x):not(.mrt-wizard-step):not(.qr-block-chev):not(.qr-ck-loc):not(.qr-chip-x):not(.qr-sec-main):not(.qr-pgroup-h):not(.qr-row-menu),
+.qr-root [role="button"]:not(.qr-recent-row):not(.mrt-workspace-tab__label),
+.qr-root [role="tab"]:not(.qr-gstep):not(.mrt-workspace-tab__label),
+.qr-root [role="menuitem"], .qr-root [role="switch"],
+.qr-root .qr-chip, .qr-root .qr-badge, .qr-root .qr-status, .qr-root .qr-tab, .qr-root .qr-settings-tab, .qr-root .qr-menu-item {
   cursor: pointer;
   border: 2px solid var(--qr-btn-border) !important;
   background: var(--qr-btn-bg) !important;
@@ -257,11 +258,11 @@
   border-radius: var(--qr-btn-radius) !important;
   box-shadow: none;
 }
-.qr-root button:hover:not(:disabled):not(.qr-gstep):not(.qr-hist-open):not(.qr-tri-open):not(.qr-loaded-part), .qr-root [role="button"]:hover:not(.qr-recent-row), .qr-root [role="tab"]:hover:not(.qr-gstep), .qr-root [role="menuitem"]:hover,
-.qr-root [role="switch"]:hover, .qr-root .qr-ck-link:hover,
-.qr-root .qr-menu-item:hover, .qr-root .qr-tab:hover, .qr-root .qr-settings-tab:hover, .qr-root .qr-cks-x:hover,
-.qr-root .qr-ck-loc:hover, .qr-root .qr-chip-x:hover, .qr-root .qr-block-chev:hover,
-.qr-root .qr-sec-main:hover, .qr-root .qr-pgroup-h:hover, .qr-root summary:hover {
+.qr-root button:hover:not(:disabled):not(.qr-gstep):not(.qr-hist-open):not(.qr-tri-open):not(.qr-loaded-part):not(.mrt-workspace-tab__label):not(.mrt-workspace-tab__close):not(.mrt-workspace-tab__add):not(.qr-ck-link):not(.qr-cks-x):not(.mrt-wizard-step),
+.qr-root [role="button"]:hover:not(.qr-recent-row):not(.mrt-workspace-tab__label),
+.qr-root [role="tab"]:hover:not(.qr-gstep):not(.mrt-workspace-tab__label), .qr-root [role="menuitem"]:hover,
+.qr-root [role="switch"]:hover,
+.qr-root .qr-menu-item:hover, .qr-root .qr-tab:hover, .qr-root .qr-settings-tab:hover {
   background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important;
 }
 .qr-root button:active:not(:disabled), .qr-root [role="button"]:active, .qr-root [role="menuitem"]:active {
@@ -285,9 +286,10 @@
   border: 1px dashed var(--qr-btn-disabled-border) !important;
 }
 .qr-root .qr-ck-link, .qr-root .qr-cks-x {
-  display: inline-flex !important; align-items: center; text-decoration: none !important;
-  padding: 0.12em 0.5em !important; min-height: 0 !important; height: auto !important; min-width: max-content !important;
+  display: inline !important; align-items: center; text-decoration: none !important;
+  padding: 0 !important; min-height: 0 !important; height: auto !important; min-width: 0 !important;
   font: inherit; white-space: nowrap !important;
+  border: 0 !important; background: none !important; box-shadow: none !important; border-radius: 0 !important;
 }
 .qr-root .qr-hist-open, .qr-root .qr-tri-open, .qr-root .qr-loaded-part {
   display: inline !important; align-items: unset; text-decoration: none !important;
@@ -311,10 +313,20 @@
   cursor: default; display: inline-flex !important; align-items: center; padding-inline: 0.45em !important;
 }
 .qr-root .qr-tab, .qr-root .qr-settings-tab, .qr-root .qr-menu-item { text-align: start; }
-.qr-root .mrt-workspace-tab { background: var(--qr-btn-bg) !important; border: 2px solid var(--qr-btn-border) !important; }
-/* One chip border only — inner label/close are not a second button frame. */
+.qr-root .mrt-workspace-tab-strip, .qr-root .qr-ptabs {
+  border: 0 !important; background: transparent !important; box-shadow: none !important; outline: none !important;
+}
+.qr-root .mrt-workspace-tab {
+  background: var(--mrt-surface, #fff) !important;
+  border: 1px solid var(--mrt-ui-border, var(--mrt-chrome-border, var(--mrt-border))) !important;
+  border-radius: var(--mrt-radius, 6px) !important;
+}
+.qr-root .mrt-workspace-tab--active {
+  border-color: var(--mrt-ui-border-strong, var(--mrt-border-active, var(--mrt-grid-border-strong))) !important;
+  background: var(--mrt-surface, #fff) !important;
+}
 .qr-root .mrt-workspace-tab__label, .qr-root .mrt-workspace-tab__close, .qr-root .qr-more-job .mrt-workspace-tab__close {
-  border: 0 !important; background: transparent !important; box-shadow: none !important;
+  border: 0 !important; background: transparent !important; box-shadow: none !important; outline: none !important;
 }
 .qr-root .mrt-workspace-tab__close:hover, .qr-root .qr-more-job .mrt-workspace-tab__close:hover {
   background: color-mix(in srgb, var(--mrt-text-muted) 12%, transparent) !important; border: 0 !important;
@@ -326,12 +338,16 @@
   border: 0 !important; background: transparent !important; box-shadow: none !important;
 }
 
-/* Section headings (MRT): larger/bolder than the rows, tinted band + accent bar, compact space above. */
+/* Section headings: MRT collapsible / utility header band — fill only, no second outline. */
 .qr-root .qr-pgroup-h, .qr-root .qr-sec, .qr-root .qr-panel-h,
 .qr-root .qr-cks > summary, .qr-root .qr-ck > summary, .qr-root .qr-field > label, .qr-root .qr-rc-sum, .qr-root .qr-tri-sec .qr-panel-h {
   font-size: var(--qr-fs-md) !important; font-weight: 700 !important; color: var(--mrt-text) !important;
-  background: var(--mrt-surface-muted); box-shadow: inset 3px 0 0 var(--mrt-accent);
-  padding-block: 0.28em 0.18em; margin-block-start: 0.35em;
+  background: var(--mrt-header-bg, var(--mrt-surface-muted));
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0.5rem 0.75rem;
+  margin-block-start: 0;
 }
 .qr-root .qr-ck-gh th, .qr-root table.qr-mrt tr.qr-mrt-gh th, .qr-root .qr-modal-h {
   box-shadow: none !important;
@@ -371,7 +387,7 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root .mrt-wizard-step, .qr-root .qr-rail .mrt-wizard-step {
   cursor: pointer !important;
 }
-.qr-root .qr-ck-link, .qr-root .qr-cks-x, .qr-root [data-testid='btn-questions'], .qr-root [data-testid='btn-summary'],
+.qr-root [data-testid='btn-questions'], .qr-root [data-testid='btn-summary'],
 .qr-root [data-testid='btn-cancel'], .qr-root [data-testid='btn-close'],
 .qr-root button.mrt-app-control.mrt-btn:not(.mrt-btn-primary), .qr-root button.mrt-btn.mrt-action-btn:not(.mrt-btn-primary), .qr-root button.mrt-btn-secondary {
   border: 2px solid var(--qr-btn-border) !important; background: var(--qr-btn-bg) !important; cursor: pointer !important;
@@ -381,7 +397,9 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
   color: var(--qr-btn-disabled-fg) !important; cursor: default !important;
 }
 .qr-root .mrt-workspace-tab__add, .qr-root .qr-tab-more {
-  border: 2px solid var(--qr-btn-border) !important; background: var(--qr-btn-bg) !important; cursor: pointer !important;
+  border: 1px solid var(--mrt-ui-border, var(--mrt-chrome-border, var(--mrt-border))) !important;
+  background: var(--mrt-surface, #fff) !important; cursor: pointer !important;
+  border-radius: var(--mrt-radius, 6px) !important;
 }
 
 .qr-root .qr-sum-g {
@@ -465,4 +483,28 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root button.qr-gstep[data-s='done'][data-current='1'] {
   background: var(--qr-st-ok) !important; color: #fff !important; border-color: var(--qr-st-ok) !important;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mrt-accent) 22%, transparent) !important;
+}
+
+/* One outer frame (MRT .mrt-report-card / utility wrap). Inner header band and table perimeter are not a second outline. */
+.qr-root .qr-cks-card, .qr-root .qr-rc, .qr-root .qr-wsum, .qr-root .qr-mrt-shell {
+  box-shadow: none !important;
+}
+.qr-root .qr-cks > summary, .qr-root .qr-rc-sum, .qr-root .qr-ck > summary {
+  border: 0 !important; box-shadow: none !important; outline: none !important;
+}
+.qr-root .qr-wsum table.qr-mrt,
+.qr-root .qr-cks-card table.qr-mrt,
+.qr-root .qr-rc table.qr-mrt,
+.qr-root .qr-mrt-shell > table.qr-mrt {
+  border: 0 !important;
+}
+.qr-root .qr-cks-card table.qr-mrt thead tr:first-child > th,
+.qr-root .qr-rc table.qr-mrt thead tr:first-child > th,
+.qr-root .qr-mrt-shell table.qr-mrt thead tr:first-child > th {
+  border-top: 0 !important;
+}
+.qr-root .qr-plist-box { border: 0 !important; box-shadow: none !important; background: transparent !important; }
+.qr-root .qr-row-menu {
+  border: 1px solid var(--mrt-ui-border, #d1d5db) !important;
+  background: var(--mrt-surface, #fff) !important;
 }
