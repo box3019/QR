@@ -362,7 +362,10 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root table.qr-mrt.qr-cks-tab, .qr-root table.qr-mrt.qr-hist-t, .qr-root table.qr-mrt.qr-catalog, .qr-root table.qr-mrt.qr-wsum-table { table-layout: auto; }
 .qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding: 3px 2px; }
 @media (max-width: 1100px) {
+  .qr-root table.qr-mrt.qr-cks-tab { table-layout: fixed; width: 100%; }
   .qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding-inline: 1px; }
+  .qr-root table.qr-mrt.qr-cks-tab th { white-space: normal; overflow: visible; }
+  .qr-root table.qr-mrt.qr-cks-tab th:first-child, .qr-root table.qr-mrt.qr-cks-tab td.qr-cks-p { width: 8.4rem; }
 }
 .qr-root table.qr-mrt.qr-tri-tab { table-layout: fixed; }
 .qr-root .qr-ck-tab thead, .qr-root .qr-bd-tab thead, .qr-root table.qr-mrt thead { display: table-header-group; }
