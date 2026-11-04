@@ -188,6 +188,24 @@
   border-width: 1px !important;
   white-space: nowrap;
 }
+.qr-root .qr-wiz-footer .mrt-btn-primary,
+.qr-root .qr-wiz-footer button.mrt-btn-primary {
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 1.25rem !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  border-radius: var(--mrt-radius, 6px) !important;
+}
+.qr-root button.mrt-btn-primary:disabled,
+.qr-root .mrt-btn.mrt-btn-primary:disabled {
+  opacity: 0.48 !important;
+  filter: grayscale(0.12) !important;
+  cursor: default !important;
+  background: var(--mrt-btn-primary-bg) !important;
+  color: var(--mrt-btn-primary-fg) !important;
+  border: 1px solid var(--mrt-btn-primary-border) !important;
+}
 
 .qr-root .qr-modal {
   border-radius: var(--mrt-radius, 6px);

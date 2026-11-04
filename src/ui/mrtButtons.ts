@@ -3,13 +3,13 @@
  */
 
 const btnBase =
-  'mrt-btn mrt-action-btn inline-flex items-center justify-center rounded-[var(--mrt-radius,8px)] border leading-tight antialiased transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--mrt-focus)] focus-visible:ring-offset-2';
+  'mrt-btn mrt-action-btn inline-flex items-center justify-center rounded-[var(--mrt-radius,6px)] border leading-tight antialiased transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--mrt-focus)] focus-visible:ring-offset-2';
 
 /** Secondary — Cancel, Close, Back. */
 export const MRT_BTN = `${btnBase} mrt-app-control mrt-btn-secondary mrt-action-btn--dialog-secondary h-10 px-4 gap-2 text-[13px] font-medium`;
 
-/** Primary — Login, Save, Approve. */
-export const MRT_BTN_PRIMARY = `${btnBase} mrt-btn-primary mrt-action-btn--dialog-primary h-10 px-4 gap-2 text-[13px] font-semibold`;
+/** Primary — filled MRT dialog command (42px / 14px / px-5, white on mixHex graphite+accent). */
+export const MRT_BTN_PRIMARY = `${btnBase} mrt-btn-primary mrt-action-btn--dialog-primary h-[42px] min-h-[42px] px-5 gap-2 text-[14px] font-semibold`;
 
 /** Full-width important action (Verify PIN, Generate Checklist). */
 export const MRT_BTN_EMPHASIS = `${btnBase} mrt-btn-primary mrt-btn-emphasis mrt-action-btn--emphasis w-full gap-1.5 text-[12px] font-semibold`;

@@ -10,11 +10,12 @@ Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimpl
 | `src/styles/tokens.ts` | Geometry: radius 6px, button 40px, topbar 60px, sidebar 240px; table type 11/13/14px | `src/styles/mrtTable.css`, `src/styles/buttons.css` |
 | `src/tokens.ts` | Re-export of `styles/tokens` | (not copied as a module) |
 | `src/theme/mrtBuiltinPaletteTokens.ts` | Light glass: canvas `#ebebed`, surface `#fff`, muted `#f5f5f7`, grid `#64748b` / `#334155`, text `#1c1c1e` / `#636366` | `src/styles/qrPalette.css` |
+| `src/theme/mrtPaletteTokens.ts` `derivePrimaryButtonCssVars` | mixHex graphite `#8e8e93` + accent; fg `#ffffff`; hover/border mix; disabled opacity 0.48 | `qrPalette.css` / `themes.css` / `.mrt-btn-primary` |
 | `src/index.css` | `--mrt-radius: 6px`; report thead sticky, header-bg, muted, weight 700 | `src/styles/mrtTable.css` |
 | `src/styles/mrtTableFocus.ts` | Report TH: min-h 42px, px-2 py-1, 15px bold uppercase tracking 0.04em, grid-border-strong; TD: 15px semibold, 1px grid | `src/styles/mrtTable.css` (`.qr-mrt`) |
 | `src/ui/mrtUtilityShell.ts` | Utility wrap + TH/TD (11px uppercase / 13px semibold, px-2 py-2 / py-1.5); footer min-h 3.25rem; header 17px/52px | `.qr-mrt.qr-wsum-table`, `.qr-modal-*` |
-| `src/ui/mrtButtons.ts` | Command `h-10` 13px; row `h-8`; topbar column | `src/ui/mrtButtons.ts` (class names already aligned; QR keeps light fills) |
-| `src/ui/mrtDialogButtonStandard.tsx` | Dialog/wizard buttons 42px / 14px / px-5; wizard nav 120×42; wizard action 40×148 | Footer/dialog rules in `mrtChrome.css` |
+| `src/ui/mrtButtons.ts` | Command `h-10` 13px; row `h-8`; topbar column | `src/ui/mrtButtons.ts` |
+| `src/ui/mrtDialogButtonStandard.tsx` | Dialog/wizard buttons 42px / 14px / px-5; wizard nav 120×42; wizard action 40×148 | `MRT_BTN_PRIMARY` + `mrtChrome.css` |
 | `src/ui/WizardHeaderSummaryTable.tsx` | Rail key/value: label `th`, value `td`, em-dash when empty | `src/components/wizard/RailContext.tsx` |
 | `src/components/MrtCmmProgramWizard.tsx` | Rail + steps + main header + body + footer; no PIN/ERP | `ProjectView` / `Stepper` / `StepHeader` / `WizardFooter` |
 | `mrtLiquidGlass.css` `.mrt-wizard-*` | Rail 280px; header pad 0.875/1.25rem; title 1rem/600; body pad 1.25rem; footer 34px buttons, flex-end | `src/styles/mrtChrome.css`, `src/styles/wizard.css` |
@@ -41,8 +42,11 @@ Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimpl
 | Dialog header | min-h 52px, 17px/700 | `.qr-modal-h` |
 | Dialog footer | min-h 3.25rem, px-6 py-4 | `.qr-modal-f` |
 | Row menu | 34×34, radius 6px | `.qr-row-menu` |
+| Primary button | mixHex `#8e8e93`+`#48484a`@0.1 → fill `#87878c`, text `#ffffff`, border `#757578`, hover `#9e9ea1`; radius `var(--mrt-radius,6px)`; height 42px; disabled opacity 0.48 / grayscale 0.12 | `.mrt-btn-primary` |
+| Secondary button | fill `#ffffff` / `--mrt-btn-neutral-fill`, text `#1c1c1e`, hover `#f2f2f7` | `.mrt-btn-secondary` |
+| History empty | Feature report empty: table + `py-8` centered cell | `HistoryDialog` `MrtEmpty` |
 
-QR keeps: guided check, locate, per-part PDF, package sort, auto-update, Hebrew RTL + English LTR, no ellipsis, no horizontal scroll, 4K@200%, light button fills (AA; MRT’s filled primary is not copied).
+QR keeps: guided check, locate, per-part PDF, package sort, auto-update, Hebrew RTL + English LTR, no ellipsis, no horizontal scroll, 4K@200%. Exactly one filled primary command per screen/dialog.
 
 ## Screen checklist
 
@@ -53,5 +57,5 @@ QR keeps: guided check, locate, per-part PDF, package sort, auto-update, Hebrew 
 | Documents | Same grid, empty `py-8` | `ProblemsPanel` |
 | Summary | Card + auto table | `ChecklistSummary` |
 | Settings | Utility table wrap | catalog / customers |
-| History / dialogs | Utility header/footer + grid | `HistoryDialog`, `Modal` |
+| History / dialogs | Utility header/footer + grid; empty `py-8` in table | `HistoryDialog` `MrtEmpty`, `Modal` |
 | Rail / footer / header | CMM wizard chrome | `RailContext`, `Stepper`, `StepHeader`, `WizardFooter` |

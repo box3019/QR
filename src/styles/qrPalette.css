@@ -45,11 +45,11 @@
   --qr-ok-text: #047857;
   --qr-warn-text: #92400e;
   --qr-bad-text: #b91c1c;
-  /* Light primary button (Alex's rule: no dark fills): white fill, dark text and border */
-  --mrt-btn-primary-bg: #ffffff;
-  --mrt-btn-primary-fg: #1c1c1e;
-  --mrt-btn-primary-border: #48484a;
-  --mrt-btn-primary-bg-hover: #f2f2f7;
+  /* Primary = MRT derivePrimaryButtonCssVars(accent #48484a, light, 0.1) */
+  --mrt-btn-primary-bg: #87878c;
+  --mrt-btn-primary-fg: #ffffff;
+  --mrt-btn-primary-border: #757578;
+  --mrt-btn-primary-bg-hover: #9e9ea1;
   /* Disabled controls stay legible: flat light fill, readable muted text (no opacity fade) */
   --qr-disabled-bg: #ffffff;
   --qr-disabled-fg: #3a3a3c;

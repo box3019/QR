@@ -70,4 +70,21 @@ test('docs map real MRT v9.0.60 files onto QR files', () => {
   assert.match(doc, /src\/styles\/mrtTable\.css/);
   assert.match(doc, /src\/styles\/mrtChrome\.css/);
   assert.match(doc, /MrtPinInput[\s\S]*\*\*Excluded\*\*/);
+  assert.match(doc, /#87878c/);
+  assert.match(doc, /HistoryDialog.*MrtEmpty/);
+  assert.doesNotMatch(doc, /light button fills|filled primary is not copied/);
+});
+
+test('History empty state is MrtEmpty inside the table', () => {
+  const h = R('src/components/history/HistoryDialog.tsx');
+  assert.match(h, /MrtEmpty/);
+  assert.match(h, /testid="history-empty"/);
+  assert.doesNotMatch(h, /<p className="qr-muted" data-testid="history-empty"/);
+});
+
+test('primary command button is MRT filled 42px', () => {
+  const b = R('src/ui/mrtButtons.ts');
+  assert.match(b, /h-\[42px\]/);
+  assert.match(R('src/styles/buttons.css'), /--qr-btn-primary-bg:\s*#87878c/);
+  assert.match(R('src/styles/qrPalette.css'), /--mrt-btn-primary-fg:\s*#ffffff/);
 });

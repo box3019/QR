@@ -277,7 +277,8 @@
 }
 .qr-root button.mrt-btn-primary:hover:not(:disabled), .qr-root .qr-btn-primary:hover:not(:disabled),
 .qr-root .mrt-btn.mrt-btn-primary:hover:not(:disabled) {
-  background: var(--qr-btn-primary-bg-hover) !important; border-color: var(--qr-btn-primary-border-hover) !important;
+  background: var(--qr-btn-primary-bg-hover) !important; border-color: var(--qr-btn-primary-bg-hover) !important;
+  color: var(--qr-btn-primary-fg) !important;
 }
 .qr-root button:disabled, .qr-root [aria-disabled='true'] {
   cursor: default !important; background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important;
@@ -362,10 +363,10 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 }
 .qr-root .qr-ck-link, .qr-root .qr-cks-x, .qr-root [data-testid='btn-questions'], .qr-root [data-testid='btn-summary'],
 .qr-root [data-testid='btn-cancel'], .qr-root [data-testid='btn-close'],
-.qr-root button.mrt-app-control.mrt-btn, .qr-root button.mrt-btn.mrt-action-btn, .qr-root button.mrt-btn-secondary {
+.qr-root button.mrt-app-control.mrt-btn:not(.mrt-btn-primary), .qr-root button.mrt-btn.mrt-action-btn:not(.mrt-btn-primary), .qr-root button.mrt-btn-secondary {
   border: 2px solid var(--qr-btn-border) !important; background: var(--qr-btn-bg) !important; cursor: pointer !important;
 }
-.qr-root button:disabled, .qr-root button.mrt-app-control.mrt-btn:disabled, .qr-root button.mrt-btn:disabled {
+.qr-root button:disabled:not(.mrt-btn-primary), .qr-root button.mrt-app-control.mrt-btn:disabled:not(.mrt-btn-primary), .qr-root button.mrt-btn:disabled:not(.mrt-btn-primary) {
   border: 2px dashed var(--qr-btn-disabled-border) !important; background: var(--qr-btn-disabled-bg) !important;
   color: var(--qr-btn-disabled-fg) !important; cursor: default !important;
 }
