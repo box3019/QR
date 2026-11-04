@@ -51,8 +51,12 @@ test('one MRT border level: tab chip 1px, close/label/summary 0, no strip frame'
   assert.match(layers, /qr-cks > summary[\s\S]*border:\s*0 !important/);
   assert.match(layers, /qr-ck-link[\s\S]*border:\s*0 !important/);
   assert.doesNotMatch(layers, /\.qr-root \.mrt-workspace-tab \{[^}]*border:\s*2px/);
+  assert.doesNotMatch(layers, /border:\s*2px solid var\(--qr-btn-border\)/);
   assert.match(R('src/styles/wizard.css'), /qr-cks-card \{[^}]*border:\s*1px solid var\(--mrt-grid-border/);
+  assert.match(R('src/styles/wizard.css'), /qr-cks-card \{[^}]*overflow:\s*visible/);
   assert.match(R('scripts/check-layout.cjs'), /nested border:/);
+  assert.match(R('scripts/check-layout.cjs'), /border >1px/);
+  assert.match(R('scripts/check-layout.cjs'), /footer not visible/);
 });
 
 test('stylesheets load last: mrtTable then mrtChrome', () => {

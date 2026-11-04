@@ -121,13 +121,23 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (jc !== 'flex-start' && jc !== 'start') res.issues.push('footer not rail-side: ' + jc);
     const dir = getComputedStyle(foot).direction;
     const r = foot.getBoundingClientRect();
+    const fcs = getComputedStyle(foot);
+    if (fcs.display === 'none' || fcs.visibility === 'hidden') res.issues.push('footer hidden');
+    if (r.height < 24 || r.bottom < 8 || r.top >= innerHeight - 4 || r.bottom > innerHeight + 8) res.issues.push('footer not visible ' + Math.round(r.top) + '-' + Math.round(r.bottom) + ' in ' + innerHeight);
     const btns = [...foot.querySelectorAll('button')].filter((b) => getComputedStyle(b).display !== 'none');
+    if (!btns.length) res.issues.push('footer buttons missing');
     if (btns.length) {
       const mid = (btns[0].getBoundingClientRect().left + btns[btns.length - 1].getBoundingClientRect().right) / 2;
       const center = (r.left + r.right) / 2;
       if (dir === 'rtl' && mid < center - 8) res.issues.push('footer buttons not on RTL rail (right)');
       if (dir !== 'rtl' && mid > center + 8) res.issues.push('footer buttons not on LTR rail (left)');
+      btns.forEach((b) => {
+        const br = b.getBoundingClientRect();
+        if (br.bottom > innerHeight + 4 || br.top < 0 || br.height < 20) res.issues.push('footer button clipped: ' + (b.getAttribute('data-testid') || '').slice(0, 20));
+      });
     }
+  } else if (document.querySelector('[data-testid=project]:not(.qr-proj-off) .qr-wiz')) {
+    res.issues.push('footer missing');
   }
   const visFrame = (el) => {
     const cs = getComputedStyle(el);
@@ -146,12 +156,30 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const nestedOk = (el, p) => {
     if ((el.tagName === 'TD' || el.tagName === 'TH') && p.tagName === 'TR') return true;
     if (el.classList.contains('qr-chip') || el.classList.contains('qr-badge') || el.classList.contains('qr-status') || el.classList.contains('qr-dot')) return true;
+    if (el.classList.contains('qr-stat') || el.classList.contains('qr-tile')) return true;
+    if (el.classList.contains('mrt-btn') || el.classList.contains('qr-btn') || el.classList.contains('mrt-action-btn')) return true;
     if (el.classList.contains('mrt-wizard-step-marker')) return true;
     if (el.classList.contains('qr-row-menu') && (p.tagName === 'TD' || p.closest('td'))) return true;
     if (el.classList.contains('mrt-workspace-tab') && p.classList.contains('mrt-workspace-tab-strip')) return true;
     if (el.classList.contains('mrt-workspace-tab__add') || el.classList.contains('qr-tab-more')) return true;
     return false;
   };
+  const accentBar = (el) => {
+    if (el.classList.contains('mrt-wizard-step-marker')) return true;
+    if (el.classList.contains('mrt-wizard-step') && el.getAttribute('data-state') === 'current') return true;
+    if (el.classList.contains('qr-tour-hole') || el.classList.contains('qr-mark')) return true;
+    if (el.classList.contains('qr-drop')) return true;
+    if (el.classList.contains('qr-acc') && el.getAttribute('data-active') === 'true') return true;
+    const cs = getComputedStyle(el);
+    if ((cs.borderTopStyle === 'dashed' || cs.borderStyle === 'dashed') && (el.classList.contains('qr-drop') || el.classList.contains('qr-step-intake'))) return true;
+    return false;
+  };
+  document.querySelectorAll('body *').forEach((el) => {
+    if (el.closest('.qr-proj-off')) return;
+    const bw = visFrame(el); if (bw <= 1.15) return;
+    if (accentBar(el)) return;
+    res.issues.push('border >1px: ' + (typeof el.className === 'string' && el.className ? el.className.split(' ')[0] : el.tagName) + ' ' + Math.round(bw * 10) / 10 + 'px');
+  });
   document.querySelectorAll('body *').forEach((el) => {
     if (el.closest('.qr-proj-off')) return;
     const bw = visFrame(el); if (!bw) return;
@@ -668,7 +696,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const m = await win.evaluate(MEASURE);
       const clipIssues = (m.issues || []).filter((x) => /^clip /.test(x));
       const viewIssues = st === 2 ? (m.issues || []).filter((x) => /^(viewer |locate )/.test(x)) : [];
-      const extraIssues = (m.issues || []).filter((x) => /^(hint bar|multiline )/.test(x));
+      const extraIssues = (m.issues || []).filter((x) => /^(hint bar|multiline |footer |nested border|border >1px)/.test(x));
       report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, clips: m.clips, viewer: m.viewer, printButton: m.printButton, savePdfButton: m.savePdfButton, issues: [...clipIssues, ...viewIssues, ...extraIssues] });
       if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length) || clipIssues.length || viewIssues.length || extraIssues.length) fail++;
       // Check Print / Save PDF buttons are visible on each step

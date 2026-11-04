@@ -180,7 +180,11 @@
   width: 100%;
   max-width: 100%;
 }
-.qr-root table.qr-mrt.qr-cks-tab,
+.qr-root table.qr-mrt.qr-cks-tab {
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
+}
 .qr-root table.qr-mrt.qr-catalog,
 .qr-root table.qr-mrt.qr-prob-tab {
   table-layout: auto;

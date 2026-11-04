@@ -33,7 +33,7 @@
 
 /* summary tiles: counts, not buttons (no fill change, no shadow); active = thin accent border */
 .qr-tiles { display: flex; flex-wrap: wrap; gap: var(--qr-gap); padding: 8px 8px 0; justify-content: flex-start; }
-.qr-tile { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: var(--mrt-surface); border: var(--qr-bd); border-radius: var(--qr-r); cursor: pointer; min-width: 0; user-select: none; }
+.qr-tile { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: var(--mrt-surface); border: 1px solid var(--mrt-border-strong); border-radius: var(--qr-card-r, var(--qr-r)); cursor: pointer; min-width: 0; user-select: none; box-shadow: var(--qr-card-shadow); }
 .qr-tile:hover { border-color: var(--mrt-border-strong); }
 .qr-tile[data-active='true'] { border-color: var(--mrt-accent); }
 .qr-tile:focus-visible { outline: 2px solid var(--mrt-focus); outline-offset: 1px; }

@@ -4,8 +4,9 @@ const test = require('node:test'); const assert = require('node:assert'); const 
 const ROOT = path.join(__dirname, '..'); const rd = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/^\uFEFF/, '');
 const css = rd('src/styles/wizard.css'), tsx = rd('src/checklist/ChecklistSummary.tsx');
 
-test('summary table: auto layout sized from the content, one line per item, N items fallback instead of wrapping, no scroll wrapper', () => {
-  assert.ok(/\.qr-cks-tab\s*\{[^}]*table-layout:\s*auto/.test(css));
+test('summary table: full-width MRT FeatureReportTable layout, one line per item, N items fallback instead of wrapping, no scroll wrapper', () => {
+  assert.ok(/\.qr-cks-tab\s*\{[^}]*table-layout:\s*fixed/.test(css));
+  assert.ok(/\.qr-cks-card\s*\{[^}]*overflow:\s*visible/.test(css));
   assert.ok(!/qr-cks-scroll/.test(css) && !/qr-cks-scroll/.test(tsx));
   assert.ok(/\.qr-cks-tab th, \.qr-cks-tab td\s*\{[^}]*white-space:\s*nowrap/.test(css), 'cells nowrap');
   assert.ok(/\.qr-cks-t\s*\{[^}]*display:\s*inline;\s*white-space:\s*nowrap/.test(css), 'each item on its own line, never wraps inside');

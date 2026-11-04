@@ -63,5 +63,5 @@ QR keeps: guided check, locate, per-part PDF, package sort, auto-update, Hebrew 
 | Part navigator 1..n + סיכום | Settings segment group | Green/red done/problem is QR status, not in Settings |
 | Footer on rail side in RTL | `mrt-wizard-footer` chrome | MRT is LTR `flex-end`; QR uses `flex-start` + `padding-inline-start` |
 | Finish check (job tab) | Workspace tab close | Does not close the Electron window |
-| Status counter chips | Utility chips / compact cards | `flex` + `flex: 0 0 auto`, never `minmax(100px, 1fr)` |
+| Status counter chips | Utility chips / compact cards | `flex` + `flex: 0 0 auto`, never `minmax(100px, 1fr)`. Summary `.qr-stat` is the reference: 1px `--mrt-btn-neutral-border`, white fill, coloured dot, `--qr-card-shadow` rest / `--mrt-btn-hover-shadow` + `translateY(-1px)` lift. Same chrome on tiles, status pills, chips, and light secondary buttons. |
 | Locate on drawing | — | QR-only; table chrome still MRT |

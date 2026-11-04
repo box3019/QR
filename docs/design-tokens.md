@@ -31,7 +31,7 @@ Caveats: MRT has a 5-step stepper with captions and 10px panel radius; QR has 4 
 | `--mrt-accent` | `#48484a` | selection border, focus ring (no fills) |
 | `--mrt-border` | `rgba(60,60,67,.14)` | 1px hairlines (MRT) |
 | `--mrt-border-strong` | `rgba(60,60,67,.22)` | panel outline (MRT) |
-| `--qr-btn-border` | `rgba(60,60,67,.55)` | button border: deliberately darker than MRT's .20 so buttons are crisp (3:1 on white) |
+| `--mrt-btn-neutral-border` | `rgba(60,60,67,.20)` | light 1px chip/button frame (summary counters are the reference). `--qr-btn-border` is a contrast fallback only |
 | `--mrt-btn-neutral-fill` | `#ffffff` (hover `#f2f2f7`) | buttons (light only) |
 | `--qr-disabled-bg` / `--qr-disabled-fg` | `#ffffff` / `#3a3a3c` | disabled controls: white fill, dark text, dashed border (no grey-on-grey; MRT fades to .48 opacity, which fails AA) |
 

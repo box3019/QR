@@ -2,7 +2,7 @@
    measured with scripts/btn-probe (MRT dist CSS rendered in Electron). No MRT code is imported. */
 :root {
   --qr-btn-radius: 6px;
-  --qr-btn-border-w: 2px;
+  --qr-btn-border-w: 1px;
   /* Compact MRT size in px: buttons do NOT grow with QR's Large/XLarge/Huge text setting (capped at Normal). */
   --qr-btn-h: 32px;
   --qr-btn-pad-x: 12px;
@@ -12,12 +12,15 @@
   --qr-btn-fw-primary: 600;
   --qr-btn-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   --qr-btn-transition: 0.15s;
-  /* secondary (default) */
+  /* secondary (default) — MRT --mrt-btn-neutral-border / fill, 1px */
   --qr-btn-bg: #ffffff;
   --qr-btn-fg: #1c1c1e;
-  --qr-btn-border: rgba(60, 60, 67, 0.55);
+  --qr-btn-border: rgba(60, 60, 67, 0.2);
   --qr-btn-bg-hover: #f2f2f7;
-  --qr-btn-border-hover: rgba(60, 60, 67, 0.75);
+  --qr-btn-border-hover: rgba(60, 60, 67, 0.32);
+  --qr-float-shadow: var(--qr-card-shadow, 0 1px 2px rgba(28, 28, 30, 0.08), 0 3px 10px rgba(28, 28, 30, 0.10));
+  --qr-float-shadow-hover: var(--mrt-btn-hover-shadow, 0 2px 8px color-mix(in srgb, var(--mrt-text, #1c1c1e) 9%, transparent));
+  --qr-float-lift: var(--mrt-press-lift, translateY(-1px));
   /* primary: filled with the default slate accent (themes.css retints to --mrt-accent) */
   --qr-btn-primary-h: 42px;
   --qr-btn-primary-bg: #87878c;
@@ -35,15 +38,15 @@
 }
 .qr-btn, .qr-root .mrt-btn, .qr-root button.mrt-app-control.mrt-btn, .qr-root button.mrt-btn.mrt-action-btn {
   border-radius: var(--qr-btn-radius) !important;
-  border: var(--qr-btn-border-w) solid var(--qr-btn-border) !important;
+  border: var(--qr-btn-border-w) solid var(--mrt-btn-neutral-border, var(--qr-btn-border)) !important;
   background: var(--qr-btn-bg) !important;
   color: var(--qr-btn-fg) !important;
   font-family: var(--qr-btn-font);
   font-size: var(--qr-btn-fs);
   line-height: var(--qr-btn-lh);
   font-weight: var(--qr-btn-fw);
-  box-shadow: none;
-  transform: none !important;
+  box-shadow: var(--qr-float-shadow);
+  transform: translate3d(0, 0, 0);
   transition-duration: var(--qr-btn-transition);
   cursor: pointer;
 }
@@ -62,11 +65,19 @@
 .qr-root .mrt-btn:not(.mrt-topbar-cmd) { font-size: var(--qr-btn-fs) !important; line-height: var(--qr-btn-lh) !important; }
 .qr-btn:hover:not(:disabled), .qr-btn:active:not(:disabled),
 .qr-root .mrt-btn:hover:not(:disabled), .qr-root .mrt-btn:active:not(:disabled) {
-  background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important; transform: none !important;
+  background: var(--qr-btn-bg-hover) !important; border-color: var(--qr-btn-border-hover) !important;
+  transform: var(--qr-float-lift); box-shadow: var(--qr-float-shadow-hover);
+}
+.qr-root .mrt-topbar-cmd:hover:not(:disabled), .qr-root .mrt-topbar-cmd:active:not(:disabled),
+.qr-root .mrt-btn-primary:hover:not(:disabled), .qr-root .mrt-btn-primary:active:not(:disabled),
+.qr-btn-primary:hover:not(:disabled), .qr-btn-primary:active:not(:disabled) {
+  transform: translate3d(0, 0, 0);
+  box-shadow: none;
 }
 .qr-btn-primary, .qr-root .mrt-btn.mrt-btn-primary {
   background: var(--qr-btn-primary-bg) !important; color: var(--qr-btn-primary-fg) !important;
   border-color: var(--qr-btn-primary-border) !important; font-weight: var(--qr-btn-fw-primary);
+  box-shadow: none;
 }
 .qr-btn-primary:hover:not(:disabled), .qr-btn-primary:active:not(:disabled),
 .qr-root .mrt-btn.mrt-btn-primary:hover:not(:disabled), .qr-root .mrt-btn.mrt-btn-primary:active:not(:disabled) {
@@ -77,7 +88,8 @@
 .qr-btn:disabled, .qr-root .mrt-btn:disabled, .qr-root button:disabled {
   opacity: var(--qr-btn-disabled-opacity) !important; cursor: default !important; pointer-events: auto !important; filter: none !important;
   background: var(--qr-btn-disabled-bg) !important; color: var(--qr-btn-disabled-fg) !important;
-  border-color: var(--qr-btn-disabled-border) !important; border-style: dashed !important;
+  border-color: var(--qr-btn-disabled-border) !important; border-style: dashed !important; border-width: 1px !important;
+  box-shadow: none !important; transform: none !important;
 }
 .qr-btn-primary:disabled, .qr-root .mrt-btn.mrt-btn-primary:disabled, .qr-root button.mrt-btn-primary:disabled {
   opacity: 0.48 !important; filter: grayscale(0.12) !important; cursor: default !important;
@@ -86,9 +98,9 @@
   border-color: var(--mrt-btn-primary-border, var(--qr-btn-primary-border)) !important;
   border-style: solid !important;
 }
-/* Same shape for badges, chips and status labels (colored fills allowed). */
+/* Same 1px light frame as summary counters (chips / badges / status). */
 .qr-chip, .qr-badge, .qr-status, .qr-brand-badge {
-  border-radius: var(--qr-btn-radius) !important; border-width: var(--qr-btn-border-w); border-style: solid;
+  border-radius: var(--qr-card-r, var(--qr-btn-radius)) !important; border-width: 1px; border-style: solid;
 }
 
 /* Light buttons everywhere (footer, toolbar, Summary, part card, dialogs): override any dark fill from MRT CSS. */
