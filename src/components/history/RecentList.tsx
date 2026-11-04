@@ -7,7 +7,7 @@ import { MrtTable, MrtHead, MrtRow } from '../../ui/MrtTable';
 export function RecentList({ items, onOpen }: any) {
   return <div className="qr-recent" data-testid="recent">
     <div className="qr-recent-h">{t('hist.recent')}</div>
-    <MrtTable className="qr-recent-tab">
+    <MrtTable shell fit="content" className="qr-recent-tab">
       <MrtHead cells={[t('ck.col.item'), t('hist.customer'), t('wz.parts'), t('hist.opened')]} />
       <tbody>{items.map((e: any) => <MrtRow key={e.id} className="qr-recent-row" data-testid="recent-row" data-id={e.id} title={t('hist.tipOpen')} onClick={() => onOpen(e.id)}>
         <td><button type="button" className="qr-hist-open" title={t('hist.tipOpen')}><bdi className="qr-recent-l">{e.label || t('tab.new')}</bdi></button></td>

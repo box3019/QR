@@ -17,7 +17,7 @@ export function PartsList({ parts, sel, onOpen, unknown, details }: any) {
     <div className="qr-panel qr-plist-box"><div className="qr-scroll qr-plist-rows" data-testid="parts-rows">
       {allReady && !filter && <div className="qr-allgood" data-testid="all-ready"><i className="qr-dot" data-s="ok" aria-hidden="true" />{t('tile.allGood')}</div>}
       {filter && !rows.length && <div className="qr-muted qr-empty" data-testid="tile-empty">{t('tile.empty')}</div>}
-      <MrtTable className="qr-plist-tab">
+      <MrtTable shell fit="content" className="qr-plist-tab">
         <MrtHead cells={details
           ? [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value'), t('parts.qty'), t('rc.customer')]
           : [t('ck.col.item'), t('rc.rev'), t('ck.col.status'), t('ck.col.value')]} />

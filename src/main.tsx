@@ -19,4 +19,5 @@ import './styles/system.css';
 import './styles/surface.css';
 import './styles/themes.css';
 import './styles/layers.css';
+import './styles/mrtTable.css';
 import './styles/video.css';

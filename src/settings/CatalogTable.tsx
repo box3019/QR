@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import AliasChips from './AliasChips';
 import { t } from '../i18n';
+import { MrtTable } from '../ui/MrtTable';
 
 type Kind = 'materials' | 'processes';
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'entry';
@@ -28,7 +29,7 @@ export default function CatalogTable({ kind, rows, onChange }: { kind: Kind; row
       <label className="qr-row"><input type="checkbox" checked={advanced} data-testid={'advanced-' + kind} onChange={(e) => setAdvanced(e.target.checked)} /> {t('cat.advanced')}</label>
       <button className={MRT_ACTION_BTN} data-testid={'add-' + kind} title={t('tip.add')} onClick={addRow}>{t('cat.add')}</button>
     </div>
-    <table className="qr-mrt qr-table qr-catalog" data-mrt="1"><thead><tr>
+    <MrtTable shell className="qr-table qr-catalog"><thead><tr>
       <th style={{ width: 44 }}>{t('cat.on')}</th>
       {isMat && <th style={{ width: 110 }}>{t('cat.family')}</th>}{isMat && <th style={{ width: 80 }}>{t('cat.grade')}</th>}
       <th style={{ width: 170 }}>{t('cat.nameEn')}</th><th style={{ width: 150 }}>{t('cat.nameHe')}</th>
@@ -46,6 +47,6 @@ export default function CatalogTable({ kind, rows, onChange }: { kind: Kind; row
         {advanced && <td><code className="qr-pattern qr-ltr">{patterns[i] || ''}</code></td>}
         <td>{r.custom && <button className={MRT_ACTION_BTN} title={t('cat.delete')} onClick={() => onChange(rows.filter((_, j) => j !== i))}>🗑</button>}</td>
       </tr>)}
-    </tbody></table>
+    </tbody></MrtTable>
   </div>;
 }

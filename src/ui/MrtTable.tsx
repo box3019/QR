@@ -25,11 +25,12 @@ export function OverflowLine({ className, testid, text, children }: { className?
   </span>;
 }
 
-export function MrtTable({ children, className, testid, tableRef, tabIndex, cols, ...rest }: any) {
-  return <table className={'qr-mrt' + (className ? ' ' + className : '')} data-mrt="1" data-testid={testid} ref={tableRef} tabIndex={tabIndex} {...rest}>
+export function MrtTable({ children, className, testid, tableRef, tabIndex, cols, shell, fit, ...rest }: any) {
+  const table = <table className={'qr-mrt' + (fit === 'content' ? ' qr-mrt-fit' : '') + (className ? ' ' + className : '')} data-mrt="1" data-testid={testid} ref={tableRef} tabIndex={tabIndex} {...rest}>
     {cols}
     {children}
   </table>;
+  return shell ? <div className="qr-mrt-shell">{table}</div> : table;
 }
 
 export function MrtHead({ cells }: { cells: any[] }) {
@@ -43,6 +44,10 @@ export function MrtHead({ cells }: { cells: any[] }) {
 
 export function MrtGroup({ children, colSpan, testid, className }: any) {
   return <tr className={'qr-mrt-gh' + (className ? ' ' + className : '')}><th colSpan={colSpan} data-testid={testid}>{children}</th></tr>;
+}
+
+export function MrtEmpty({ children, colSpan, testid, className }: any) {
+  return <tr className={'qr-mrt-empty' + (className ? ' ' + className : '')} data-testid={testid}><td colSpan={colSpan}>{children}</td></tr>;
 }
 
 export function MrtRow({ children, className, active, ...rest }: any) {

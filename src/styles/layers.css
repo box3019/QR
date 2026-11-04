@@ -316,10 +316,9 @@
 }
 
 /* Section headings (MRT): larger/bolder than the rows, tinted band + accent bar, compact space above. */
-.qr-root .qr-mrt-gh th, .qr-root .qr-ck-gh th, .qr-root .qr-pgroup-h, .qr-root .qr-sec, .qr-root .qr-panel-h,
-.qr-root .qr-cks > summary, .qr-root .qr-ck > summary, .qr-root .qr-hist-t th, .qr-root .qr-cks-tab th,
-.qr-root .qr-catalog th, .qr-root .qr-field > label, .qr-root .qr-rc-sum, .qr-root .qr-tri-sec .qr-panel-h,
-.qr-root .qr-modal-h, .qr-root .qr-wsum-table th {
+.qr-root .qr-ck-gh th, .qr-root .qr-pgroup-h, .qr-root .qr-sec, .qr-root .qr-panel-h,
+.qr-root .qr-cks > summary, .qr-root .qr-ck > summary, .qr-root .qr-field > label, .qr-root .qr-rc-sum, .qr-root .qr-tri-sec .qr-panel-h,
+.qr-root .qr-modal-h {
   font-size: var(--qr-fs-md) !important; font-weight: 700 !important; color: var(--mrt-text) !important;
   background: var(--mrt-surface-muted); box-shadow: inset 3px 0 0 var(--mrt-accent);
   padding-block: 0.28em 0.18em; margin-block-start: 0.35em;
@@ -381,7 +380,8 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 .qr-root .qr-hist-t { table-layout: auto; }
 
 /* Checklist: real MRT table (do not flatten to stacked blocks). */
-.qr-root .qr-ck-tab, .qr-root .qr-bd-tab, .qr-root table.qr-mrt { display: table; width: 100%; max-width: 100%; table-layout: fixed; }
+.qr-root .qr-ck-tab, .qr-root .qr-bd-tab { display: table; width: 100%; max-width: 100%; table-layout: fixed; }
+.qr-root table.qr-mrt { display: table; width: 100%; max-width: 100%; table-layout: auto; }
 .qr-root table.qr-mrt.qr-cks-tab, .qr-root table.qr-mrt.qr-hist-t, .qr-root table.qr-mrt.qr-catalog, .qr-root table.qr-mrt.qr-wsum-table { table-layout: auto; }
 .qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding: 3px 2px; }
 @media (max-width: 1100px) {
@@ -390,7 +390,7 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
   .qr-root table.qr-mrt.qr-cks-tab th { white-space: nowrap; overflow: hidden; }
   .qr-root table.qr-mrt.qr-cks-tab th:first-child, .qr-root table.qr-mrt.qr-cks-tab td.qr-cks-p { width: 8.4rem; }
 }
-.qr-root table.qr-mrt.qr-tri-tab { table-layout: fixed; }
+.qr-root table.qr-mrt.qr-tri-tab { table-layout: auto; }
 .qr-root .qr-ck-tab thead, .qr-root .qr-bd-tab thead, .qr-root table.qr-mrt thead { display: table-header-group; }
 .qr-root .qr-ck-tab tbody, .qr-root .qr-bd-tab tbody, .qr-root table.qr-mrt tbody { display: table-row-group; }
 .qr-root .qr-ck-tab tr, .qr-root .qr-bd-tab tr, .qr-root table.qr-mrt tr { display: table-row; }

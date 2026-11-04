@@ -1,0 +1,214 @@
+/* MRT-parity item tables. Loaded last. One continuous shell + uniform 1px grid.
+   Group rows are a muted band (no physical inset bar). Selection is a tint, never outline. */
+
+.qr-mrt-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--mrt-grid-border, var(--mrt-border-strong, rgba(60, 60, 67, 0.22)));
+  border-radius: var(--mrt-radius, 8px);
+  background: var(--mrt-surface, #fff);
+  overflow: auto;
+  box-sizing: border-box;
+}
+.qr-mrt-shell > table.qr-mrt {
+  flex: 0 0 auto;
+  border: 0 !important;
+  border-radius: 0;
+}
+
+.qr-root table.qr-mrt {
+  display: table;
+  width: 100%;
+  max-width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 1px solid var(--mrt-grid-border, var(--mrt-border-strong, #64748b));
+  background: var(--mrt-surface, #fff);
+  color: var(--mrt-text, #1c1c1e);
+  font-size: var(--qr-fs-sm);
+}
+.qr-root table.qr-mrt.qr-mrt-fit {
+  width: max-content;
+  max-width: 100%;
+  table-layout: auto;
+}
+.qr-root table.qr-mrt thead { display: table-header-group; }
+.qr-root table.qr-mrt tbody { display: table-row-group; }
+.qr-root table.qr-mrt tr { display: table-row; }
+.qr-root table.qr-mrt th,
+.qr-root table.qr-mrt td {
+  display: table-cell;
+  box-sizing: border-box;
+  padding: var(--qr-row-py, var(--mrt-report-cell-py, 4px)) var(--qr-cell-px, var(--mrt-report-cell-px, 8px));
+  vertical-align: middle;
+  text-align: start;
+  border: 1px solid var(--mrt-grid-border, var(--mrt-border, #64748b));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  min-width: 0;
+  font-size: var(--qr-fs-sm);
+  outline: none;
+}
+.qr-root table.qr-mrt thead th {
+  font-size: var(--qr-fs-sm) !important;
+  font-weight: 600 !important;
+  background: var(--mrt-surface-muted, #f5f5f7);
+  color: var(--mrt-text);
+  box-shadow: none !important;
+  margin-block-start: 0;
+}
+.qr-root table.qr-mrt tr.qr-mrt-gh th,
+.qr-root table.qr-mrt tr.qr-ck-gh th {
+  font-size: var(--qr-fs-md) !important;
+  font-weight: 700 !important;
+  background: var(--mrt-surface-muted, #f5f5f7) !important;
+  color: var(--mrt-text) !important;
+  box-shadow: none !important;
+  text-align: start;
+}
+.qr-root table.qr-mrt tr.qr-mrt-empty td {
+  color: var(--mrt-sample-empty-text, var(--mrt-text-muted, #636366));
+  background: var(--mrt-sample-empty-bg, color-mix(in srgb, var(--mrt-text-muted) 8%, var(--mrt-surface)));
+  font-weight: 400;
+  font-style: normal;
+  text-align: start;
+  padding-block: 0.45em;
+}
+.qr-root table.qr-mrt tbody tr.qr-mrt-row:nth-child(even of .qr-mrt-row) {
+  background: color-mix(in srgb, var(--mrt-text-muted) 5%, var(--mrt-surface));
+}
+.qr-root table.qr-mrt tbody tr.qr-mrt-row:hover {
+  background: color-mix(in srgb, var(--mrt-accent) 8%, var(--mrt-surface));
+}
+.qr-root table.qr-mrt tbody tr.qr-mrt-row[data-active='true'] {
+  background: var(--mrt-grid-selection-fill, color-mix(in srgb, var(--mrt-accent) 14%, var(--mrt-surface)));
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Shell: drop the table's outer edges so the card frame is a single line (MRT report-card). */
+.qr-mrt-shell table.qr-mrt thead tr:first-child > th { border-top: 0 !important; }
+.qr-mrt-shell table.qr-mrt tr > *:first-child { border-inline-start: 0 !important; }
+.qr-mrt-shell table.qr-mrt tr > *:last-child { border-inline-end: 0 !important; }
+
+/* Content-sized columns: never stretch a hollow middle and park status/menu at the far end. */
+.qr-root table.qr-mrt col.qr-mrt-c-check { width: 2.1rem; }
+.qr-root table.qr-mrt col.qr-mrt-c-menu { width: 2.1rem; }
+.qr-root table.qr-mrt col.qr-mrt-c-id,
+.qr-root table.qr-mrt col.qr-mrt-c-status { width: 1%; }
+.qr-root table.qr-mrt.qr-mrt-fit col.qr-mrt-c-text { width: auto; }
+
+/* Fill tables that must use the pane (checklist, route card, block details). */
+.qr-root table.qr-mrt.qr-ck-tab,
+.qr-root table.qr-mrt.qr-bd-tab,
+.qr-root table.qr-mrt.qr-rcard-tab {
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Package / parts / history / rail: hug content; leftover space is the shell, not a gap between columns. */
+.qr-root table.qr-mrt.qr-tri-tab,
+.qr-root table.qr-mrt.qr-plist-tab,
+.qr-root table.qr-mrt.qr-hist-t,
+.qr-root table.qr-mrt.qr-recent-tab,
+.qr-root table.qr-mrt.qr-cust-tab,
+.qr-root table.qr-mrt.qr-import-files,
+.qr-root table.qr-mrt.qr-loaded-list,
+.qr-root table.qr-mrt.qr-wsum-table {
+  table-layout: auto;
+  width: max-content;
+  max-width: 100%;
+}
+.qr-root table.qr-mrt.qr-cks-tab,
+.qr-root table.qr-mrt.qr-catalog,
+.qr-root table.qr-mrt.qr-prob-tab {
+  table-layout: auto;
+  width: 100%;
+}
+
+/* Rows that used to be CSS grids must stay real table rows. */
+.qr-root table.qr-mrt tr.qr-prow,
+.qr-root table.qr-mrt tr.qr-tri-row,
+.qr-root table.qr-mrt tr.qr-prob,
+.qr-root table.qr-mrt tr.qr-cust-item,
+.qr-root table.qr-mrt tr.qr-recent-row {
+  display: table-row !important;
+  grid-template-columns: none !important;
+  width: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  gap: 0 !important;
+  box-shadow: none !important;
+}
+
+.qr-root .qr-tri-open {
+  background: none;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+  color: inherit;
+  min-width: 0;
+  max-width: none;
+  padding: 0;
+  white-space: nowrap;
+}
+.qr-root .qr-tri-why { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: clip; }
+.qr-root .qr-tri-acts { white-space: nowrap; width: 1%; }
+.qr-root .qr-tri-inc { width: 1%; white-space: nowrap; }
+.qr-root .qr-tri-done {
+  font-weight: 600;
+  color: var(--qr-ok-text, #047857);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+/* Compact row overflow (MRT row menu): icon only, no labelled More column. */
+.qr-root .qr-row-menu {
+  width: 1.75rem !important;
+  min-width: 1.75rem !important;
+  max-width: 1.75rem !important;
+  height: 1.75rem !important;
+  min-height: 1.75rem !important;
+  padding: 0 !important;
+  margin: 0;
+  display: inline-grid !important;
+  place-items: center;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--mrt-text) !important;
+  cursor: pointer;
+  border-radius: var(--qr-btn-radius, 6px);
+}
+.qr-root .qr-row-menu:hover,
+.qr-root .qr-row-menu[aria-expanded='true'] {
+  border-color: var(--mrt-border-strong, rgba(60, 60, 67, 0.22)) !important;
+  background: var(--mrt-surface-muted, #f5f5f7) !important;
+}
+
+.qr-triage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+}
+.qr-tri-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.55rem; min-width: 0; }
+.qr-plist { display: flex; flex-direction: column; gap: 0.75rem; flex: 1; min-height: 0; padding: 0.75rem 1rem; box-sizing: border-box; }
+.qr-plist-box { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.qr-plist-box > .qr-scroll { flex: 1; min-height: 0; }

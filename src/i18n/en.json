@@ -920,5 +920,6 @@
   "tip.gdConfirm": "This item is correct. Go to the next check",
   "tip.gdProblem": "Mark this item as a problem and go to the next check",
   "tip.gdStep": "Open this check",
-  "tip.more": "Other actions on this screen"
+  "tip.more": "Other actions on this screen",
+  "tip.rowMenu": "Actions for this row"
 }

@@ -21,7 +21,7 @@ export function LoadedSummary({ rfqs, parts, files, unknown, details, onNext, on
     </div>
     <div className="qr-panel qr-loaded-box">
       <div className="qr-panel-h">{t('ld.list')}</div>
-      <MrtTable className="qr-loaded-list" testid="ld-list">
+      <MrtTable fit="content" className="qr-loaded-list" testid="ld-list">
         <MrtHead cells={[t('ck.col.item'), t('ck.col.value')]} />
         <tbody>
           {s.groups.map((g: any) => <MrtRow key={g.index} data-testid="ld-part">

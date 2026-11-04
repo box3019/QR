@@ -23,7 +23,7 @@ export default function CustomersTab({ rows, onChange }: { rows: any[]; onChange
         <button className={MRT_ACTION_BTN} data-testid="cust-dup" title={t('tip.dup')} onClick={() => add(c)}>{t('cu.dup')}</button>
         {!c.builtin && <button className={MRT_ACTION_BTN} data-testid="cust-del" title={t('tip.del')} onClick={() => { onChange(rows.filter((_, i) => i !== sel)); setSel(0); }}>{t('cu.del')}</button>}
       </div>
-      <MrtTable className="qr-cust-tab">
+      <MrtTable shell fit="content" className="qr-cust-tab">
         <MrtHead cells={[t('ck.col.item'), t('ck.col.value'), t('ck.col.status')]} />
         <tbody>{rows.map((r, i) => <MrtRow key={r.id} className="qr-cust-item" active={i === sel} data-disabled={r.enabled === false} onClick={() => setSel(i)}>
           <td><b>{r.name}</b></td>

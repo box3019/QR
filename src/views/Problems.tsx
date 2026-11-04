@@ -4,7 +4,7 @@ import { t, getLang } from '../i18n';
 import { Chip } from '../ui/common';
 import { MRT_ACTION_BTN, MRT_BTN } from '../ui/mrtButtons';
 import { Box } from '../components/wizard/Box';
-import { MrtTable, MrtHead, MrtGroup, MrtRow, OverflowLine } from '../ui/MrtTable';
+import { MrtTable, MrtHead, MrtGroup, MrtEmpty, MrtRow, OverflowLine } from '../ui/MrtTable';
 
 import { localized as L } from '../i18n/localized';
 const tone = (sev: string) => (sev === 'Blocker' ? 'danger' : sev === 'Question' ? 'attention' : 'info');
@@ -47,7 +47,7 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
         <MrtTable className="qr-prob-tab">
           <MrtHead cells={[t('ck.col.item'), t('ck.col.status'), t('ck.col.value'), t('ck.col.source'), '']} />
           <tbody>
-            {!uploads.length && <MrtRow><td colSpan={COLS} className="qr-muted">{t('wz.noUploads')}</td></MrtRow>}
+            {!uploads.length && <MrtEmpty colSpan={COLS}>{t('wz.noUploads')}</MrtEmpty>}
             {uploads.map((tk: any) => {
               const title = L(tk, 'title').replace(/^\S+ \S+ /, '');
               const val = title + ' · ' + t('pr.blocks', { n: L(tk, 'blocks') });
@@ -67,7 +67,7 @@ export function ProblemsPanel({ part, onFocus, updatePart, details }: any) {
         <MrtTable className="qr-prob-tab">
           <MrtHead cells={[t('ck.col.item'), t('ck.col.status'), t('ck.col.value'), t('ck.col.source'), '']} />
           <tbody>
-            {!main.length && <MrtRow><td colSpan={COLS} className="qr-muted" data-testid="no-problems">{t('pr.none')}</td></MrtRow>}
+            {!main.length && <MrtEmpty colSpan={COLS} testid="no-problems">{t('pr.none')}</MrtEmpty>}
             {main.map((p: any) => <ProblemRow key={p.id} p={p} onFocus={onFocus} updatePart={updatePart} />)}
           </tbody>
         </MrtTable>

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
-import { MrtTable, MrtHead, MrtGroup, MrtRow, OverflowLine } from '../../ui/MrtTable';
+import { MrtTable, MrtHead, MrtGroup, MrtEmpty, MrtRow, OverflowLine } from '../../ui/MrtTable';
 import { triageLists, triageCounts, triageReason, isIncluded, moveTriage, setInclude } from '../../parts/triage.mjs';
 import { SaveEachChoice } from './SaveEachChoice';
 import { MoreMenu } from '../MoreMenu';
@@ -16,7 +16,7 @@ function Row({ part, index, sel, list, onOpen, onPatch, onPrint, onSave }: any) 
     <td><OverflowLine className="qr-tri-why" testid="tri-why" text={why}><bdi>{why}</bdi></OverflowLine></td>
     <td>{r.moved ? <span className="qr-tri-moved" data-testid="tri-moved">{t('tri.moved')}</span> : <span className="qr-muted">{'\u2013'}</span>}</td>
     <td className="qr-tri-acts">
-      <MoreMenu testid={'tri-more-' + index} items={[
+      <MoreMenu row testid={'tri-more-' + index} items={[
         list !== 'suitable' && { testid: 'tri-to-suit', label: t('tri.toSuit'), onClick: () => onPatch(index, moveTriage(part, 'suitable')) },
         list !== 'notSuitable' && { testid: 'tri-to-not', label: t('tri.toNot'), onClick: () => onPatch(index, moveTriage(part, 'notSuitable')) },
         { testid: 'tri-print', label: t('top.print'), tip: t('tip.printPart'), onClick: () => onPrint(index) },
@@ -40,13 +40,13 @@ export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPri
         { testid: 'tri-save-pack', label: t('tri.savePack'), tip: t('tip.savePack'), onClick: onSavePack },
       ]} />
     </div>
-    <MrtTable className="qr-tri-tab" cols={<colgroup><col style={{ width: '5.2rem' }} /><col style={{ width: '22%' }} /><col /><col style={{ width: '7rem' }} /><col style={{ width: '8rem' }} /></colgroup>}>
-      <MrtHead cells={[t('tri.includeCol'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), t('gd.more')]} />
+    <MrtTable shell fit="content" className="qr-tri-tab" cols={<colgroup><col className="qr-mrt-c-check" /><col className="qr-mrt-c-id" /><col className="qr-mrt-c-text" /><col className="qr-mrt-c-status" /><col className="qr-mrt-c-menu" /></colgroup>}>
+      <MrtHead cells={[t('tri.includeCol'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), '']} />
       <tbody>
         {(['suitable', 'notSuitable', 'unknown'] as const).map((k) => <React.Fragment key={k}>
           <MrtGroup colSpan={COLS} testid={'tri-' + k}>{t('tri.' + k)} · {lists[k].length}</MrtGroup>
           {lists[k].map((x: any) => <Row key={x.part.id || x.index} {...x} list={k} sel={sel} onOpen={onOpen} onPatch={onPatch} onPrint={onPrint} onSave={onSave} />)}
-          {!lists[k].length && <MrtRow className="qr-tri-empty"><td colSpan={COLS} className="qr-muted">{t('tri.empty')}</td></MrtRow>}
+          {!lists[k].length && <MrtEmpty colSpan={COLS} testid={'tri-empty-' + k}>{t('tri.empty')}</MrtEmpty>}
         </React.Fragment>)}
       </tbody>
     </MrtTable>

@@ -33,7 +33,7 @@ export function SummaryDialog({ parts, onClose }: any) {
     {msg && <span className="qr-muted" style={{ marginInlineEnd: 'auto' }}>{msg}</span>}
     <button className={MRT_BTN} title={t('tip.csv')} onClick={async () => { const r = await qr().exportSummary(parts, 'csv'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.csv')}</button>
     <button className={MRT_BTN_PRIMARY} title={t('tip.pdf')} onClick={async () => { const r = await qr().exportSummary(parts, 'pdf'); if (r) setMsg(t('q.saved', { path: r.path })); }}>{t('sum.pdf')}</button></>}>
-    <MrtTable className="qr-table">
+    <MrtTable shell className="qr-table">
       <MrtHead cells={[t('rc.part'), t('rc.rev'), t('rc.customer'), t('rc.material'), t('rc.status'), t('sum.blockers'), t('sum.questions'), t('sum.tasks'), t('sum.model')]} />
       <tbody>{parts.map((p: Part) => <MrtRow key={p.id}><td>{p.partNo}</td><td>{p.rev}</td><td>{p.customer}</td><td>{L(p.material, 'line') || L(p.material, 'normalized')}</td><td><PlainStatusBadge part={p} /></td>
         <td>{p.problems.filter((x: any) => x.severity === 'Blocker').length}</td><td>{p.problems.filter((x: any) => x.severity === 'Question').length}</td><td>{p.tasks.filter(isOpenDoc).length}</td><td>{p.model ? t('sum.found') : '—'}</td></MrtRow>)}</tbody>

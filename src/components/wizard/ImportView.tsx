@@ -17,7 +17,7 @@ export function ImportView({ view }: any) {
     <div className="qr-import-prog" data-testid="import-progress" data-done={pr.kind === 'parts' && pr.n > 0 && pr.d >= pr.n}><span className={pr.kind === 'parts' && pr.n > 0 && pr.d >= pr.n ? 'qr-import-done' : undefined}>{t(pr.kind === 'parts' ? 'imp.analysed' : 'imp.progress', { d: pr.d, n: pr.n })}</span>
       <div className="qr-bar" data-testid="import-bar"><div style={{ width: Math.round(pr.frac * 100) + '%' }} /></div></div>
     <div className="qr-panel-h">{t('imp.files', { n: view.files.length })}</div>
-    <MrtTable className="qr-import-files" testid="import-files">
+    <MrtTable shell fit="content" className="qr-import-files" testid="import-files">
       <MrtHead cells={[t('ck.col.item'), t('ck.col.status')]} />
       <tbody>{view.files.map((f: any) => {
         const st = f.status === 'attached' ? t('imp.st.attached', { pn: f.partNo || '' }) : t('imp.st.' + f.status);

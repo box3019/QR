@@ -2,6 +2,7 @@
 import React from 'react';
 import { t, getLang } from '../i18n';
 import { MRT_BTN } from './mrtButtons';
+import { MrtTable, MrtHead, MrtRow } from './MrtTable';
 
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
 
@@ -16,22 +17,22 @@ export function ProcessesPanel({ part }: any) {
     {!req.length && <div className="qr-muted">{t('pp.none')}</div>}
     {req.map((p: any, i: number) => <div key={i} style={{ marginTop: '0.6rem' }}>
       {req.length > 1 && <div className="qr-muted">{t('pp.page')} {p.page}</div>}
-      <table className="qr-mrt qr-table" data-mrt="1">
-        <thead><tr><th>{t('ck.col.item')}</th><th>{t('ck.col.value')}</th></tr></thead>
+      <MrtTable className="qr-table" fit="content">
+        <MrtHead cells={[t('ck.col.item'), t('ck.col.value')]} />
         <tbody>
-        <tr className="qr-mrt-row"><td>{t('pp.material')}</td><td><bdi>{p.material ? [L(p.material, 'family'), p.material.alloy, p.material.temper, p.material.form].filter(Boolean).join(' ') : '—'}</bdi>{p.material && p.material.stds ? <div className="qr-muted qr-ltr">{p.material.stds}</div> : null}</td></tr>
-        <tr className="qr-mrt-row"><td>{t('pp.heat')}</td><td><bdi>{L(p.summary, 'heatTreat') || '—'}</bdi></td></tr>
-        <tr className="qr-mrt-row"><td>{t('pp.coatings')}</td><td><bdi>{L(p.summary, 'coatings') || '—'}</bdi></td></tr>
-        <tr className="qr-mrt-row"><td>{t('pp.paint')}</td><td><bdi>{L(p.summary, 'paint') || '—'}</bdi></td></tr>
-        <tr className="qr-mrt-row"><td>{t('pp.masking')}</td><td><bdi>{L(p.summary, 'masking') || '—'}</bdi></td></tr>
-        <tr className="qr-mrt-row"><td>{t('pp.flow')}</td><td><bdi>{L(p.summary, 'flow') || '—'}</bdi></td></tr>
+        <MrtRow><td>{t('pp.material')}</td><td><bdi>{p.material ? [L(p.material, 'family'), p.material.alloy, p.material.temper, p.material.form].filter(Boolean).join(' ') : '—'}</bdi>{p.material && p.material.stds ? <div className="qr-muted qr-ltr">{p.material.stds}</div> : null}</td></MrtRow>
+        <MrtRow><td>{t('pp.heat')}</td><td><bdi>{L(p.summary, 'heatTreat') || '—'}</bdi></td></MrtRow>
+        <MrtRow><td>{t('pp.coatings')}</td><td><bdi>{L(p.summary, 'coatings') || '—'}</bdi></td></MrtRow>
+        <MrtRow><td>{t('pp.paint')}</td><td><bdi>{L(p.summary, 'paint') || '—'}</bdi></td></MrtRow>
+        <MrtRow><td>{t('pp.masking')}</td><td><bdi>{L(p.summary, 'masking') || '—'}</bdi></td></MrtRow>
+        <MrtRow><td>{t('pp.flow')}</td><td><bdi>{L(p.summary, 'flow') || '—'}</bdi></td></MrtRow>
         </tbody>
-      </table>
-      {p.procs.length > 0 && <table className="qr-mrt qr-table" data-mrt="1" style={{ marginTop: '0.5rem' }}>
-        <thead><tr><th>{t('pp.no')}</th><th>{t('pp.process')}</th><th>{t('pp.specs')}</th><th>{t('pp.details')}</th></tr></thead>
-        <tbody>{p.procs.map((q: any, j: number) => <tr key={j}><td>{q.no}</td><td><bdi>{L(q, 'subtype')}</bdi>{q.layer ? <span className="qr-muted"> ({q.layer})</span> : null}</td>
-          <td className="qr-ltr">{[q.stds, q.typecls].filter(Boolean).join(' · ')}</td><td className="qr-ltr">{[q.thick, q.color, q.coats, q.hard, q.temp, q.case].filter(Boolean).join(' · ')}</td></tr>)}</tbody>
-      </table>}
+      </MrtTable>
+      {p.procs.length > 0 && <MrtTable className="qr-table" fit="content">
+        <MrtHead cells={[t('pp.no'), t('pp.process'), t('pp.specs'), t('pp.details')]} />
+        <tbody>{p.procs.map((q: any, j: number) => <MrtRow key={j}><td>{q.no}</td><td><bdi>{L(q, 'subtype')}</bdi>{q.layer ? <span className="qr-muted"> ({q.layer})</span> : null}</td>
+          <td className="qr-ltr">{[q.stds, q.typecls].filter(Boolean).join(' · ')}</td><td className="qr-ltr">{[q.thick, q.color, q.coats, q.hard, q.temp, q.case].filter(Boolean).join(' · ')}</td></MrtRow>)}</tbody>
+      </MrtTable>}
     </div>)}
   </div>;
 }
