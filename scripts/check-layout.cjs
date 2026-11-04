@@ -118,7 +118,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const foot = document.querySelector('[data-testid=wiz-footer]');
   if (foot && !foot.closest('.qr-proj-off')) {
     const jc = getComputedStyle(foot).justifyContent;
-    if (jc !== 'flex-start' && jc !== 'start') res.issues.push('footer not rail-side: ' + jc);
+    if (jc !== 'flex-start' && jc !== 'start') res.issues.push('footer not list-edge: ' + jc);
     const dir = getComputedStyle(foot).direction;
     const r = foot.getBoundingClientRect();
     const fcs = getComputedStyle(foot);
@@ -127,10 +127,19 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     const btns = [...foot.querySelectorAll('button')].filter((b) => getComputedStyle(b).display !== 'none');
     if (!btns.length) res.issues.push('footer buttons missing');
     if (btns.length) {
-      const mid = (btns[0].getBoundingClientRect().left + btns[btns.length - 1].getBoundingClientRect().right) / 2;
-      const center = (r.left + r.right) / 2;
-      if (dir === 'rtl' && mid < center - 8) res.issues.push('footer buttons not on RTL rail (right)');
-      if (dir !== 'rtl' && mid > center + 8) res.issues.push('footer buttons not on LTR rail (left)');
+      const ws = btns.map((b) => Math.round(b.getBoundingClientRect().width));
+      const hs = btns.map((b) => Math.round(b.getBoundingClientRect().height));
+      if (Math.max(...ws) - Math.min(...ws) > 2) res.issues.push('footer buttons unequal width ' + ws.join(','));
+      if (Math.max(...hs) - Math.min(...hs) > 2) res.issues.push('footer buttons unequal height ' + hs.join(','));
+      const listHost = document.querySelector('.qr-proj:not(.qr-proj-off) [data-testid=triage], .qr-proj:not(.qr-proj-off) [data-testid=parts-panel], .qr-proj:not(.qr-proj-off) [data-testid=checklist-summary]');
+      const list = listHost && (listHost.querySelector('.qr-mrt-shell, table.qr-mrt') || listHost);
+      if (list) {
+        const lr = list.getBoundingClientRect();
+        const br0 = btns[0].getBoundingClientRect();
+        const listEdge = dir === 'rtl' ? lr.right : lr.left;
+        const btnEdge = dir === 'rtl' ? br0.right : br0.left;
+        if (Math.abs(btnEdge - listEdge) > 8) res.issues.push('footer not list-edge ' + Math.round(btnEdge) + ' vs ' + Math.round(listEdge));
+      }
       btns.forEach((b) => {
         const br = b.getBoundingClientRect();
         if (br.bottom > innerHeight + 4 || br.top < 0 || br.height < 20) res.issues.push('footer button clipped: ' + (b.getAttribute('data-testid') || '').slice(0, 20));
@@ -187,6 +196,29 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (!visFrame(p)) return;
     if (nestedOk(el, p)) return;
     res.issues.push('nested border: ' + (typeof el.className === 'string' && el.className ? el.className.split(' ')[0] : el.tagName) + ' in ' + (typeof p.className === 'string' && p.className ? p.className.split(' ')[0] : p.tagName));
+  });
+  document.querySelectorAll('.qr-cks-tab td, .qr-cks-tab th, .qr-ck-tab td, .qr-ck-tab th').forEach((c) => {
+    if (c.closest('.qr-proj-off') || c.closest('.qr-cks-xr')) return;
+    const cr = c.getBoundingClientRect();
+    if (cr.width < 2 || cr.height < 2) return;
+    [...c.children].forEach((ch) => {
+      const r = ch.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return;
+      if (r.right > cr.right + 1.5 || r.left < cr.left - 1.5 || r.bottom > cr.bottom + 1.5 || r.top < cr.top - 1.5)
+        res.issues.push('cell overflow: ' + (c.textContent || '').trim().slice(0, 24));
+    });
+  });
+  document.querySelectorAll('.qr-cks-card, .mrt-report-card, .qr-mrt-shell').forEach((card) => {
+    if (card.closest('.qr-proj-off')) return;
+    const tbl = card.querySelector('table.qr-mrt');
+    if (!tbl) return;
+    const cs = getComputedStyle(card);
+    const cr = card.getBoundingClientRect();
+    const tr = tbl.getBoundingClientRect();
+    const innerL = cr.left + (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.borderLeftWidth) || 0);
+    const innerR = cr.right - (parseFloat(cs.paddingRight) || 0) - (parseFloat(cs.borderRightWidth) || 0);
+    if (Math.abs(tr.left - innerL) > 2 || Math.abs(tr.right - innerR) > 2)
+      res.issues.push('frame gap: table vs card');
   });
   document.querySelectorAll('.qr-ptabs .mrt-workspace-tab__label').forEach((e) => {
     if (e.closest('.qr-proj-off')) return;
@@ -696,7 +728,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const m = await win.evaluate(MEASURE);
       const clipIssues = (m.issues || []).filter((x) => /^clip /.test(x));
       const viewIssues = st === 2 ? (m.issues || []).filter((x) => /^(viewer |locate )/.test(x)) : [];
-      const extraIssues = (m.issues || []).filter((x) => /^(hint bar|multiline |footer |nested border|border >1px)/.test(x));
+      const extraIssues = (m.issues || []).filter((x) => /^(hint bar|multiline |footer |nested border|border >1px|cell overflow|frame gap)/.test(x));
       report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, clips: m.clips, viewer: m.viewer, printButton: m.printButton, savePdfButton: m.savePdfButton, issues: [...clipIssues, ...viewIssues, ...extraIssues] });
       if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length) || clipIssues.length || viewIssues.length || extraIssues.length) fail++;
       // Check Print / Save PDF buttons are visible on each step

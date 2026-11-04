@@ -6,9 +6,10 @@ const css = rd('src/styles/wizard.css'), tsx = rd('src/checklist/ChecklistSummar
 
 test('summary table: full-width MRT FeatureReportTable layout, one line per item, N items fallback instead of wrapping, no scroll wrapper', () => {
   assert.ok(/\.qr-cks-tab\s*\{[^}]*table-layout:\s*fixed/.test(css));
-  assert.ok(/\.qr-cks-card\s*\{[^}]*overflow:\s*visible/.test(css));
+  assert.ok(/\.qr-cks-card\s*\{[^}]*overflow:\s*hidden/.test(css));
   assert.ok(!/qr-cks-scroll/.test(css) && !/qr-cks-scroll/.test(tsx));
   assert.ok(/\.qr-cks-tab th, \.qr-cks-tab td\s*\{[^}]*white-space:\s*nowrap/.test(css), 'cells nowrap');
+  assert.ok(/\.qr-cks-g\s*\{[^}]*flex-wrap:\s*wrap/.test(css), 'group items wrap inside the cell');
   assert.ok(/\.qr-cks-t\s*\{[^}]*display:\s*inline;\s*white-space:\s*nowrap/.test(css), 'each item on its own line, never wraps inside');
   assert.ok(/ck\.items\.many/.test(tsx) && /materialShort/.test(tsx), 'N items fallback + trimmed material');
   assert.ok(!/min-width:\s*\d+px/.test(css.slice(css.indexOf('.qr-cks-card'), css.indexOf('/* No horizontal'))), 'no fixed min widths in the summary table block');

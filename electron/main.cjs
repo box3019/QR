@@ -169,6 +169,7 @@ const history = require('../core/history.cjs');
 ipcMain.handle('qr:history:list', () => history.readHistory(app.getPath('userData')));
 ipcMain.handle('qr:history:touch', (_e, entry) => history.touchHistory(app.getPath('userData'), entry).list);
 ipcMain.handle('qr:history:remove', (_e, id, deleteData) => history.removeHistory(app.getPath('userData'), id, !!deleteData));
+ipcMain.handle('qr:history:clear', () => history.clearHistory(app.getPath('userData')));
 ipcMain.handle('qr:importCache:release', (_e, job) => {
   const id = String(job || '');
   try {

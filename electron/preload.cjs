@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('qr', {
   listHistory: () => ipcRenderer.invoke('qr:history:list'),
   touchHistory: (entry) => ipcRenderer.invoke('qr:history:touch', entry),
   removeHistory: (id, deleteData) => ipcRenderer.invoke('qr:history:remove', id, deleteData),
+  clearHistory: () => ipcRenderer.invoke('qr:history:clear'),
   loadProject: (id) => ipcRenderer.invoke('qr:projects:load', id),
   saveProjectAs: (id, state, label, target) => ipcRenderer.invoke('qr:projects:saveAs', id, state, label, target),
   pickProjectFile: (target) => ipcRenderer.invoke('qr:projects:pickOpen', target), importProject: (file) => ipcRenderer.invoke('qr:projects:import', file),

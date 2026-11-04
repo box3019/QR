@@ -1,7 +1,7 @@
 // Package list: Suitable / Not suitable / Material not detected. Move, include, Print and Save PDF per part; package PDF actions.
 import React, { useState } from 'react';
 import { t } from '../../i18n';
-import { MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
+import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import { MrtTable, MrtHead, MrtGroup, MrtEmpty, MrtRow, OverflowLine } from '../../ui/MrtTable';
 import { triageLists, triageCounts, triageReason, isIncluded, moveTriage, setInclude } from '../../parts/triage.mjs';
 import { SaveEachChoice } from './SaveEachChoice';
@@ -10,9 +10,10 @@ import { MoreMenu } from '../MoreMenu';
 function Row({ part, index, sel, list, onOpen, onPatch, onPrint, onSave }: any) {
   const r = triageReason(part);
   const why = [r.material || t('tri.noMat'), r.zone].filter(Boolean).join(' · ');
-  return <MrtRow className="qr-tri-row" data-testid="tri-row" data-list={list} active={index === sel}>
+  const pn = part.partNo || (part.drawing && part.drawing.name) || '';
+  return <MrtRow className="qr-tri-row" data-testid="tri-row" data-list={list} active={index === sel} title={t('pl.open', { pn })} onClick={(e: any) => { if ((e.target as HTMLElement).closest('input, label, .qr-tri-acts')) return; onOpen(index); }}>
     <td className="qr-tri-inc"><label title={t('tri.include')}><input type="checkbox" data-testid="tri-include" checked={isIncluded(part)} onChange={(e) => onPatch(index, setInclude(part, e.target.checked))} /></label></td>
-    <td><button type="button" className="qr-tri-open" data-testid="tri-open" title={t('pl.open', { pn: part.partNo || '' })} onClick={() => onOpen(index)}><bdi className="qr-ltr">{part.partNo || (part.drawing && part.drawing.name) || ''}</bdi></button></td>
+    <td><button type="button" className="qr-tri-open" data-testid="tri-open" title={t('pl.open', { pn })} onClick={() => onOpen(index)}><bdi className="qr-ltr">{pn}</bdi></button></td>
     <td><OverflowLine className="qr-tri-why" testid="tri-why" text={why}><bdi>{why}</bdi></OverflowLine></td>
     <td>{r.moved ? <span className="qr-tri-moved" data-testid="tri-moved">{t('tri.moved')}</span> : <span className="qr-muted">{'\u2013'}</span>}</td>
     <td className="qr-tri-acts">
@@ -34,6 +35,7 @@ export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPri
   return <div className="qr-triage" data-testid="triage">
     <div className="qr-tri-bar">
       <span className="qr-tri-done" data-testid="tri-processed">{t('tri.processed', { d: c.processed, n: c.total })}</span>
+      <button type="button" className={MRT_BTN} data-testid="tri-open-drawing" title={t('tip.openDrawing')} onClick={() => onOpen(sel)}>{t('pl.openDrawing')}</button>
       <button type="button" className={MRT_BTN_PRIMARY} data-testid="tri-save-each" title={t('tip.saveEach')} onClick={() => setAsk(true)}>{t('tri.saveEach')}</button>
       <MoreMenu testid="tri-pack-more" items={[
         { testid: 'tri-print-pack', label: t('tri.printPack'), tip: t('tip.printPack'), onClick: onPrintPack },

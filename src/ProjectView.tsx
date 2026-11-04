@@ -34,7 +34,7 @@ function afterPdf(notify: any, r: any, each?: boolean, counts?: any) {
   const vars = each ? { n: (r.files || []).length, path: r.dir, checked: counts?.checked ?? (r.files || []).length, suitable: counts?.suitable ?? 0, all: counts?.all ?? 0 } : { path: r.path };
   notify({ text: t(each ? 'pdf.savedEach' : 'pdf.saved', vars), action: { label: t('pdf.openFolder'), run: () => { qr().openPath(path); } } });
 }
-export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, notify, over, onMeta, register, recent, onReopen, onHistory, onCloseJob }: any) {
+export function ProjectView({ id, active, initial, pending, settings, assistant, details, setDetails, notify, over, onMeta, register, recent, onReopen, onHistory, onClearHistory, onCloseJob }: any) {
   setCkSettings(settings); // the checklist thresholds (Settings > Precision) for the screens below
   const I = initial || {};
   const [parts, setParts] = useState((I.parts || []) as Part[]); const [unknown, setUnknown] = useState((I.unknown || []) as string[]);
@@ -98,7 +98,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
       <Stepper step={step} setStep={stepTo} hasParts={has} />
       {!!busy && has && step > 1 && <div className="qr-provisional" data-testid="provisional" role="status">{t('prov.note')}</div>}
       <main className="qr-wiz-main">
-        {step === 1 && <StepIntake view={view} parts={parts} files={lastRun?.files || []} onNext={() => stepTo(2)} onPart={(i: number) => openPart(i, 2)} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} recent={recent} onReopen={onReopen} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder({ zip: true }); if (f) run([f]); }} />}
+        {step === 1 && <StepIntake view={view} parts={parts} files={lastRun?.files || []} onNext={() => stepTo(2)} onPart={(i: number) => openPart(i, 2)} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} recent={recent} onReopen={onReopen} onClearHistory={onClearHistory} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder({ zip: true }); if (f) run([f]); }} />}
         {step === 2 && has && <StepCheckParts parts={parts} sel={sel} open={partOpen} onOpen={(i: number) => openPart(i, 2)} onBack={() => setPartOpen(false)} onGo={pick} onLeave={() => stepTo(3)} rtl={getLang() === 'he'} unknown={unknown} details={details} tab={tab} setTab={setTab} focus={focus} setFocus={setFocus} setStep={stepTo}
           onPatch={(i: number, next: any) => { setDirty(true); setParts((ps) => ps.map((p, j) => (j === i ? next : p))); }}
           onPrint={(i: number) => qr().print({ parts, step: 2, sel: i, partOpen: true, mode: 'part', lang: reportLang(settings), meta: tabMeta({ parts, rfqs }) }).then((r: any) => { if (r && r.ok === false) notify(r.error === 'Print document rendered empty' ? t('print.empty') : (r.error || t('print.failed'))); })}

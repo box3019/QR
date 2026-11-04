@@ -96,8 +96,8 @@
 .qr-rail .mrt-wizard-step-label, .qr-rail .mrt-wizard-step-text { font-size: 0.8125rem; font-weight: 600; overflow: visible; text-overflow: clip; white-space: nowrap; min-width: 0; }
 .qr-rail .mrt-wizard-step[data-state='locked'] .mrt-wizard-step-label, .qr-rail .mrt-wizard-step[data-state='todo'] .mrt-wizard-step-label { color: var(--mrt-text-muted, #636366); }
 .qr-wiz > .qr-wiz-main { grid-column: 2; grid-row: 2; background: var(--mrt-surface, #fff); }
-.qr-wiz-footer { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border-top: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.75rem 1rem; }
-.qr-root .qr-wiz-footer button { width: auto; min-width: 120px; height: 34px !important; min-height: 34px !important; padding: 6px 12px !important; font-size: 0.8125rem !important; white-space: nowrap; }
+.qr-wiz-footer { grid-column: 2; grid-row: 3; display: flex; align-items: center; justify-content: flex-start; gap: 8px; border-top: 1px solid var(--mrt-chrome-border, var(--mrt-ui-border, var(--mrt-border))); background: var(--mrt-header-bg, #f4f4f5); padding: 0.75rem 1.25rem; }
+.qr-root .qr-wiz-footer button { box-sizing: border-box; flex: 0 0 10.5rem; width: 10.5rem; min-width: 10.5rem; height: 34px !important; min-height: 34px !important; padding: 6px 12px !important; font-size: 0.8125rem !important; white-space: nowrap; }
 .qr-chev { display: inline-block; margin-inline-start: 0.35rem; font-size: 1.1em; line-height: 1; }
 [dir='rtl'] .qr-chev { transform: scaleX(-1); }
 /* assistant: avatar + speech bubble - inline with title, compact */
@@ -289,7 +289,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-loaded-btns { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; }
 
 /* Package material triage: two sections, compact, full width, one line labels */
-.qr-triage { display: flex; flex-direction: column; gap: 0.55rem; flex: 1; min-height: 0; min-width: 0; width: 100%; overflow: hidden; }
+.qr-triage { display: flex; flex-direction: column; gap: 0.55rem; flex: 1; min-height: 0; min-width: 0; width: 100%; overflow: hidden; padding: 1.25rem; box-sizing: border-box; }
 .qr-tri-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.55rem; min-width: 0; }
 .qr-tri-done { font-weight: 600; color: #166534; background: #dcfce7; border: 1px solid #86efac; border-radius: 4px; padding: 0.15rem 0.55rem; white-space: nowrap; }
 .qr-tri-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; min-width: 0; min-height: 0; }
@@ -382,13 +382,14 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-ck-s { font-weight: 600; white-space: nowrap; } .qr-ck-s[data-s="yes"], .qr-cks-t[data-s="yes"] { color: var(--qr-ok-text); } .qr-ck-s[data-s="no"], .qr-cks-t[data-s="no"] { color: var(--mrt-text-muted); } .qr-ck-s[data-s="notfound"], .qr-cks-t[data-s="notfound"] { color: var(--qr-warn-text); }
 .qr-ck-where { font-size: var(--qr-fs-xs); font-weight: 400; color: var(--mrt-text-muted); }
 .qr-ck-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline dotted; cursor: pointer; text-align: start; }
-.qr-root .qr-cks-card { margin: 0; padding: 0; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-grid-border, #4b5563); border-radius: var(--mrt-radius, 6px); box-shadow: none; width: 100%; max-width: 100%; box-sizing: border-box; min-width: 0; overflow: visible; }
-.qr-cks > summary { font-size: var(--qr-fs-md); font-weight: 600; cursor: pointer; padding: 0.5rem 0.75rem; border: 0; background: var(--mrt-header-bg, #f3f4f6); }
+.qr-root .qr-cks-card { margin: 0; padding: 0; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-grid-border, #4b5563); border-radius: var(--mrt-radius, 6px); box-shadow: none; width: 100%; max-width: 100%; box-sizing: border-box; min-width: 0; overflow: hidden; }
+.qr-cks > summary { font-size: var(--qr-fs-md); font-weight: 600; cursor: pointer; padding: 0.5rem 0.75rem; border: 0; border-bottom: 1px solid var(--mrt-grid-border, #4b5563); background: var(--mrt-header-bg, #f3f4f6); }
 .qr-cks-tab { table-layout: fixed; width: 100%; max-width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); color: var(--mrt-text); }
-.qr-cks-tab th, .qr-cks-tab td { padding: 4px 6px; border: 1px solid var(--qr-line, rgba(128,128,128,.35)); text-align: start; vertical-align: top; white-space: nowrap; overflow: visible; overflow-wrap: normal; word-break: keep-all; hyphens: none; }
+.qr-cks-tab th, .qr-cks-tab td { padding: 4px 6px; border: 1px solid var(--qr-line, rgba(128,128,128,.35)); text-align: start; vertical-align: top; white-space: nowrap; overflow: hidden; overflow-wrap: anywhere; word-break: normal; hyphens: none; }
 .qr-cks-tab th { font-weight: 600; background: var(--mrt-surface-muted, transparent); white-space: nowrap; vertical-align: bottom; overflow-wrap: normal; }
 .qr-cks-p .qr-ck-link, .qr-cks-p bdi { white-space: nowrap; } .qr-cks-p { text-align: start; }
-.qr-cks-t { display: inline; white-space: nowrap; font-weight: 600; } .qr-cks-t + .qr-cks-t { margin-inline-start: 0.35rem; } .qr-cks-t[data-s="notfound"] { font-weight: 500; }
+.qr-cks-g { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.15rem 0.35rem; min-width: 0; overflow: hidden; }
+.qr-cks-t { display: inline; white-space: nowrap; font-weight: 600; } .qr-cks-t[data-s="notfound"] { font-weight: 500; }
 .qr-cks-i { font-weight: 500; }
 
 /* No horizontal scrollbars anywhere: tables fit their container and wrap text (tests/no_hscroll.test.cjs, scripts/check-layout.cjs). */
@@ -453,7 +454,8 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 
 /* ===== Large screen layout: every value/label/header on one line, no wrap, no overlap at any window size or DPI ===== */
 /* Table cells: fixed column widths where appropriate, nowrap for all labels and values */
-.qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { white-space: nowrap; }
+.qr-root .qr-cks-tab th, .qr-root .qr-cks-tab td { white-space: nowrap; overflow: hidden; }
+.qr-root .qr-cks-tab td.qr-cks-g { white-space: normal; overflow-wrap: anywhere; }
 
 /* Checklist part card table: auto layout with nowrap cells */
 .qr-root .qr-ck-tab { table-layout: fixed; }

@@ -16,4 +16,6 @@ function removeHistory(base, id, deleteData) {
   return readHistory(base);
 }
 function loadProject(base, id) { if (!ID.test(String(id))) throw new Error('bad project id'); try { return JSON.parse(fs.readFileSync(path.join(base, 'projects', id, 'project.json'), 'utf8')); } catch { return null; } }
-module.exports = { MAX, upsert, readHistory, touchHistory, removeHistory, loadProject };
+/** Empty the history list. Project folders on disk are left in place. */
+function clearHistory(base) { writeHistory(base, []); return readHistory(base); }
+module.exports = { MAX, upsert, readHistory, touchHistory, removeHistory, clearHistory, loadProject };

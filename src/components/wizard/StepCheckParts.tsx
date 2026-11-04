@@ -26,7 +26,7 @@ export function StepCheckParts({ parts, sel, open, onOpen, onBack, onGo, onLeave
       <PartCard part={part} n={parts.length} sel={sel} setSel={onGo} details={details} goStep={setStep} focus={focus} onFocus={loc}
         onPatch={(next: any) => onPatch(sel, next)} onPrint={() => onPrint(sel)} onSave={() => onSave(sel)} />
       <div className="qr-panel" data-testid="drawing-panel">
-        {details && <div className="qr-tabs">{tabs.map((k: string) => <button key={k} className="qr-tab" data-active={cur === k} data-testid={'tab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('tab.' + k)}</button>)}</div>}
+        <div className="qr-tabs">{tabs.map((k: string) => <button key={k} className="qr-tab" data-active={cur === k} data-testid={'tab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('tab.' + k)}</button>)}</div>
         <div className="qr-scroll">
           {cur === 'drawing' && <DrawingView part={part} focus={focus} details={details} onFocus={setFocus} onSelect={(id: string) => setFocus((f: any) => (f && f.id === id ? f : { ...f, id }))} />}
           {cur === 'route' && <RouteCard part={part} />}

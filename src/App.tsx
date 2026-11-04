@@ -96,14 +96,14 @@ export default function App() {
       {upd.busy && <UpdateProgress version={upd.busy.version} notes={upd.busy.notes} frac={upd.busy.frac} phase={upd.busy.phase} onCancel={upd.cancel} />}
       <div className="qr-projs">
         {P.list.map((p) => <ProjectView key={p.id} id={p.id} active={p.id === P.active} initial={p.initial} pending={p.pending} settings={settings} assistant={assistant}
-          details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} onCloseJob={P.close} />)}
+          details={details} setDetails={setDetails} notify={notify} over={over && p.id === P.active} onMeta={P.setMeta} register={P.register} recent={recent(hist)} onReopen={P.reopen} onHistory={setHist} onClearHistory={async () => setHist(await qr().clearHistory())} onCloseJob={P.close} />)}
       </div>
       <div className="qr-statusbar" data-testid="status-bar" role="status">{saveStatus(m) === 'saved' && <span data-testid="saved-at" title={t('tip.savedAt', { time: hhmm(m.savedAt) })}>{t('top.saved', { time: hhmm(m.savedAt) })}</span>}{saveStatus(m) === 'unsaved' && <span data-testid="unsaved-note" title={t('tab.unsaved')}>{t('top.unsaved')}</span>}</div>
       {notice && <Notice text={notice} action={noticeAction ? { label: noticeAction.label, run: () => { noticeAction.run(); setNotice(''); setNoticeAction(null); } } : null} onClose={() => { setNotice(''); setNoticeAction(null); }} />}
       {P.closeAsk && <CloseJobsDialog ask={P.closeAsk} onPick={P.resolveClose} />}
       {dialog === 'settings' && settings && <SettingsDialog settings={settings} onClose={() => setDialog(null)} onSave={async (s: any) => { await saveSettings(s); setDialog(null); }} onApplyPreset={async (s: any) => { await saveSettings(s); }} onRestartTour={async (s: any) => { await saveSettings(s); setTourStage(0); setDialog('tutorial'); }} onCloseAllJobs={() => { setDialog(null); P.closeAll(); }} />}
       {settings && !settings.firstRunDone && !m.nParts && m.status !== 'busy' && <Tour first lang0={resolveAssistantLang(settings)} onClose={async () => setSettings(await qr().setSettings({ ...settings, firstRunDone: true }))} />}
-      {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} />}
+      {dialog === 'history' && <HistoryDialog items={hist} openIds={P.list.map((p) => p.id)} onClose={() => setDialog(null)} onOpen={async (id: string) => { if (await P.reopen(id)) setDialog(null); }} onRemove={async (id: string, del: boolean) => setHist(await qr().removeHistory(id, del))} onClear={async () => setHist(await qr().clearHistory())} />}
       {dialog === 'tutorial' && <Tour lang0={resolveAssistantLang(settings) || 'en'} stage={tourStage} onClose={() => { setDialog(null); setTourStage(0); }} />}
     </div>
   );

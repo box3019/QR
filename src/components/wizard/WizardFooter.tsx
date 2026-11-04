@@ -1,4 +1,4 @@
-// Wizard footer bar: Cancel (new RFQ), Next, Finish check. Buttons sit on the rail (inline-start) side.
+// Wizard footer bar: Cancel (new RFQ), Next, Finish check. Equal-size buttons flush with the content-list inline-start edge.
 import React from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';

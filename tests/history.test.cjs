@@ -17,6 +17,22 @@ test('Remove from history keeps the data unless the user chose to delete it', ()
   H.removeHistory(base, e(2).id, true); assert.ok(!fs.existsSync(path.join(base, 'projects', e(2).id))); assert.strictEqual(H.readHistory(base).length, 0);
   assert.throws(() => H.removeHistory(base, '../x', true));
 });
+test('Clear history empties the list and leaves project folders on disk', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'qrh-'));
+  for (const i of [1, 2, 3]) { P.saveProject(base, e(i).id, { step: 2 }); H.touchHistory(base, e(i)); }
+  assert.strictEqual(H.readHistory(base).length, 3);
+  const next = H.clearHistory(base);
+  assert.strictEqual(next.length, 0);
+  assert.strictEqual(H.readHistory(base).length, 0);
+  for (const i of [1, 2, 3]) assert.ok(fs.existsSync(path.join(base, 'projects', e(i).id, 'project.json')));
+  const recent = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'history', 'RecentList.tsx'), 'utf8');
+  const hist = fs.readFileSync(path.join(__dirname, '..', 'src', 'components', 'history', 'HistoryDialog.tsx'), 'utf8');
+  assert.match(recent, /hist\.clear/); assert.match(hist, /hist\.clear/);
+  assert.match(recent, /ConfirmDialog/); assert.match(hist, /ConfirmDialog/);
+  assert.match(recent, /MrtEmpty/); assert.match(recent, /testid="recent-empty"/);
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'electron', 'preload.cjs'), 'utf8'), /clearHistory/);
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'electron', 'main.cjs'), 'utf8'), /qr:history:clear/);
+});
 test('search by RFQ, part number or customer; recent 5 with parts only', async () => {
   const m = await imp(); const l = [1, 2, 3, 4, 5, 6, 7].map((i) => e(i)); l.push(e(8, { nParts: 0 }));
   assert.deepStrictEqual(m.filterHistory(l, 'rfq3').map((x) => x.label), ['RFQ3']); assert.deepStrictEqual(m.filterHistory(l, 'pn5').map((x) => x.label), ['RFQ5']);

@@ -53,10 +53,15 @@ test('one MRT border level: tab chip 1px, close/label/summary 0, no strip frame'
   assert.doesNotMatch(layers, /\.qr-root \.mrt-workspace-tab \{[^}]*border:\s*2px/);
   assert.doesNotMatch(layers, /border:\s*2px solid var\(--qr-btn-border\)/);
   assert.match(R('src/styles/wizard.css'), /qr-cks-card \{[^}]*border:\s*1px solid var\(--mrt-grid-border/);
-  assert.match(R('src/styles/wizard.css'), /qr-cks-card \{[^}]*overflow:\s*visible/);
+  assert.match(R('src/styles/wizard.css'), /qr-cks-card \{[^}]*overflow:\s*hidden/);
+  assert.match(R('src/styles/wizard.css'), /qr-cks-g \{[^}]*flex-wrap:\s*wrap/);
+  assert.match(R('src/styles/layers.css'), /qr-cks > summary[\s\S]*border-bottom:\s*1px solid/);
+  assert.match(R('src/styles/layers.css'), /qr-cks-card table\.qr-mrt tr > \*:first-child[\s\S]*border-inline-start:\s*0/);
   assert.match(R('scripts/check-layout.cjs'), /nested border:/);
   assert.match(R('scripts/check-layout.cjs'), /border >1px/);
   assert.match(R('scripts/check-layout.cjs'), /footer not visible/);
+  assert.match(R('scripts/check-layout.cjs'), /cell overflow:/);
+  assert.match(R('scripts/check-layout.cjs'), /frame gap:/);
 });
 
 test('stylesheets load last: mrtTable then mrtChrome', () => {
@@ -87,6 +92,11 @@ test('wizard footer sits on the rail (inline-start) and Finish check closes the 
   assert.match(foot, /tip\.wzFinish/);
   assert.doesNotMatch(foot, /wz\.close/);
   assert.match(R('src/styles/wizard.css'), /\.qr-wiz-footer \{[^}]*justify-content:\s*flex-start/);
+  assert.match(R('src/styles/wizard.css'), /\.qr-wiz-footer \{[^}]*grid-column:\s*2/);
+  assert.match(R('src/styles/mrtChrome.css'), /qr-wiz-footer \{[\s\S]*grid-column:\s*2/);
+  assert.match(R('src/styles/mrtChrome.css'), /qr-wiz-footer[\s\S]*width:\s*10\.5rem !important/);
+  assert.match(R('src/styles/mrtChrome.css'), /qr-wiz-footer[\s\S]*height:\s*34px !important/);
+  assert.match(R('src/styles/mrtChrome.css'), /qr-wiz-footer button\.mrt-btn-primary \{[\s\S]*?height:\s*34px !important/);
   assert.doesNotMatch(R('src/ProjectView.tsx'), /window\.close/);
   assert.match(R('src/ProjectView.tsx'), /onCloseJob\(id\)/);
   assert.match(R('src/App.tsx'), /onCloseJob=\{P\.close\}/);
@@ -100,6 +110,8 @@ test('Recent is one card, plain order text, row click', () => {
   assert.doesNotMatch(r, /qr-hist-open/);
   assert.match(r, /onClick=\{\(\) => onOpen\(e\.id\)\}/);
   assert.match(r, /qr-recent-l/);
+  assert.match(r, /hist\.clear/);
+  assert.match(r, /MrtEmpty/);
 });
 
 test('part navigator copies MRT settings segment; no double ring', () => {
@@ -123,7 +135,9 @@ test('status chips stay grouped, not 1fr stretched', () => {
 test('check-layout flags table width, footer side, and allows value wrap', () => {
   const m = R('scripts/check-layout.cjs');
   assert.match(m, /table not full width/);
-  assert.match(m, /footer not rail-side/);
+  assert.match(m, /footer not list-edge/);
+  assert.match(m, /footer buttons unequal width/);
+  assert.match(m, /footer buttons unequal height/);
   assert.match(m, /qr-ck-val, \.qr-bd-v, \.qr-mrt-wrap/);
 });
 

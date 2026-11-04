@@ -9,7 +9,7 @@ import { showLoaded } from '../../wizard/loaded.mjs';
 import { LoadedSummary } from './LoadedSummary';
 import { RecentList } from '../history/RecentList';
 
-export function StepIntake({ view, parts, files, nParts, rfqs, over, details, unknown, onFiles, onFolder, recent, onReopen, onNext, onPart }: any) {
+export function StepIntake({ view, parts, files, nParts, rfqs, over, details, unknown, onFiles, onFolder, recent, onReopen, onClearHistory, onNext, onPart }: any) {
   if (showLoaded(view, nParts)) return <LoadedSummary rfqs={rfqs} parts={parts} files={files} unknown={unknown} details={details} onNext={onNext} onPart={onPart} onFiles={onFiles} onFolder={onFolder} />;
   if (!showDrop(view, nParts)) return <div className="qr-step-intake">{view && <ImportView view={view} />}</div>;
   return <div className="qr-step-intake">
@@ -24,6 +24,6 @@ export function StepIntake({ view, parts, files, nParts, rfqs, over, details, un
         {details && unknown.length > 0 && <div className="qr-muted" style={{ marginTop: 12 }}>{t('drop.notDrawings', { list: unknown.join(', ') })}</div>}
       </div>
     </div>
-    {recent && recent.length > 0 && <RecentList items={recent} onOpen={onReopen} />}
+    <RecentList items={recent || []} onOpen={onReopen} onClear={onClearHistory} />
   </div>;
 }

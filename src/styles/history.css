@@ -7,7 +7,11 @@
 .qr-hist-open { background: none; border: 0; padding: 0; color: var(--mrt-text); text-decoration: none; cursor: pointer; font: inherit; font-weight: 500; text-align: start; }
 .qr-hist-open:hover { text-decoration: underline; }
 .qr-recent { max-width: 640px; margin: 10px auto 0; font-size: 12px; }
-.qr-recent-h { color: var(--mrt-text-muted, #636366); margin-bottom: 4px; }
+.qr-recent-h { color: var(--mrt-text-muted, #636366); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.qr-hist-h-acts { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; }
+.qr-confirm-bg { z-index: 60; }
+.qr-confirm { width: min(28rem, 92vw); }
+.qr-confirm-danger .qr-modal-h { color: var(--mrt-danger, #dc2626); }
 .qr-recent ul { list-style: none; margin: 0; padding: 0; } .qr-recent li { padding: 2px 0; }
 .qr-recent-l { font-weight: 500; }
 .qr-hist .qr-modal-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; }
