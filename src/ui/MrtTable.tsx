@@ -25,8 +25,8 @@ export function OverflowLine({ className, testid, text, children }: { className?
   </span>;
 }
 
-export function MrtTable({ children, className, testid, tableRef, tabIndex, cols }: any) {
-  return <table className={'qr-mrt' + (className ? ' ' + className : '')} data-mrt="1" data-testid={testid} ref={tableRef} tabIndex={tabIndex}>
+export function MrtTable({ children, className, testid, tableRef, tabIndex, cols, ...rest }: any) {
+  return <table className={'qr-mrt' + (className ? ' ' + className : '')} data-mrt="1" data-testid={testid} ref={tableRef} tabIndex={tabIndex} {...rest}>
     {cols}
     {children}
   </table>;

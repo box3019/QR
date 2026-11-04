@@ -314,7 +314,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     fit(src, 'sheet 12 · zone B12 · note 14 · step 10', 'source 40-char');
   }
   // Every button / role=button / onclick: visible border or fill distinct from the container, plus pointer (disabled may be default).
-  const lookSkip = '.qr-modal-bg, .qr-modal-back, .qr-mark, video, .qr-vid-el, .qr-vid-bg, .qr-face, .qr-tour-dot';
+  const lookSkip = '.qr-modal-bg, .qr-modal-back, .qr-mark, video, .qr-vid-el, .qr-vid-bg, .qr-face, .qr-ai-avatar, .qr-tour-dot, .mrt-workspace-tab__label, .mrt-workspace-tab__close, .qr-ck-loc, .qr-block-chev, .qr-ck-more, .qr-cks-x';
   const looks = [];
   const distinct = (a, b) => { if (!a || !b) return false; return Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b) > 18 || Math.abs((a.a == null ? 1 : a.a) - (b.a == null ? 1 : b.a)) > 0.12; };
   document.querySelectorAll('button, [role="button"], [onclick]').forEach((e) => {

@@ -1,10 +1,11 @@
 ﻿// Part card: the Alex checklist as an MRT table — Item | Status | Value | locate. Source is a full-width sub-row.
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { evaluate, ROWS } from '../../core/checklist/live.mjs';
 import { getCkSettings } from './store';
 import { itemWhat, whereText, focusOf } from './format';
 import { MrtTable, MrtHead, MrtGroup, MrtRow, OverflowLine } from '../ui/MrtTable';
+import { MRT_BTN } from '../ui/mrtButtons';
 export { OverflowLine } from '../ui/MrtTable';
 
 const GLYPH: any = { yes: '\u2713', no: '\u2013', notfound: '?' };
@@ -82,6 +83,8 @@ export function Indicators({ ev }: any) {
 }
 export function ChecklistBody({ part, onFocus, focusId }: any) {
   const ev = evaluate(part, getCkSettings()); const R: any = Object.fromEntries(ev.rows.map((r: any) => [r.id, r]));
+  const [showAll, setShowAll] = useState(false);
+  const noCount = ev.rows.filter((r: any) => r.state === 'no').length;
   const locatable = useMemo(() => {
     const out: any[] = [];
     for (const g of ev.order) for (const r of ROWS.filter((x: any) => x.group === g)) {
@@ -109,6 +112,7 @@ export function ChecklistBody({ part, onFocus, focusId }: any) {
     <Indicators ev={ev} />
     {ev.read && !ev.read.ok && <div className="qr-ck-warn" data-testid="ck-lowread">{t('ck.lowRead')}</div>}
     {ev.zoneEstimated && <div className="qr-muted qr-ck-zn" data-testid="ck-zone-note">{t('ck.zoneNote')}</div>}
+    {noCount > 0 && <div className="qr-ck-all"><button type="button" className={MRT_BTN} data-testid="ck-show-all" title={showAll ? t('ck.hideNo') : t('ck.showAll')} onClick={() => setShowAll((v) => !v)}>{showAll ? t('ck.hideNo') : t('ck.showAll')}</button></div>}
     <MrtTable className="qr-ck-tab" tableRef={box} tabIndex={0} testid="ck-list" cols={<colgroup>
         <col className="qr-ck-c-item" />
         <col className="qr-ck-c-st" />
@@ -121,10 +125,13 @@ export function ChecklistBody({ part, onFocus, focusId }: any) {
         { label: t('ck.col.value'), className: 'qr-ck-h-val' },
         { label: '\u2316', className: 'qr-ck-h-loc', title: t('ck.show') }
       ]} />
-      <tbody>{ev.order.map((g: string) => <React.Fragment key={g}>
+      <tbody>{ev.order.map((g: string) => {
+        const rows = ROWS.filter((r: any) => r.group === g && (showAll || !R[r.id] || R[r.id].state !== 'no'));
+        if (!rows.length) return null;
+        return <React.Fragment key={g}>
         <MrtGroup className="qr-ck-gh" colSpan={COLS} testid={'ck-g-' + g}>{t('ck.g.' + g)}</MrtGroup>
-        {ROWS.filter((r: any) => r.group === g).map((r: any) => <ItemRows key={r.id} r={r} row={R[r.id]} onFocus={onFocus} pid={part.id || part.partNo} focusId={focusId} />)}
-      </React.Fragment>)}</tbody>
+        {rows.map((r: any) => <ItemRows key={r.id} r={r} row={R[r.id]} onFocus={onFocus} pid={part.id || part.partNo} focusId={focusId} />)}
+      </React.Fragment>; })}</tbody>
     </MrtTable>
   </>;
 }

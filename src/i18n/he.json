@@ -824,6 +824,8 @@
   "ck.collapse": "הסתרת רשימת הבדיקה המלאה של החלק",
   "ck.valueFull": "הצגת הערך המלא",
   "ck.valueHide": "הסתרת הערך המלא",
+  "ck.showAll": "הצגת הכול",
+  "ck.hideNo": "הסתרת פריטי לא",
   "print.empty": "מסמך ההדפסה נוצר ריק",
   "print.failed": "ההדפסה נכשלה.",
   "st.tab.updates": "עדכונים",

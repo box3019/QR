@@ -84,20 +84,22 @@ export function BlockCard({ block: b, open, onToggle, onAction, state, part, onF
   const val = b.kind === 'material' ? <bdi data-testid="mat-line">{localized(part && part.material, 'line') || b.value}{b.ours === true ? ` — ${t('blk.mat.ours')}` : b.ours === false ? ` — ${t('blk.mat.notOurs')}` : ''}</bdi>
     : b.kind === 'field' && b.status === 'ok' && b.value ? <bdi>{String(b.value)}</bdi> : null;
   const confirmedField = b.kind === 'field' && b.action && b.action.kind === 'confirm' && state && state.ok;
+  const compactKey = b.kind === 'material' || (b.sec && (b.sec.key === 'material' || b.sec.key === 'coatings' || b.sec.key === 'sequence'));
+  const compact = !!(compactKey && ((b.kind === 'material' && status === 'ok') || confirmedField));
   const needle = (b.kind === 'standard' && b.title) || (b.details && b.details.raw) || b.value || '';
   const pgN = (b.pg && b.pg.page) || (b.page) || 1;
   const tokens = ((part && part.drawing && part.drawing.pages) || []).flatMap((p: any) => (p.tokens || []).map((tk: any) => ({ ...tk, _p: p.n })));
   const pageToks = ((part && part.drawing && part.drawing.pages) || []).find((p: any) => p.n === pgN)?.tokens || tokens;
   const bbox = needle ? locate(String(needle), pageToks) : null;
   const loc = bbox ? { page: pgN, bbox, boxes: [bbox], id: 'bd-' + b.id, tone: status === 'ok' || done ? 'checked' : status === 'bad' ? 'critical' : 'accent' } : null;
-  return <section className="qr-block" data-testid="block" data-block={b.id} data-kind={b.kind} data-status={status} data-open={open} title={loc ? undefined : t('ck.locateMissing')}>
-    <div className="qr-block-h">
+  return <section className="qr-block" data-testid="block" data-block={b.id} data-kind={b.kind} data-status={status} data-open={open} data-compact={compact ? '1' : undefined} title={loc ? undefined : t('ck.locateMissing')}>
+    <div className="qr-block-h" onClick={compact && b.details ? (e: any) => { if ((e.target as HTMLElement).closest('button')) return; onToggle(); } : undefined}>
       <i className="qr-dot" data-s={status} aria-hidden="true" />
       <div className="qr-block-main">
-        <div className="qr-block-title" data-testid="block-title">{title}</div>
-        <div className="qr-block-line" data-testid="block-line">{val || lineText(b, state, part)}</div>
+        <div className="qr-block-title" data-testid="block-title">{title}{compact && (val || lineText(b, state, part)) ? <> <span className="qr-block-line" data-testid="block-line">{val || lineText(b, state, part)}</span></> : null}</div>
+        {!compact && <div className="qr-block-line" data-testid="block-line">{val || lineText(b, state, part)}</div>}
       </div>
-      {act && <button type="button" className={MRT_BTN} data-testid={'block-act-' + act.kind} title={t(ACTION[act.kind].tip)} onClick={() => onAction(b)}>{confirmedField ? '✓ ' : ''}{t(ACTION[act.kind].label)}</button>}
+      {act && !compact && <button type="button" className={MRT_BTN} data-testid={'block-act-' + act.kind} title={t(ACTION[act.kind].tip)} onClick={() => onAction(b)}>{confirmedField ? '✓ ' : ''}{t(ACTION[act.kind].label)}</button>}
       {loc ? <button type="button" className="qr-ck-loc" data-testid="block-locate" title={t('ck.show')} onClick={(e) => { e.stopPropagation(); onFocus && onFocus(loc); }}>{'\u2316'}</button> : null}
       {!b.details && <span className="qr-block-chev" aria-hidden="true" />}
       {b.details && <button type="button" className="qr-block-chev" data-testid="block-chev" aria-expanded={open} title={t('tip.blkDetails')} onClick={onToggle}>{open ? '▾' : '▸'}</button>}

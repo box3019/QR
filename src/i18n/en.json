@@ -824,6 +824,8 @@
   "ck.collapse": "Hide the full checklist for this part",
   "ck.valueFull": "Show the full value",
   "ck.valueHide": "Hide the full value",
+  "ck.showAll": "Show all",
+  "ck.hideNo": "Hide No items",
   "print.empty": "Print document rendered empty",
   "print.failed": "Print failed.",
   "st.tab.updates": "Updates",

@@ -3,9 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Chip } from '../ui/common';
 import { t, getLang } from '../i18n';
-import { PlainStatusBadge } from '../ui/simple';
-import { MrtTable, MrtHead, MrtRow, OverflowLine } from '../ui/MrtTable';
 import { zoomStep, fitSheet, centerScroll, panTo, zoomToBox } from '../wizard/dropGuard.mjs';
+export { RouteCard } from './RouteCardView';
 
 const qr = () => (window as any).qr;
 const L = (o: any, f: string) => (o ? (getLang() === 'he' && o[f + 'He'] ? o[f + 'He'] : o[f]) : '');
@@ -100,25 +99,6 @@ export function DrawingView({ part, focus, details, onFocus, onSelect }: any) {
           {boxes.filter((b: any) => (b.page || focus.page) === page).map((b: any, i: number) => <div key={'f' + i} className="qr-mark" data-kind="focus" data-tone={focus.tone || 'accent'} data-active={i === boxIndex ? 'true' : undefined} data-testid="dw-mark" style={{ left: b.x * k - 4, top: b.y * k - 4, width: b.w * k + 8, height: b.h * k + 8 }} onClick={(e) => { e.stopPropagation(); onSelect && onSelect(focus.id); }} />)}
         </div>}
     </div>
-  </div>;
-}
-
-const OL = (text: string, children?: any) => <OverflowLine className="qr-ck-body" text={text}>{children ?? text}</OverflowLine>;
-export function RouteCard({ part }: any) {
-  return <div className="qr-route-card" data-testid="route-card">
-    <div className="head">
-      <div><b>{t('rc.part')}</b><span className="qr-ltr">{part.partNo}</span></div><div><b>{t('rc.rev')}</b>{part.rev || '-'}</div><div><b>{t('rc.customer')}</b>{part.customer}</div><div><b>{t('rc.material')}</b><span>{L(part.material, 'normalized') || '—'}</span></div>
-      <div style={{ gridColumn: 'span 2' }}><b>{t('rc.title')}</b>{part.title}</div><div><b>{t('rc.source')}</b>{L(part, 'routeSource')}</div><div><b>{t('rc.status')}</b><PlainStatusBadge part={part} /> · {t('rc.readOnly')}</div>
-    </div>
-    <MrtTable className="qr-rcard-tab" cols={<colgroup><col className="qr-rcard-c-step" /><col className="qr-rcard-c-op" /><col className="qr-rcard-c-ins" /><col className="qr-rcard-c-spec" /><col className="qr-rcard-c-src" /><col className="qr-rcard-c-flags" /></colgroup>}>
-      <MrtHead cells={[t('rc.step'), t('rc.operation'), t('rc.instructions'), t('rc.specs'), t('rc.src'), { label: t('rc.flags'), className: 'qr-rc-flags' }]} />
-      <tbody>{part.route.map((s: any, i: number) => { const op = L(s, 'type') + (s.title ? ' · ' + L(s, 'title') : ''); const specs = (s.specRefs || []).join(', '); const src = L(s, 'source') || '';
-        return <MrtRow key={i} className={s.blocked ? 'qr-rcard-blocked' : undefined}><td>{s.seq}</td><td>{OL(op)}</td>
-          <td>{s.items.map((it: any, j: number) => { const line = (it.seq && it.seq !== s.seq ? it.seq + ' ' : '') + (L(it, 'text') || ''); return <span key={j}>{OL(line, <>{it.seq && it.seq !== s.seq ? <b>{it.seq} </b> : null}<bdi>{L(it, 'text')}</bdi></>)}</span>; })}</td>
-          <td>{OL(specs)}</td><td>{OL(src)}</td>
-          <td className="qr-rc-flags">{s.outsourced && <Chip t="info" testid="rc-outsourced">{t('rc.outsourced')}</Chip>} {s.blocked && <Chip t="danger">{t('rc.waiting')}</Chip>}{s.moved && <Chip t="attention">{t('rc.moved')}</Chip>}</td></MrtRow>; })}</tbody>
-    </MrtTable>
-    {!part.route.length && <div className="qr-muted" style={{ padding: 10 }}>{t('rc.none')}</div>}
   </div>;
 }
 

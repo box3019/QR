@@ -35,7 +35,7 @@ test('route-card flags chip grows to the full label (no ellipsis, no clip)', () 
   assert.ok(/\.qr-chip, \.qr-status, \.qr-badge \{[^}]*overflow:\s*visible/.test(fit));
   assert.ok(/\.qr-chip, \.qr-status, \.qr-badge \{[^}]*text-overflow:\s*clip/.test(fit));
   assert.ok(/qr-rc-flags/.test(css) && /min-width:\s*max-content/.test(css));
-  const v = rd('src/views/Viewer.tsx');
+  const v = rd('src/views/RouteCardView.tsx');
   assert.ok(/qr-rc-flags/.test(v) && /rc\.outsourced/.test(v) && /rc-outsourced/.test(v));
   assert.ok(!/width: 90/.test(v));
 });
