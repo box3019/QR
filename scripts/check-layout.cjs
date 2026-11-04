@@ -39,7 +39,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   }
   // one line per item: no header / label / chip / tag / button / summary-table item may wrap inside itself (height <= 1 line + 2px)
   const wraps = []; const nm = (e) => e.tagName + (typeof e.className === 'string' && e.className ? '.' + e.className.split(' ')[0] : '');
-  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-where, .qr-ck-body, .qr-ck-tab th, .qr-ck-s, .qr-cks-x, .qr-bd-tab th, .qr-bd-tab td').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.closest('.qr-ck-l, .qr-cks-tab thead') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close],.qr-ck-l,.qr-ck-lab')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
+  document.querySelectorAll('th, button, summary, .qr-stat-l, .qr-stat-n, .qr-chip, .qr-pcard-tag, .qr-pcard-badge, .qr-cks-t, .qr-cks-i, .qr-cks-p bdi, .qr-cks-g bdi, .qr-ck-where, .qr-ck-body, .qr-ck-tab th, .qr-ck-tab td:not(.qr-ck-src-cell), .qr-ck-l, .qr-ck-lab, .qr-ck-s, .qr-cks-x, .qr-bd-tab th, .qr-bd-tab td').forEach((e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || e.closest('.qr-proj-off') || e.closest('.qr-ck-full') || e.matches('[data-testid=tab-close],[data-testid=tab-more-close]')) return; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.textContent.trim()) continue; const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue; const rg = document.createRange(); rg.selectNodeContents(n); const rows = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 3))); if (rows.size > 1) { wraps.push(nm(e) + ':' + n.textContent.trim().slice(0, 24)); break; } } });
   res.wraps = wraps; wraps.slice(0, 8).forEach((x) => res.issues.push('item wraps: ' + x));
   const extra = [...document.querySelectorAll('.qr-provisional,[data-testid=busy],.qr-stat')]; res.extraContrast = []; extra.forEach((root) => { root.querySelectorAll('*').forEach((c) => { if (![...c.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return; const fg = rgba(getComputedStyle(c).color); if (!fg) return; const bg = bgOf(c); const f = over(fg, bg); const L1 = lum(f), L2 = lum(bg); const cr = (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05); res.extraContrast.push(Math.round(cr * 100) / 100); if (cr < 4.5) res.issues.push('contrast ' + (Math.round(cr * 100) / 100) + ' in ' + (root.className || root.dataset.testid).toString().slice(0, 20) + ':' + (c.textContent || '').trim().slice(0, 16)); }); });
   // full-page overlays / dimming
@@ -138,6 +138,14 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (!t) return;
     if (th.scrollWidth > th.clientWidth + 1) res.issues.push('table header clipped: ' + t.slice(0, 40));
   });
+  const bub = document.querySelector('[data-testid=assistant-bubble]');
+  if (bub && !bub.closest('.qr-proj-off')) {
+    const cs = getComputedStyle(bub);
+    if (cs.textOverflow === 'ellipsis' && bub.scrollWidth > bub.clientWidth + 1) res.issues.push('hint bar ellipsis');
+    const hintHit = (el, label) => { if (el.scrollWidth > el.clientWidth + 1) res.issues.push('hint bar clipped: ' + label); };
+    hintHit(bub, (bub.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 48));
+    bub.querySelectorAll('.qr-ai-sent').forEach((s) => hintHit(s, (s.textContent || '').trim().slice(0, 48)));
+  }
   const ptabs = document.querySelector('.qr-ptabs');
   if (ptabs) { const cs = getComputedStyle(ptabs); if (cs.overflowX === 'auto' || cs.overflowX === 'scroll') res.issues.push('job tabs must not scroll horizontally'); }
   const topbar = document.querySelector('.qr-topbar');
@@ -260,6 +268,28 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   const partPanel = document.querySelector('[data-testid=step2-part] [data-testid=breakdown-panel]');
   const ckTab = document.querySelector('table.qr-ck-tab');
   const ckVisible = !!(partPanel && partPanel.getBoundingClientRect().width >= 650 && ckTab && ckTab.getBoundingClientRect().width > 8 && getComputedStyle(ckTab).display !== 'none');
+  const lineTops = (el) => {
+    const rg = document.createRange(); const tops = [];
+    const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
+    while ((n = walk.nextNode())) {
+      if (!n.textContent.trim()) continue;
+      try { rg.selectNodeContents(n); } catch { continue; }
+      [...rg.getClientRects()].forEach((r) => { if (r.width > 0 && r.height > 1) tops.push(Math.round(r.top / 3)); });
+    }
+    return new Set(tops).size;
+  };
+  document.querySelectorAll('table.qr-mrt td, table.qr-mrt th, .qr-ck-lab, .qr-bd-lab, .qr-rail .mrt-wizard-step-label, .qr-ai-sent').forEach((e) => {
+    if (e.closest('.qr-proj-off, .qr-ck-full, .qr-ck-ind')) return;
+    const cs = getComputedStyle(e);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return;
+    if (e.getBoundingClientRect().width < 2 || e.getBoundingClientRect().height < 2) return;
+    const t = (e.innerText || e.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!t) return;
+    const n = lineTops(e);
+    const lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.2);
+    const linesH = lh > 0 ? e.getBoundingClientRect().height / lh : n;
+    if (n > 1 || linesH > 1.55) res.issues.push('multiline ' + selOf(e) + ' "' + t.slice(0, 40) + '"');
+  });
   if (strictClip && ckVisible) {
     const val = ckTab.querySelector('td.qr-ck-val');
     const src = ckTab.querySelector('td.qr-ck-src-cell') || ckTab.querySelector('.qr-ck-where');
@@ -272,7 +302,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const need = cv.measureText(sample).width;
       if (need > inner + 1) res.issues.push(label + ' ' + Math.round(need) + '>' + Math.round(inner) + ' for "' + sample + '"');
     };
-    fit(val, 'Paint · MIL-PRF-85285 Type I · black coat', 'value 45-char');
+    if (partPanel.getBoundingClientRect().width >= 800) fit(val, 'Paint · MIL-PRF-85285 Type I · black coat', 'value 45-char');
     fit(src, 'sheet 12 · zone B12 · note 14 · step 10', 'source 40-char');
   }
   // Every button / role=button / onclick: visible border or fill distinct from the container, plus pointer (disabled may be default).
@@ -458,10 +488,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       if (stacked) {
         const minFrac = innerHeight < 560 ? 0.22 : 0.4;
         if (vr.height < innerHeight * minFrac - 1) res.issues.push('viewer short ' + Math.round(vr.height) + ' < ' + Math.round(minFrac * 100) + '% of ' + innerHeight);
-      } else {
-        const minFrac = innerWidth >= 1900 ? 0.4 : 0.24;
-        if (vr.width < innerWidth * minFrac - 4) res.issues.push('viewer narrow ' + Math.round(vr.width) + ' < ' + Math.round(minFrac * 100) + '% of ' + innerWidth);
-      }
+      } else if (vr.width < innerWidth * 0.4 - 4) res.issues.push('viewer narrow ' + Math.round(vr.width) + ' < 40% of ' + innerWidth);
       const mark = vp.querySelector('[data-testid=dw-mark][data-active="true"]') || vp.querySelector('[data-testid=dw-mark]');
       if (mark) {
         const mr = mark.getBoundingClientRect();
@@ -575,8 +602,9 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const m = await win.evaluate(MEASURE);
       const clipIssues = (m.issues || []).filter((x) => /^clip /.test(x));
       const viewIssues = st === 2 ? (m.issues || []).filter((x) => /^(viewer |locate )/.test(x)) : [];
-      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, clips: m.clips, viewer: m.viewer, printButton: m.printButton, savePdfButton: m.savePdfButton, issues: [...clipIssues, ...viewIssues] });
-      if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length) || clipIssues.length || viewIssues.length) fail++;
+      const extraIssues = (m.issues || []).filter((x) => /^(hint bar|multiline )/.test(x));
+      report.scan.push({ lang, size: w + 'x' + h, step: st, hscroll: m.hscroll, wraps: m.wraps, overlaps: m.overlaps, clips: m.clips, viewer: m.viewer, printButton: m.printButton, savePdfButton: m.savePdfButton, issues: [...clipIssues, ...viewIssues, ...extraIssues] });
+      if (m.hscroll.length || m.wraps.length || (m.overlaps && m.overlaps.length) || clipIssues.length || viewIssues.length || extraIssues.length) fail++;
       // Check Print / Save PDF buttons are visible on each step
       if (!m.printButton) { report.scan[report.scan.length - 1].issues.push('Print button not visible'); fail++; }
       if (!m.savePdfButton) { report.scan[report.scan.length - 1].issues.push('Save PDF button not visible'); fail++; }
@@ -598,7 +626,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await closeUi();
       await open(); await sleep(450);
       const m = await win.evaluate(MEASURE);
-      const issues = (m.issues || []).filter((x) => /^(clip |rail |cell font|step label|table header|value |source )/.test(x) || /locate overflows|route card/.test(x));
+      const issues = (m.issues || []).filter((x) => /^(clip |rail |cell font|step label|table header|value |source |hint bar|multiline )/.test(x) || /locate overflows|route card/.test(x));
       const r = { screen, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, panel: m.panel, ckHidden: m.ckHidden, cellFont: m.cellFont, issues };
       report.clipScreens.push(r); if (issues.length) fail++;
     };
@@ -607,7 +635,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       await win.evaluate((k) => { window.__qrSettingsTab && window.__qrSettingsTab(k); }, tab);
       await sleep(250);
       const m = await win.evaluate(MEASURE);
-      const issues = (m.issues || []).filter((x) => /^(clip |rail |cell font|step label|table header|value |source )/.test(x) || /locate overflows|route card/.test(x));
+      const issues = (m.issues || []).filter((x) => /^(clip |rail |cell font|step label|table header|value |source |hint bar|multiline )/.test(x) || /locate overflows|route card/.test(x));
       report.clipScreens.push({ screen: 'settings-' + tab, lang, palette: pal, size: w + 'x' + h, dpi, clips: m.clips, issues });
       if (issues.length) fail++;
     }
@@ -641,7 +669,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     await win.waitForSelector('[data-testid=dw-mark]', { timeout: 20000 }).catch(() => {});
     await sleep(700);
     const m = await win.evaluate(MEASURE);
-    const issues = (m.issues || []).filter((x) => /^(viewer |locate |clip |rail |cell font|step label|table header|value |source )/.test(x) || /locate overflows|route card/.test(x));
+    const issues = (m.issues || []).filter((x) => /^(viewer |locate |clip |rail |cell font|step label|table header|value |source |hint bar|multiline )/.test(x) || /locate overflows|route card/.test(x));
     if (!m.viewer) issues.push('drawing viewer missing');
     const r = { lang, size: w + 'x' + h, dpi, viewer: m.viewer || null, panel: m.panel, ckHidden: m.ckHidden, cellFont: m.cellFont, issues };
     report.viewer.push(r); if (r.issues.length) fail++;

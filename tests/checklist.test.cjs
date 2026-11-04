@@ -99,7 +99,7 @@ test('UI wiring: part card + summary sections, click-to-zoom focus, tooltips, to
   assert.match(ck, /className="qr-ck-tab"/); assert.match(ck, /className="qr-ck-gh"/);
   assert.match(ck, /MrtTable/); assert.match(rd('src/ui/MrtTable.tsx'), /data-mrt="1"/);
   const css = rd('src/styles/wizard.css'); const block = css.slice(css.indexOf('/* Checklist (part card')); assert.ok(!/font-size:\s*\d/.test(block.split('/* ===== Print')[0]), 'token font sizes only'); assert.ok(!/background(-color)?:\s*#(0|1|2|3)/i.test(block.split('/* ===== Print')[0]), 'no dark fills');
-  assert.match(css, /minmax\(20rem, 0\.62fr\) minmax\(24rem, 1\.38fr\)/);
+  assert.match(css, /minmax\(40vw, 1fr\) minmax\(0, 1fr\)/);
   assert.match(css, /minmax\(40vw, 1fr\) minmax\(28rem, 1\.4fr\)/);
   assert.match(css, /nth-child\(even of \.qr-ck-item\)/);
   assert.match(css, /tr\.qr-ck-item\[data-active='true'\]/);

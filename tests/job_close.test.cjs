@@ -113,6 +113,7 @@ test('UI: close × on every tab, middle click, More jobs, close-all in Settings 
   assert.ok(/item list outside MRT table/.test(lay) && /listWidgets/.test(lay) && /data-mrt/.test(lay));
   assert.ok(/expanderHidden/.test(lay) && /rail context clipped/.test(lay) && /rail row height/.test(lay));
   assert.ok(/step label truncated/.test(lay) && /table header clipped/.test(lay) && /value 45-char/.test(lay) && /source 40-char/.test(lay));
+  assert.ok(/hint bar clipped/.test(lay) && /multiline /.test(lay));
   assert.ok(/cell font not uniform/.test(lay) && /locate overflows cell/.test(lay) && /route card is not MrtTable/.test(lay));
   assert.ok(/want 4/.test(lay));
   const main = src('electron/main.cjs') + src('electron/preload.cjs');

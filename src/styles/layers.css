@@ -36,7 +36,8 @@
   text-overflow: clip !important;
   white-space: nowrap !important;
 }
-.qr-root .qr-rail .mrt-wizard-step-label, .qr-root .qr-rail .mrt-wizard-step-text { min-width: max-content; }
+.qr-root .qr-rail .mrt-wizard-step-label { font-size: 0.8125rem !important; }
+.qr-root .qr-rail .mrt-wizard-step-label, .qr-root .qr-rail .mrt-wizard-step-text { min-width: 0; }
 .qr-root .qr-rail .mrt-wizard-step { justify-content: flex-start; }
 /* Close × always painted (never hover-only / never same colour as the chip). Tab-strip only. */
 .qr-root .mrt-workspace-tab__close, .qr-root .qr-more-job .mrt-workspace-tab__close {
@@ -170,7 +171,7 @@
 .qr-root .qr-tour-dot { background: var(--mrt-surface) !important; border-color: var(--mrt-border-strong) !important; }
 
 /* Check parts at 1280-1500px: narrower side column, a wider card pane, buttons never wrap letter by letter */
-@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: 16rem minmax(0, 1fr); } }
+@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: 13.5rem minmax(0, 1fr); } }
 @media (min-width: 1101px) { .qr-root .qr-body:not([data-cols='2']) { grid-template-columns: minmax(230px, 21%) minmax(240px, 1fr) minmax(350px, 34%); } }
 .qr-root .qr-body button:not(.qr-sec-main):not(.qr-tab):not(.qr-pgroup-h), .qr-root .qr-warnbar button { white-space: nowrap !important; overflow-wrap: normal; flex: 0 0 auto; }
 .qr-root .qr-pgroup-h { white-space: nowrap !important; } .qr-root .qr-pgroup-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -236,7 +237,7 @@
 
 /* layers.css loads after wizard.css. Keep the rail at full label width at every DPI; only trim table padding. */
 @media (max-width: 1300px) {
-  .qr-root .qr-wiz { grid-template-columns: 16rem minmax(0, 1fr); }
+  .qr-root .qr-wiz { grid-template-columns: 13.5rem minmax(0, 1fr); }
   .qr-root[data-step="1"] .qr-wiz-main, .qr-root[data-step="4"] .qr-wiz-main { padding-inline: 0; }
   .qr-root .qr-sum-wrap { padding-inline: 0; }
   .qr-root .qr-cks-card { padding-inline: 4px; }
@@ -364,7 +365,7 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
 @media (max-width: 1100px) {
   .qr-root table.qr-mrt.qr-cks-tab { table-layout: fixed; width: 100%; }
   .qr-root table.qr-mrt.qr-cks-tab th, .qr-root table.qr-mrt.qr-cks-tab td { padding-inline: 1px; }
-  .qr-root table.qr-mrt.qr-cks-tab th { white-space: normal; overflow: visible; }
+  .qr-root table.qr-mrt.qr-cks-tab th { white-space: nowrap; overflow: hidden; }
   .qr-root table.qr-mrt.qr-cks-tab th:first-child, .qr-root table.qr-mrt.qr-cks-tab td.qr-cks-p { width: 8.4rem; }
 }
 .qr-root table.qr-mrt.qr-tri-tab { table-layout: fixed; }
@@ -379,7 +380,7 @@ html:not([data-mrt-cursor-lock='1']) .qr-root [role='menuitem'] {
   overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%;
 }
 .qr-root .qr-ck-lab {
-  overflow: visible !important; text-overflow: clip !important; white-space: normal !important; overflow-wrap: normal; word-break: keep-all; max-width: 100%;
+  overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; overflow-wrap: normal; word-break: keep-all; max-width: 100%;
 }
 .qr-root .qr-ck-tab td.qr-ck-val { white-space: nowrap !important; }
 .qr-root .qr-ck-tab td.qr-ck-src-cell { white-space: nowrap !important; overflow: hidden; }
