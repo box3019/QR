@@ -5,7 +5,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const DROP_RETRY = { timeoutMs: 5000, delayMs: 50 };
+const DROP_RETRY = { timeoutMs: 10000, delayMs: 50 };
 const DROP_MAX_AGE_MS = 48 * 3600 * 1000;
 
 function dropCacheRoot(env, tmp) {
@@ -186,7 +186,14 @@ function dropSessionsOf(paths, root) {
   return [...out];
 }
 
+const Log = require('./dropLog.cjs');
+const Temp = require('./dropTemp.cjs');
+
 module.exports = {
   DROP_RETRY, DROP_MAX_AGE_MS, dropCacheRoot, dropFileName, uniqueDest, fileReady, pathKind,
   newDropDir, pruneDropCache, copyNow, copyTreeNow, writeNow, dropSessionOf, dropSessionsOf,
+  dropLogPath: Log.dropLogPath, dropLogFiles: Log.dropLogFiles, writeDropLog: Log.writeDropLog,
+  DROP_TEMP_WAIT_MS: Temp.DROP_TEMP_WAIT_MS, isDropTempName: Temp.isDropTempName, tempRoots: Temp.tempRoots,
+  findNamedInTemp: Temp.findNamedInTemp, harvestNamed: Temp.harvestNamed, harvestOne: Temp.harvestOne,
+  parseHdrop: Temp.parseHdrop, clipboardDropPaths: Temp.clipboardDropPaths,
 };

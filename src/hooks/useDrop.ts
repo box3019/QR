@@ -12,6 +12,7 @@ function dropApi() {
     startSession: () => q.dropStart(),
     stagePath: (dir: string, src: string, name: string) => q.stageDropPath(dir, src, name),
     stageBytes: (dir: string, name: string, bytes: ArrayBuffer) => q.stageDropBytes(dir, name, bytes),
+    harvestTemp: (dir: string, name: string, size?: number) => q.harvestTempDrop(dir, name, size),
     arrayBuffer: (f: any) => f.arrayBuffer(),
     sleep: (ms: number) => new Promise((r) => setTimeout(r, ms)),
     log: (msg: string) => { try { q.logDrop?.(msg); } catch {} },

@@ -35,8 +35,9 @@ const sevenZipPath = () => (app.isPackaged ? path.join(process.resourcesPath, '7
 const importCachePath = () => (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'QR', 'ImportCache') : path.join(app.getPath('userData'), 'ImportCache'));
 const jobTmp = new Map();
 const jobDrops = new Map();
-const { dropCacheRoot, dropSessionsOf } = require('../core/intake/dropStage.cjs');
-ipcMain.on('qr:drop-log', (_e, msg) => mainLog(msg));
+const { dropCacheRoot, dropSessionsOf, writeDropLog, dropLogPath } = require('../core/intake/dropStage.cjs');
+ipcMain.on('qr:drop-log', (_e, msg) => { writeDropLog(msg); mainLog(msg); });
+mainLog('drop log ' + dropLogPath());
 const { releaseJobCache } = require('../core/intake/archive.cjs');
 const langPath = () => (app.isPackaged ? path.join(process.resourcesPath, 'ocr') : path.join(__dirname, '..', 'ocr'));
 

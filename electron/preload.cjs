@@ -1,6 +1,7 @@
 'use strict';
 const { contextBridge, ipcRenderer, webFrame, webUtils } = require('electron');
 const Drop = require('../core/intake/dropStage.cjs');
+const Ole = require('../core/intake/winOleDrop.cjs');
 // Text size is applied by the renderer (root font-size, src/i18n); zoom stays 1.
 webFrame.setZoomFactor(1);
 contextBridge.exposeInMainWorld('qr', {
@@ -18,7 +19,17 @@ contextBridge.exposeInMainWorld('qr', {
   dropStart: () => ({ dir: Drop.newDropDir(Drop.dropCacheRoot()) }),
   stageDropPath: (dir, src, name) => Drop.copyTreeNow(dir, src, name),
   stageDropBytes: (dir, name, bytes) => Drop.writeNow(dir, name, bytes),
-  logDrop: (msg) => ipcRenderer.send('qr:drop-log', String(msg || '')),
+  harvestTempDrop: (dir, name, size) => {
+    const sizes = {};
+    if (name && size) sizes[name] = size;
+    const [r] = Ole.harvestOleAndTemp(dir, [name], { sizes, log: (m) => Drop.writeDropLog(m) });
+    return r || { ok: false, error: 'not-in-temp' };
+  },
+  logDrop: (msg) => {
+    const text = String(msg || '');
+    Drop.writeDropLog(text);
+    try { ipcRenderer.send('qr:drop-log', text); } catch {}
+  },
   process: (paths, job) => ipcRenderer.invoke('qr:process', paths, job),
   releaseImportCache: (job) => ipcRenderer.invoke('qr:importCache:release', job),
   listProjects: () => ipcRenderer.invoke('qr:projects:list'), saveProject: (id, data) => ipcRenderer.invoke('qr:projects:save', id, data),
