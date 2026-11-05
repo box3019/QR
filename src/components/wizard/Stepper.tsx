@@ -5,7 +5,7 @@ import { STEPS, stepState, canOpen } from '../../wizard/steps.mjs';
 import { stepWhy } from '../../wizard/nextstep.mjs';
 
 export function Stepper({ step, setStep, hasParts }: { step: number; setStep: (n: number) => void; hasParts: boolean }) {
-  return <nav className="qr-rail" data-testid="stepbar" aria-label={t('wz.aria')}>
+  return <nav className="qr-rail-steps" data-testid="stepbar" aria-label={t('wz.aria')}>
     <ol className="mrt-wizard-steps">
       {STEPS.map((n) => { const st = stepState(n, step); const open = canOpen(n, hasParts);
         return <li key={n} className="mrt-wizard-step-item">

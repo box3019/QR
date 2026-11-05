@@ -14,8 +14,10 @@
 .qr-root .qr-import-files li { padding-block: calc(var(--qr-row-py) + 0.2rem); }
 
 /* bars: one row at every res×DPI — extra jobs go under More, Settings/Help never drop */
-.qr-root .qr-topbar { background: var(--mrt-chrome-surface); border-bottom: 1px solid var(--mrt-chrome-border); box-shadow: var(--qr-bar-shadow); position: relative; z-index: 3; flex-wrap: nowrap !important; overflow: hidden; align-items: center; }
-.qr-root .qr-topbar > :not(.qr-ptabs) { flex-shrink: 0; }
+.qr-root .qr-chrome { background: var(--mrt-chrome-surface); }
+.qr-root .qr-tabrow { background: var(--mrt-chrome-surface); border-bottom: 1px solid var(--mrt-chrome-border); }
+.qr-root .qr-topbar { background: var(--mrt-chrome-surface); border-bottom: 1px solid var(--mrt-chrome-border); box-shadow: var(--qr-bar-shadow); position: relative; z-index: 3; flex-wrap: nowrap !important; overflow: hidden; align-items: stretch; }
+.qr-root .qr-tabrow > :not(.qr-ptabs), .qr-root .qr-topbar > * { flex-shrink: 0; }
 .qr-root .qr-ptabs { min-width: 0; flex: 1 1 auto; }
 .qr-root .qr-ptabs .mrt-workspace-tab { flex: 0 0 auto; background: var(--mrt-surface) !important; color: var(--mrt-text) !important; max-width: none !important; min-width: max-content !important; }
 .qr-root .qr-ptabs .mrt-workspace-tab--active { background: var(--mrt-surface-muted) !important; }
@@ -23,9 +25,9 @@
 .qr-root .qr-ptabs .mrt-workspace-tab__label { font-size: 12px !important; overflow: visible !important; text-overflow: clip !important; min-width: max-content !important; max-width: none !important; flex: 0 1 auto !important; }
 .qr-root .qr-ptabs .mrt-workspace-tab__label bdi, .qr-root .qr-ptabs .mrt-workspace-tab__label .qr-tab-cust { overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; }
 .qr-root .qr-topbar .mrt-topbar-cmd, .qr-root .qr-topbar .mrt-action-btn--topbar {
-  height: 44px !important; min-height: 44px !important; max-height: 44px !important;
-  min-width: 72px !important; flex-shrink: 0 !important; max-width: none !important;
-  padding: 3px 8px !important; font-size: 11px !important;
+  height: 56px !important; min-height: 56px !important; max-height: 56px !important;
+  width: 96px !important; min-width: 96px !important; max-width: 96px !important; flex-shrink: 0 !important;
+  padding: 4px 10px !important; font-size: 11px !important;
 }
 .qr-root .qr-topbar .mrt-topbar-cmd > span:not(.ico) {
   overflow: visible !important; text-overflow: clip !important; white-space: nowrap !important; max-width: none !important;
@@ -60,7 +62,7 @@
 .qr-root .qr-wiz > .qr-wiz-head { box-shadow: var(--qr-bar-shadow); position: relative; z-index: 2; }
 .qr-root .qr-wiz-footer { box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05); position: relative; z-index: 2; }
 /* side column: its own tone, a 1px edge, the job table as a small card */
-.qr-root .qr-rail-context, .qr-root .qr-rail .mrt-wizard-steps { background: var(--qr-rail-bg); }
+.qr-root .qr-rail, .qr-root .qr-rail-context, .qr-root .qr-rail .mrt-wizard-steps { background: var(--qr-rail-bg); }
 .qr-root .qr-wsum { box-shadow: var(--qr-card-shadow); }
 /* canvas: the main area is the tinted canvas, content sits on cards */
 .qr-root .qr-wiz > .qr-wiz-main { background: var(--mrt-bg); overflow-x: hidden; overflow-y: auto; }
@@ -177,7 +179,7 @@
 .qr-root .qr-tour-dot { background: var(--mrt-surface) !important; border-color: var(--mrt-border-strong) !important; }
 
 /* Check parts at 1280-1500px: narrower side column, a wider card pane, buttons never wrap letter by letter */
-@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: var(--mrt-wizard-rail-width, 280px) minmax(0, 1fr); } }
+@media (max-width: 1500px) { .qr-root .qr-wiz { grid-template-columns: var(--mrt-wizard-rail-width, 272px) minmax(0, 1fr); } }
 @media (min-width: 1101px) { .qr-root .qr-body:not([data-cols='2']) { grid-template-columns: minmax(230px, 21%) minmax(240px, 1fr) minmax(350px, 34%); } }
 .qr-root .qr-body button:not(.qr-sec-main):not(.qr-tab):not(.qr-pgroup-h), .qr-root .qr-warnbar button { white-space: nowrap !important; overflow-wrap: normal; flex: 0 0 auto; }
 .qr-root .qr-pgroup-h { white-space: nowrap !important; } .qr-root .qr-pgroup-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -243,7 +245,7 @@
 
 /* layers.css loads after wizard.css. Keep the rail at full label width at every DPI; only trim table padding. */
 @media (max-width: 1300px) {
-  .qr-root .qr-wiz { grid-template-columns: var(--mrt-wizard-rail-width, 280px) minmax(0, 1fr); }
+  .qr-root .qr-wiz { grid-template-columns: var(--mrt-wizard-rail-width, 272px) minmax(0, 1fr); }
   .qr-root[data-step="1"] .qr-wiz-main, .qr-root[data-step="4"] .qr-wiz-main { padding-inline: 0; }
   .qr-root .qr-sum-wrap { padding-inline: 0; }
   .qr-root .qr-cks-card { padding-inline: 0; }

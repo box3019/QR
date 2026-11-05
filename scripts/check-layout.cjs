@@ -131,6 +131,7 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
       const hs = btns.map((b) => Math.round(b.getBoundingClientRect().height));
       if (Math.max(...ws) - Math.min(...ws) > 2) res.issues.push('footer buttons unequal width ' + ws.join(','));
       if (Math.max(...hs) - Math.min(...hs) > 2) res.issues.push('footer buttons unequal height ' + hs.join(','));
+      if (hs.some((h) => h > 36 || h < 32)) res.issues.push('footer button height ' + hs.join(',') + ' (want 34)');
       const listHost = document.querySelector('.qr-proj:not(.qr-proj-off) [data-testid=triage], .qr-proj:not(.qr-proj-off) [data-testid=parts-panel], .qr-proj:not(.qr-proj-off) [data-testid=checklist-summary]');
       const list = listHost && (listHost.querySelector('.qr-mrt-shell, table.qr-mrt') || listHost);
       if (list) {
@@ -228,13 +229,21 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   document.querySelectorAll('.qr-topbar .mrt-topbar-cmd').forEach((b) => {
     const cs = getComputedStyle(b); if (cs.display === 'none' || b.closest('.qr-proj-off')) return;
     const h = b.getBoundingClientRect().height;
-    if (h > 46 || h < 40) res.issues.push('command button height ' + Math.round(h) + 'px (want 44)');
-    const lab = [...b.querySelectorAll('span')].find((s) => !s.classList.contains('ico'));
+    if (h > 58 || h < 54) res.issues.push('command button height ' + Math.round(h) + 'px (want 56)');
+    const lab = b.querySelector('.mrt-topbar-cmd-label') || [...b.querySelectorAll('span')].find((s) => !s.classList.contains('ico') && !s.classList.contains('mrt-topbar-cmd-chevron') && !s.classList.contains('mrt-topbar-cmd-label-row'));
     if (!lab) return;
     const lcs = getComputedStyle(lab);
     if (lcs.display === 'none' || lcs.visibility === 'hidden') return;
     if (lab.scrollWidth > lab.clientWidth + 1) res.issues.push('command label truncated: ' + (lab.textContent || '').trim().slice(0, 24));
   });
+  const sameRowH = (nodes, label) => {
+    const bs = [...nodes].filter((b) => { const cs = getComputedStyle(b); return cs.display !== 'none' && cs.visibility !== 'hidden' && !b.closest('.qr-proj-off'); });
+    if (bs.length < 2) return;
+    const hs = bs.map((b) => Math.round(b.getBoundingClientRect().height));
+    if (Math.max(...hs) - Math.min(...hs) > 2) res.issues.push(label + ' unequal height ' + hs.join(','));
+  };
+  sameRowH(document.querySelectorAll('.qr-topbar .mrt-topbar-cmd'), 'toolbar buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-tri-bar button'), 'triage buttons');
   document.querySelectorAll('.qr-rail .mrt-wizard-step-label, .qr-rail .mrt-wizard-step-text').forEach((e) => {
     const cs = getComputedStyle(e); if (e.closest('.qr-proj-off')) return;
     const t = (e.textContent || '').replace(/\s+/g, ' ').trim();
@@ -267,7 +276,12 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
   if (topbar) {
     const tb = topbar.getBoundingClientRect();
     res.topbarHeight = Math.round(tb.height);
-    if (tb.height > 58) res.issues.push('topbar wraps: ' + Math.round(tb.height) + 'px');
+    if (tb.height > 76) res.issues.push('topbar wraps: ' + Math.round(tb.height) + 'px');
+    const tabrow = document.querySelector('.qr-tabrow');
+    if (tabrow) {
+      const tr = tabrow.getBoundingClientRect();
+      if (tb.top + 2 < tr.bottom) res.issues.push('tabs not above toolbar');
+    }
     ['btn-settings', 'btn-help'].forEach((id) => {
       const b = document.querySelector('[data-testid=' + id + ']');
       if (!b) { res.issues.push(id + ' missing'); return; }

@@ -33,7 +33,7 @@ test('package list: content columns, row menu, empty groups, no labelled More co
 test('MoreMenu row variant is icon-only', () => {
   const m = R('src/components/MoreMenu.tsx');
   assert.match(m, /row \? 'qr-row-menu'/);
-  assert.match(m, /row \? null : <span>\{label/);
+  assert.match(m, /row \? null : \(topbar \?/);
 });
 
 test('MrtTable exposes shell and empty row; tables are full width', () => {
@@ -70,9 +70,9 @@ test('stylesheets load last: mrtTable then mrtChrome', () => {
   assert.match(main, /mrtTable\.css['"];\s*import '\.\/styles\/mrtChrome\.css'/);
 });
 
-test('wizard chrome: 280px rail, 34px footer, 52px/17px dialog header, 42px dialog buttons', () => {
+test('wizard chrome: 272px rail, 34px footer, 52px/17px dialog header, 42px dialog buttons', () => {
   const chrome = R('src/styles/mrtChrome.css');
-  assert.match(chrome, /--mrt-wizard-rail-width:\s*280px/);
+  assert.match(chrome, /--mrt-wizard-rail-width:\s*272px/);
   assert.match(chrome, /height:\s*34px !important/);
   assert.match(chrome, /min-height:\s*52px/);
   assert.match(chrome, /font-size:\s*17px/);
@@ -138,6 +138,10 @@ test('check-layout flags table width, footer side, and allows value wrap', () =>
   assert.match(m, /footer not list-edge/);
   assert.match(m, /footer buttons unequal width/);
   assert.match(m, /footer buttons unequal height/);
+  assert.match(m, /toolbar buttons/);
+  assert.match(m, /want 56/);
+  assert.match(m, /want 34/);
+  assert.match(m, /tabs not above toolbar/);
   assert.match(m, /qr-ck-val, \.qr-bd-v, \.qr-mrt-wrap/);
 });
 

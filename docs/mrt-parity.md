@@ -17,9 +17,11 @@ Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimpl
 | Summary / loaded counters | MRT chips/cards grouped (`flex`, `flex: 0 0 auto`), not a stretching `1fr` grid. Closest: utility toolbar / toast chips. | `StepSummary.tsx`, `LoadedSummary.tsx`, `Tiles.tsx` |
 | Recent (step 1) | `MRT_UTILITY_TABLE_WRAP` **one** card (`.qr-recent`); table inside with no second shell; order number is table text, not a chip; row click opens. | `RecentList.tsx` |
 | History dialog | Utility header/footer + grid; empty `MrtEmpty` | `HistoryDialog` `MrtEmpty` |
-| Job tabs | `MrtWorkspaceTabStrip` + `mrtLiquidGlass.css` `.mrt-workspace-tab` (1px chip; label/close unframed; strip unframed; add is sibling 1px) | `TabsBar.tsx`, `layers.css` |
+| Job tabs | `MrtWorkspaceTabStrip` + `mrtLiquidGlass.css` `.mrt-workspace-tab` (1px chip; label/close unframed; strip unframed; add is sibling 1px). Tabs row sits **above** the command toolbar (`qr-tabrow` then `qr-topbar`). | `TabsBar.tsx`, `App.tsx`, `layers.css` |
+| Command toolbar | `TopBar` `mrt-topbar-command-row`: 56×96 icon-above-caps, optional dropdown caret | `App.tsx`, `FileMenu.tsx`, `MoreMenu.tsx` |
+| Side rail | `LeftPanel` 272px: Route Card caption → job/part label, 32px number, 3×48 divider, framed first-page thumbnail, Critical items, Operation Stack (wizard steps), full-width actions. No user/PIN footer. RTL = inline-start (right). | `WizardRail.tsx`, `Stepper`, `RailContext` |
 | Collapsible summary (`רשימת בדיקה` / `לכרטיס מסלול`) | `.mrt-report-card` one 1px shell; header band fill only (`mrt-collapsible-nav-group-btn` transparent border) | `ChecklistSummary.tsx`, `RouteCardSection.tsx` |
-| Rail / header / stepper | `MrtCmmProgramWizard` + `WizardHeaderSummaryTable`; step `border: 1px solid transparent`, marker is the circle | `RailContext`, `Stepper`, `StepHeader` |
+| Rail / header / stepper | `LeftPanel` + `MrtCmmProgramWizard` + `WizardHeaderSummaryTable`; step `border: 1px solid transparent`, marker is the circle | `WizardRail`, `RailContext`, `Stepper`, `StepHeader` |
 | Dialogs | `MRT_UTILITY_HEADER` 52px/17px/700; footer `min-h 3.25rem` | `Modal`, `mrtChrome.css` |
 | Primary buttons | `derivePrimaryButtonCssVars` mixHex | `mrtButtons.ts`, `qrPalette.css` |
 | PIN / ERP / user | `MrtPinInput`, `MrtScreenShell` login | **Excluded** |
@@ -49,7 +51,8 @@ Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimpl
 | Value wrap | Group cells `whitespace-normal` `[overflow-wrap:break-word]` | `.qr-mrt-wrap`, `.qr-ck-val`, `.qr-bd-v`, why/body cells |
 | Card | 1px grid, radius `--mrt-radius` (6px); one shell only | `.qr-mrt-shell`, `.qr-cks-card`, `.qr-rc` |
 | Workspace tab | 1px `--mrt-ui-border`, radius 6px, min-height 26px; close 22×22, no border | `.mrt-workspace-tab` |
-| Wizard rail | 280px | `--mrt-wizard-rail-width` |
+| Wizard rail | 272px (`LeftPanel` `w-[272px]`) | `--mrt-wizard-rail-width` / `--mrt-workspace-rail-width` |
+| Topbar command | 56px height, 96px width, icon 22px, label 11px/600 uppercase, caret 12px | `.qr-topbar .mrt-topbar-cmd` |
 | Wizard footer buttons | 34px / 6px 12px / 13px; primary 42px | `.qr-wiz-footer` |
 | Segment | h-10, radius 6px, 13px/600, 1px border | `.qr-gstep` |
 | Primary button | mixHex fill `#87878c`, text `#ffffff`, border `#757578`, hover `#9e9ea1`; height 42px; disabled opacity 0.48 | `.mrt-btn-primary` |

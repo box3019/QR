@@ -8,9 +8,9 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 }
 .qr-settings-tab { text-align: start; font-size: var(--qr-fs-sm) !important; }
 .qr-tab { font-size: 0.875rem !important; }
-.qr-topbar .mrt-topbar-cmd { height: 44px !important; min-height: 44px !important; max-height: 44px !important; min-width: 72px !important; padding: 3px 8px !important; font-size: 11px !important; flex-shrink: 0 !important; } /* px: toolbar does not grow with text size */
+.qr-topbar .mrt-topbar-cmd { height: 56px !important; min-height: 56px !important; max-height: 56px !important; width: 96px !important; min-width: 96px !important; max-width: 96px !important; padding: 4px 10px !important; font-size: 11px !important; flex-shrink: 0 !important; } /* px: MRT topbar 56×96, does not grow with text size */
 .qr-topbar .mrt-topbar-cmd > span:not(.ico) { white-space: nowrap !important; overflow: visible !important; overflow-wrap: normal !important; text-overflow: clip !important; max-width: none !important; }
-.qr-topbar .mrt-topbar-cmd[data-testid='btn-save-pdf'] { width: auto !important; min-width: 88px !important; max-width: none !important; flex-shrink: 0 !important; }
+.qr-topbar .mrt-topbar-cmd[data-testid='btn-save-pdf'] { width: 96px !important; min-width: 96px !important; max-width: 96px !important; flex-shrink: 0 !important; }
 /* Tab strip only — scoped after toolbar caps so the global button rule stays low-specificity. */
 .mrt-workspace-tab__close, .qr-more-job .mrt-workspace-tab__close {
   height: 22px !important; min-height: 22px !important; max-height: 22px !important;
@@ -36,9 +36,11 @@ button, .mrt-btn, .mrt-action-btn, .qr-tab, .qr-settings-tab {
 .qr-root .qr-tri-open {
   white-space: nowrap !important; overflow-wrap: normal !important; max-width: 5.5rem;
 }
-.qr-topbar { height: auto !important; min-height: 0 !important; flex-wrap: nowrap !important; overflow: hidden; align-items: center !important; }
-.qr-topbar > :not(.qr-ptabs) { flex-shrink: 0 !important; }
-.qr-topbar .mrt-topbar-cmd .ico { font-size: 1.15em; line-height: 1; }
+.qr-chrome { flex-shrink: 0 !important; }
+.qr-tabrow { height: auto !important; min-height: 0 !important; flex-wrap: nowrap !important; overflow: hidden; align-items: center !important; }
+.qr-topbar { height: auto !important; min-height: 62px !important; flex-wrap: nowrap !important; overflow: hidden; align-items: stretch !important; }
+.qr-tabrow > :not(.qr-ptabs), .qr-topbar > * { flex-shrink: 0 !important; }
+.qr-topbar .mrt-topbar-cmd .ico { font-size: 22px; line-height: 1; width: 22px; height: 22px; }
 .qr-brand-badge { width: 1.75em; height: 1.75em; }
 .qr-chip, .qr-status, .qr-badge {
   height: auto !important; line-height: normal !important; max-width: none !important; min-width: max-content !important; width: max-content !important;

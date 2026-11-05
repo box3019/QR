@@ -16,5 +16,5 @@ test('status bar shows Saved hh:mm quietly, unsaved note; tab dot clears on save
   assert.ok(/saved-at/.test(bar) && /unsaved-note/.test(bar) && /tip\.savedAt/.test(bar));
   const v = src('src/ProjectView.tsx'); assert.ok(/changeRev/.test(v) && /setUnsaved\(true\)/.test(v) && /if \(changeRev\.current === rev\) setUnsaved\(false\)/.test(v));
   const t = src('src/components/tabs/TabsBar.tsx'); assert.ok(/tb\.unsaved && tb\.nParts > 0/.test(t) && /data-testid="tab-unsaved"/.test(t) && /tab\.unsaved/.test(t)); });
-test('all toolbar buttons have the same width; i18n keys en and he', () => { const css = src('src/styles/wizard.css'); assert.ok(/\.qr-topbar \.mrt-topbar-cmd \{ width: 72px !important; min-width: 72px !important/.test(css));
+test('all toolbar buttons have the same width; i18n keys en and he', () => { const css = src('src/styles/wizard.css'); assert.ok(/\.qr-topbar \.mrt-topbar-cmd \{ width: 96px !important; min-width: 96px !important/.test(css));
   for (const l of ['en', 'he']) { const j = JSON.parse(src('src/i18n/' + l + '.json')); for (const k of ['top.file', 'top.unsaved', 'tab.unsaved', 'tip.file', 'tip.fileSaved', 'tip.savedAt', 'tip.saveAgain']) assert.ok(j[k], l + ' ' + k); assert.ok(/\{time\}/.test(j['tip.savedAt']) && /\{time\}/.test(j['tip.saveAgain'])); } });

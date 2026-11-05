@@ -33,7 +33,7 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
   const ids = tabs.map((tb: any) => tb.id);
   const fit = () => {
     const el = strip.current; if (!el) return;
-    const bar = el.closest('.qr-topbar') as HTMLElement | null;
+    const bar = (el.closest('.qr-tabrow') || el.closest('.qr-topbar')) as HTMLElement | null;
     const addW = addRef.current ? addRef.current.getBoundingClientRect().width + 8 : 32;
     const moreW = moreRef.current ? moreRef.current.getBoundingClientRect().width + 8 : 120;
     const sample = el.querySelector('.mrt-workspace-tab') as HTMLElement | null;
@@ -56,7 +56,7 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
   useLayoutEffect(fit, [tabs.length, tabs.map((tb: any) => tb.label + tb.customer).join('|')]);
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return;
-    const el = strip.current; const bar = el && el.closest('.qr-topbar');
+    const el = strip.current; const bar = el && (el.closest('.qr-tabrow') || el.closest('.qr-topbar'));
     const ro = new ResizeObserver(fit);
     if (el) ro.observe(el); if (bar) ro.observe(bar);
     window.addEventListener('resize', fit);

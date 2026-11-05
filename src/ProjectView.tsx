@@ -2,14 +2,13 @@
 import { setCkSettings } from './checklist/store';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { t, getLang } from './i18n';
-import { Stepper } from './components/wizard/Stepper';
 import { StepHeader } from './components/wizard/StepHeader';
 import { StepIntake } from './components/wizard/StepIntake';
 import { StepCheckParts } from './components/wizard/StepCheckParts';
 import { StepDocsQuestions } from './components/wizard/StepDocsQuestions';
 import { StepSummary } from './components/wizard/StepSummary';
 import { ProgressToast } from './components/wizard/ProgressToast';
-import { RailContext } from './components/wizard/RailContext';
+import { WizardRail } from './components/wizard/WizardRail';
 import { WizardFooter } from './components/wizard/WizardFooter';
 import { DropChoice } from './components/wizard/DropChoice';
 import { QuestionsDialog, SummaryDialog } from './views/Dialogs';
@@ -93,9 +92,10 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   const clearAll = () => { const snap = { parts, rfqs, unknown, lastRun, sel, step }; reset(); notify({ code: 'cleared', undo: () => { setParts(snap.parts); setRfqs(snap.rfqs); setUnknown(snap.unknown); setLastRun(snap.lastRun); setSel(snap.sel); setStep(snap.step); setDirty(false); } }); };
   return <div className={'qr-proj' + (active ? '' : ' qr-proj-off')} data-testid="project" data-id={id} data-step={step} data-provisional={!!busy && has} aria-hidden={!active}>
     <div className="qr-wiz mrt-wizard-shell">
-      <RailContext rfqs={rfqs} parts={parts} files={lastRun?.files || []} />
+      <WizardRail step={step} setStep={stepTo} hasParts={has} rfqs={rfqs} parts={parts} files={lastRun?.files || []} sel={sel} settings={settings}
+        onOpenDrawing={() => { if (!has) return; pick(sel); setPartOpen(true); setStep(2); setTab('drawing'); }}
+        onOpenChecklist={() => { if (has) stepTo(4); }} />
       <StepHeader step={step} hint={hint} assistant={assistant} next={nextLine} onGo={goNext} />
-      <Stepper step={step} setStep={stepTo} hasParts={has} />
       {!!busy && has && step > 1 && <div className="qr-provisional" data-testid="provisional" role="status">{t('prov.note')}</div>}
       <main className="qr-wiz-main">
         {step === 1 && <StepIntake view={view} parts={parts} files={lastRun?.files || []} onNext={() => stepTo(2)} onPart={(i: number) => openPart(i, 2)} nParts={parts.length} rfqs={rfqs} over={over} details={details} unknown={unknown} recent={recent} onReopen={onReopen} onClearHistory={onClearHistory} onFiles={async () => run(await qr().pickFiles())} onFolder={async () => { const f = await qr().pickFolder({ zip: true }); if (f) run([f]); }} />}
