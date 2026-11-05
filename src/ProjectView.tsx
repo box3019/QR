@@ -85,8 +85,9 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
   const has = parts.length > 0;
   const updatePart = (fn: (p: Part) => Part) => { setDirty(true); setParts((ps) => ps.map((p, i) => (i === sel ? fn(structuredClone(p)) : p))); };
 
-  const hint = hintFor(step, { hasParts: has, nParts: parts.length, busy: !!busy, nQuestions: parts.reduce((n, p) => n + openQuestions(p), 0) });
-  const nextLine = nextAction(step, parts, !!busy);
+  const isImporting = !!busy || (view && (view.active || (view.files && view.files.some((f: any) => f.status === 'waiting' || f.status === 'reading'))));
+  const hint = hintFor(step, { hasParts: has, nParts: parts.length, busy: isImporting, nQuestions: parts.reduce((n, p) => n + openQuestions(p), 0) });
+  const nextLine = nextAction(step, parts, isImporting);
   const goNext = (go: any) => { if (!go) return; if (go.part != null) { pick(go.part); setPartOpen(true); } else setPartOpen(false); if (go.step) setStep(go.step); if (go.action === 'files') qr().pickFiles().then((f: string[]) => run(f)); if (go.action === 'export') setTimeout(() => (document.querySelector('[data-testid=btn-export-xlsx-all]') as HTMLElement | null)?.click(), 0); };
   // Cancel clears the RFQ without a question: a toast offers Undo instead (nothing is lost)
   const clearAll = () => { const snap = { parts, rfqs, unknown, lastRun, sel, step }; reset(); notify({ code: 'cleared', undo: () => { setParts(snap.parts); setRfqs(snap.rfqs); setUnknown(snap.unknown); setLastRun(snap.lastRun); setSel(snap.sel); setStep(snap.step); setDirty(false); } }); };
@@ -112,7 +113,7 @@ export function ProjectView({ id, active, initial, pending, settings, assistant,
         {step === 3 && has && <StepDocsQuestions parts={parts} sel={sel} open={partOpen} onOpen={(i: number) => openPart(i, 3)} onBack={() => setPartOpen(false)} onGo={pick} onLeave={() => stepTo(4)} rtl={getLang() === 'he'} unknown={unknown} details={details} updatePart={updatePart} onFocus={(loc: any) => { setStep(2); setPartOpen(true); setTab('drawing'); setFocus(loc); }} />}
         {step === 4 && has && <StepSummary parts={parts} openDialog={(d: any) => { setDialog(d); setDirty(false); }} goPart={(i: number) => openPart(i, 2)} />}
       </main>
-      <WizardFooter step={step} partOpen={partOpen} setStep={stepTo} hasParts={has} busy={!!busy} onCancel={clearAll} onClose={() => onCloseJob(id)} />
+      <WizardFooter step={step} partOpen={partOpen} setStep={stepTo} hasParts={has} busy={isImporting} onCancel={clearAll} onClose={() => onCloseJob(id)} />
     </div>
     {active && ask && <DropChoice onChoose={(c: 'append' | 'new') => ask(c)} />}
     {active && busy && view?.active && step !== 1 && <ProgressToast busy={busy} details={details} />}

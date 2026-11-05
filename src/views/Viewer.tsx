@@ -1,5 +1,8 @@
 // Step 2 viewer tabs: drawing (with source highlight), route card, model, data.
 import React, { useEffect, useRef, useState } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import 'pdfjs-dist/web/pdf_viewer.css';
 import { MRT_ACTION_BTN } from '../ui/mrtButtons';
 import { Chip } from '../ui/common';
 import { t, getLang } from '../i18n';
@@ -13,6 +16,8 @@ export function DrawingView({ part, focus, details, onFocus, onSelect }: any) {
   const [page, setPage] = useState(focus?.page || 1);
   const [img, setImg] = useState<any>(null);
   const [showOcr, setShowOcr] = useState(true);
+  const [tool, setTool] = useState<'pan' | 'select'>('pan');
+  const [rotation, setRotation] = useState<number>(0);
   const ocrOn = showOcr && details;
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => { if (focus?.page) setPage(focus.page); }, [focus]);
@@ -26,74 +31,53 @@ export function DrawingView({ part, focus, details, onFocus, onSelect }: any) {
   const boxRef = useRef<any>(null);
   const refit = () => { const el = ref.current; const im = imgRef.current; if (!el || !im) return; setZoom(fitSheet(el.clientWidth, el.clientHeight, im.width, im.height)); };
   const recenter = () => { const el = ref.current; if (!el) return; const c = centerScroll(el.clientWidth, el.clientHeight, el.scrollWidth, el.scrollHeight); el.scrollLeft = c.left; el.scrollTop = c.top; };
-  const scrollLocate = () => {
-    const el = ref.current; if (!el || !locateRef.current) return;
-    const mark = el.querySelector('[data-kind="focus"][data-active="true"]') as HTMLElement || el.querySelector('[data-kind="focus"]') as HTMLElement;
-    if (!mark) return;
-    const vr = el.getBoundingClientRect(), mr = mark.getBoundingClientRect();
-    el.scrollLeft += (mr.left + mr.width / 2) - (vr.left + vr.width / 2);
-    el.scrollTop += (mr.top + mr.height / 2) - (vr.top + vr.height / 2);
-  };
+  const scrollLocate = () => { const el = ref.current; if (!el || !locateRef.current) return; const mark = (el.querySelector('[data-kind="focus"][data-active="true"]') || el.querySelector('[data-kind="focus"]')) as HTMLElement; if (!mark) return; const vr = el.getBoundingClientRect(), mr = mark.getBoundingClientRect(); el.scrollLeft += (mr.left + mr.width / 2) - (vr.left + vr.width / 2); el.scrollTop += (mr.top + mr.height / 2) - (vr.top + vr.height / 2); };
   const clearLocate = () => { locateRef.current = false; };
-  // a new part / sheet / image: fit the whole sheet again
   useEffect(() => { if (focus && (focus.bbox || (focus.boxes && focus.boxes.length))) { setAuto(false); autoRef.current = false; return; } locateRef.current = false; setAuto(true); autoRef.current = true; if (img) refit(); }, [img, part.drawing.path, page]);
-  // the pane changes size (window resize, panel toggle, details): keep the fit (or the centre when zoomed by hand). After a locate zoom, re-apply the box scroll instead of recentring.
-  useEffect(() => { const el = ref.current; if (!el || typeof ResizeObserver === 'undefined') return; const ro = new ResizeObserver(() => {
-    if (locateRef.current) {
-      const im = imgRef.current, box = boxRef.current;
-      if (el && im && box) setZoom(zoomToBox(el.clientWidth, el.clientHeight, im.width, im.height, box));
-      scrollLocate();
-      return;
-    }
-    if (autoRef.current) refit(); else recenter();
-  }); ro.observe(el); return () => ro.disconnect(); }, [img]);
-  // wheel (and Ctrl+wheel) = zoom; passive:false so the page does not scroll instead
+  useEffect(() => { const el = ref.current; if (!el || typeof ResizeObserver === 'undefined') return; const ro = new ResizeObserver(() => { if (locateRef.current) { const im = imgRef.current, box = boxRef.current; if (el && im && box) setZoom(zoomToBox(el.clientWidth, el.clientHeight, im.width, im.height, box)); scrollLocate(); return; } if (autoRef.current) refit(); else recenter(); }); ro.observe(el); return () => ro.disconnect(); }, [img]);
   useEffect(() => { const el = ref.current; if (!el) return; const h = (e: WheelEvent) => { e.preventDefault(); locateRef.current = false; setAuto(false); setZoom((z) => zoomStep(z, e.deltaY)); }; el.addEventListener('wheel', h, { passive: false }); return () => el.removeEventListener('wheel', h); }, [img]);
   // pan: left-drag moves the scroll position only
   const drag = useRef(null as null | { x: number; y: number; left: number; top: number });
-  const onDown = (e: React.MouseEvent) => { if (e.button !== 0 || !ref.current) return; e.preventDefault(); drag.current = { x: e.clientX, y: e.clientY, left: ref.current.scrollLeft, top: ref.current.scrollTop }; };
+  const onDown = (e: React.MouseEvent) => { if (tool === 'select' && !e.altKey) return; if (e.button !== 0 || !ref.current) return; e.preventDefault(); drag.current = { x: e.clientX, y: e.clientY, left: ref.current.scrollLeft, top: ref.current.scrollTop }; };
   const onMove = (e: React.MouseEvent) => { const d = drag.current; if (!d || !ref.current) return; const p = panTo(d, e.clientX - d.x, e.clientY - d.y); ref.current.scrollLeft = p.left; ref.current.scrollTop = p.top; };
   const onUp = () => { drag.current = null; };
   // end pan
   const k = img ? W / img.width : 1;
   const boxes = (focus && (focus.boxes || (focus.bbox ? [focus.bbox] : []))) || [];
   const boxIndex = Math.min(focus && focus.boxIndex != null ? focus.boxIndex : 0, Math.max(0, boxes.length - 1));
-  const activeBox = boxes[boxIndex] || focus?.bbox;
-  boxRef.current = activeBox;
+  const activeBox = boxes[boxIndex] || focus?.bbox; boxRef.current = activeBox;
   const activePage = (activeBox && activeBox.page) || focus?.page;
   useEffect(() => { if (activePage) setPage(activePage); }, [activePage]);
-  useEffect(() => {
-    if (!img || !activeBox || !ref.current || activePage !== page) return;
-    setAuto(false); autoRef.current = false; locateRef.current = true;
-    const z = zoomToBox(ref.current.clientWidth, ref.current.clientHeight, img.width, img.height, activeBox);
-    setZoom(z);
-  }, [img, focus && focus.id, boxIndex, page]);
-  useEffect(() => {
-    if (!img || !activeBox || !ref.current || activePage !== page) return;
-    locateRef.current = true;
-    scrollLocate();
-  }, [zoom, img, focus && focus.id, boxIndex, page]);
-  useEffect(() => {
-    if (!onFocus) return;
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onFocus(null); };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [onFocus]);
+  useEffect(() => { if (!img || !activeBox || !ref.current || activePage !== page) return; setAuto(false); autoRef.current = false; locateRef.current = true; setZoom(zoomToBox(ref.current.clientWidth, ref.current.clientHeight, img.width, img.height, activeBox)); }, [img, focus && focus.id, boxIndex, page]);
+  useEffect(() => { if (!img || !activeBox || !ref.current || activePage !== page) return; locateRef.current = true; scrollLocate(); }, [zoom, img, focus && focus.id, boxIndex, page]);
+  useEffect(() => { if (!onFocus) return; const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onFocus(null); }; window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h); }, [onFocus]);
   const marks = part.problems.filter((p: any) => p.loc && p.loc.page === page);
   const ocrWords = ocrOn && pg?.ocr ? pg.ocr.words : [];
+  const allTokens = pg?.tokens || [];
   return <div className="qr-draw" dir="ltr">
-    <div className="qr-row" dir={getLang() === 'he' ? 'rtl' : 'ltr'} style={{ padding: '6px 10px', borderBottom: '1px solid var(--mrt-border-strong)', position: 'sticky', top: 0, background: 'var(--mrt-surface)', zIndex: 2 }}>
+    <div className="qr-row" dir={getLang() === 'he' ? 'rtl' : 'ltr'} style={{ padding: '6px 10px', borderBottom: '1px solid var(--mrt-border-strong)', position: 'sticky', top: 0, background: 'var(--mrt-surface)', zIndex: 2, gap: 6, flexWrap: 'wrap' }}>
       <b className="qr-ltr">{part.drawing.name}</b>
       {part.drawing.pages.map((p: any) => <button key={p.n} className={MRT_ACTION_BTN} data-active={p.n === page} title={t('tip.sheet')} onClick={() => setPage(p.n)} style={p.n === page ? { fontWeight: 700 } : {}}>{t('dw.sheet', { n: p.n })}</button>)}
+      <div style={{ height: 18, width: 1, background: 'var(--mrt-border-strong)', margin: '0 4px' }} />
+      <button type="button" className={MRT_ACTION_BTN} data-active={tool === 'pan'} title={t('dw.modePan')} onClick={() => setTool('pan')}>🖐️ {t('dw.pan')}</button>
+      <button type="button" className={MRT_ACTION_BTN} data-active={tool === 'select'} title={t('dw.modeSelect')} onClick={() => setTool('select')}>🔤 {t('dw.selectText')}</button>
+      <div style={{ height: 18, width: 1, background: 'var(--mrt-border-strong)', margin: '0 4px' }} />
+      <button type="button" className={MRT_ACTION_BTN} title={t('dw.zoomOut')} onClick={() => { setAuto(false); autoRef.current = false; setZoom((z) => Math.max(0.3, z - 0.2)); }}>−</button>
+      <span className="qr-muted" style={{ minWidth: 40, textAlign: 'center', fontSize: 13 }}>{Math.round(zoom * 100)}%</span>
+      <button type="button" className={MRT_ACTION_BTN} title={t('dw.zoomIn')} onClick={() => { setAuto(false); autoRef.current = false; setZoom((z) => Math.min(4, z + 0.2)); }}>+</button>
       <button type="button" className={MRT_ACTION_BTN} data-testid="dw-fit" title={t('dw.fitPage')} onClick={() => { clearLocate(); setAuto(true); autoRef.current = true; refit(); }}>{t('dw.fitPage')}</button>
+      <div style={{ height: 18, width: 1, background: 'var(--mrt-border-strong)', margin: '0 4px' }} />
+      <button type="button" className={MRT_ACTION_BTN} title={t('dw.rotate')} onClick={() => setRotation((r) => (r + 90) % 360)}>⟳ {t('dw.rotate')}</button>
+      <button type="button" className={MRT_ACTION_BTN} title={t('dw.openPdf')} onClick={() => qr().stdOpen ? qr().stdOpen(part.drawing.path) : qr().openPath(part.drawing.path)}>↗ {t('dw.openPdf')}</button>
       {focus && boxes.length > 1 && <span className="qr-muted" data-testid="dw-of">{t('ck.of', { n: boxIndex + 1, total: boxes.length })}</span>}
       {details && <span className="qr-muted">{t('dw.text', { mode: pg?.quality?.mode })}{pg?.quality?.reasons?.length ? ` (${pg.quality.reasons.join(', ')})` : ''}{pg?.ocr ? ' · ' + t('dw.ocrInfo', { dpi: pg.ocr.dpi, words: pg.ocr.words.length, sec: pg.ocr.seconds }) : ''}{pg?.ocrError ? ' · ' + t('dw.ocrError', { text: pg.ocrError }) : ''}</span>}
       {details && <label className="qr-row" style={{ marginInlineStart: 'auto' }}><input type="checkbox" checked={showOcr} onChange={(e) => setShowOcr(e.target.checked)} /> {t('dw.ocrWords')}</label>}
     </div>
-    <div ref={ref} className="qr-draw-vp" style={{ cursor: drag.current ? 'grabbing' : 'grab' }} dir="ltr" data-testid="drawing-viewport" onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onDragStart={(e) => e.preventDefault()} onDoubleClick={() => { clearLocate(); setAuto(true); autoRef.current = true; refit(); }}>
+    <div ref={ref} className="qr-draw-vp" style={{ cursor: tool === 'select' ? 'text' : drag.current ? 'grabbing' : 'grab' }} dir="ltr" data-testid="drawing-viewport" onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp} onDragStart={(e) => e.preventDefault()} onDoubleClick={() => { clearLocate(); setAuto(true); autoRef.current = true; refit(); }}>
       {!img ? <div className="qr-muted" style={{ padding: 20 }}>{t('dw.rendering')}</div> :
-        <div className="qr-sheet" style={{ width: W }} data-testid="drawing-sheet">
+        <div className="qr-sheet" style={{ width: W, transform: rotation ? `rotate(${rotation}deg)` : undefined, transformOrigin: 'center center' }} data-testid="drawing-sheet">
           <img src={img.png} style={{ width: W }} draggable={false} />
+          {allTokens.map((t: any, i: number) => <span key={'t' + i} className="qr-text-token" style={{ position: 'absolute', left: t.x * k, top: t.y * k, width: Math.max(t.w * k, 4), height: Math.max(t.h * k, 8), fontSize: Math.max((t.h || 10) * k * 0.85, 7) + 'px', lineHeight: Math.max(t.h * k, 8) + 'px', fontFamily: 'sans-serif', color: 'transparent', whiteSpace: 'pre', cursor: 'text', pointerEvents: tool === 'select' ? 'auto' : 'none', userSelect: tool === 'select' ? 'text' : 'none' }}>{t.text}</span>)}
           {ocrWords.map((w: any, i: number) => <div key={'o' + i} className="qr-mark" data-kind="ocr" title={`OCR "${w.text}" ${Math.round(w.conf * 100)}%`} style={{ left: w.x * k, top: w.y * k, width: w.w * k, height: w.h * k, opacity: w.conf < 0.6 ? 1 : 0.5 }} />)}
           {marks.map((m: any) => <div key={m.id} className="qr-mark" data-kind={focus && focus.id === m.id ? 'focus' : m.severity} data-tone={focus && focus.id === m.id ? (focus.tone || 'accent') : undefined} title={m.message} style={{ left: m.loc.x * k - 4, top: m.loc.y * k - 4, width: m.loc.w * k + 8, height: m.loc.h * k + 8 }} onClick={(e) => { e.stopPropagation(); onSelect && onSelect(m.id); }} />)}
           {boxes.filter((b: any) => (b.page || focus.page) === page).map((b: any, i: number) => <div key={'f' + i} className="qr-mark" data-kind="focus" data-tone={focus.tone || 'accent'} data-active={i === boxIndex ? 'true' : undefined} data-testid="dw-mark" style={{ left: b.x * k - 4, top: b.y * k - 4, width: b.w * k + 8, height: b.h * k + 8 }} onClick={(e) => { e.stopPropagation(); onSelect && onSelect(focus.id); }} />)}
