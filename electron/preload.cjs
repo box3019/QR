@@ -1,5 +1,6 @@
 'use strict';
 const { contextBridge, ipcRenderer, webFrame, webUtils } = require('electron');
+const Drop = require('../core/intake/dropStage.cjs');
 // Text size is applied by the renderer (root font-size, src/i18n); zoom stays 1.
 webFrame.setZoomFactor(1);
 contextBridge.exposeInMainWorld('qr', {
@@ -14,6 +15,10 @@ contextBridge.exposeInMainWorld('qr', {
   pickFiles: () => ipcRenderer.invoke('qr:pickFiles'),
   pickFolder: (opts) => ipcRenderer.invoke('qr:pickFolder', opts),
   pathForFile: (f) => { try { return webUtils.getPathForFile(f); } catch { return f.path || ''; } },
+  dropStart: () => ({ dir: Drop.newDropDir(Drop.dropCacheRoot()) }),
+  stageDropPath: (dir, src, name) => Drop.copyNow(dir, src, name),
+  stageDropBytes: (dir, name, bytes) => Drop.writeNow(dir, name, bytes),
+  logDrop: (msg) => ipcRenderer.send('qr:drop-log', String(msg || '')),
   process: (paths, job) => ipcRenderer.invoke('qr:process', paths, job),
   releaseImportCache: (job) => ipcRenderer.invoke('qr:importCache:release', job),
   listProjects: () => ipcRenderer.invoke('qr:projects:list'), saveProject: (id, data) => ipcRenderer.invoke('qr:projects:save', id, data),

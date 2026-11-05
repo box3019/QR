@@ -102,5 +102,6 @@ test('pick files and pick folder accept zip; drop uses the same run()', () => {
   assert.match(proj, /pickFolder\(\{ zip: true \}\)/);
   const drop = fs.readFileSync(path.join(__dirname, '..', 'src', 'hooks', 'useDrop.ts'), 'utf8');
   assert.match(drop, /pathForFile/);
+  assert.match(drop, /captureDroppedFiles/);
   assert.doesNotMatch(drop, /\.zip/);
 });

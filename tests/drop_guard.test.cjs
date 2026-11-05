@@ -11,7 +11,8 @@ test('internal drag does not import; external files and Outlook do', async () =>
   assert.strictEqual(m.isExternalDrop(['FileGroupDescriptorW', 'FileContents'], false), true); });
 test('App: drop handler checks isExternalDrop and marks internal drags', () => { const a = src('hooks/useDrop.ts'); assert.match(src('App.tsx'), /useDrop\(/);
   assert.match(a, /isExternalDrop\(/); assert.match(a, /addEventListener\('dragstart'/);
-  assert.match(a, /if \(!ext\) return;/); assert.doesNotMatch(a.slice(a.indexOf('onDragOver'), a.indexOf('onDrop =')), /run\(|setStep|reset/, 'dragover only shows the overlay'); });
+  assert.match(a, /if \(!ext\) return;/); assert.match(a, /captureDroppedFiles/);
+  assert.doesNotMatch(a.slice(a.indexOf('onDragOver'), a.indexOf('onDrop =')), /run\(|setStep|reset/, 'dragover only shows the overlay'); });
 test('drop while loaded adds, never replaces; other RFQ asks', async () => { const m = await load();
   assert.strictEqual(m.dropPlan(false, [], [{ rfq_no: '1' }]), 'new');
   assert.strictEqual(m.dropPlan(true, [{ rfq_no: '1' }], []), 'append');

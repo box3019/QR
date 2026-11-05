@@ -61,7 +61,7 @@ export default function App() {
     if (a === 'save') p.save(); else if (a === 'saveAs') p.saveAs(); else if (a === 'close') p.close(p.active); else p.openProject(); };
     window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h); }, []);
   // drops go into the current tab; a dropped .qrproj opens as a project
-  const drop = useDrop((paths: string[]) => { const s = splitProjectFiles(paths); s.projects.forEach((f) => P.openProject(f)); if (s.rest.length) return P.runActive(s.rest); }, settings, setOver);
+  const drop = useDrop((paths: string[]) => { const s = splitProjectFiles(paths); s.projects.forEach((f) => P.openProject(f)); if (s.rest.length) return P.runActive(s.rest); }, settings, setOver, notify);
   const w = window as any; w.__qrAddTab = P.add; w.__qrTabs = () => P.list.map((p) => ({ id: p.id, active: p.id === P.active, ...(P.metas[p.id] || {}) })); w.__qrSelectTab = P.setActive; w.__qrMoveTab = P.move; w.__qrCloseTab = P.close; w.__qrCloseAll = P.closeAll; w.__qrHistory = () => hist; w.__qrReopen = P.reopen;
   const saveSettings = async (s: any) => setSettings(await qr().setSettings(s));
   const assistant = useAssistant(settings, saveSettings);

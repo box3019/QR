@@ -634,6 +634,8 @@
   "dis.busyNext": "QR is still analysing the parts. Next is available when analysis finishes.",
   "dis.presetSame": "This look is already applied. Choose another one to enable Apply.",
   "notice.cleared": "RFQ cleared. Nothing is deleted: it stays in History.",
+  "notice.dropFailed": "Could not keep the dropped files: {list}. Save them to a folder and add them from there.",
+  "notice.dropPartial": "Some dropped files could not be kept: {list}. The rest were added.",
   "notice.undo": "Undo",
   "dis.firstPart": "This is the first part: there is no previous one.",
   "pv.back": "Back to list",

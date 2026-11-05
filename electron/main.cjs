@@ -34,6 +34,9 @@ function saveSettings(s) { fs.mkdirSync(path.dirname(settingsFile()), { recursiv
 const sevenZipPath = () => (app.isPackaged ? path.join(process.resourcesPath, '7zip', '7z.exe') : path.join(__dirname, '..', 'vendor', '7zip', '7z.exe'));
 const importCachePath = () => (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'QR', 'ImportCache') : path.join(app.getPath('userData'), 'ImportCache'));
 const jobTmp = new Map();
+const jobDrops = new Map();
+const { dropCacheRoot, dropSessionsOf } = require('../core/intake/dropStage.cjs');
+ipcMain.on('qr:drop-log', (_e, msg) => mainLog(msg));
 const { releaseJobCache } = require('../core/intake/archive.cjs');
 const langPath = () => (app.isPackaged ? path.join(process.resourcesPath, 'ocr') : path.join(__dirname, '..', 'ocr'));
 
@@ -76,6 +79,10 @@ ipcMain.handle('qr:process', async (e, paths, job) => {
   (res.parts || []).forEach(localizePart);
   res.seconds = Math.round((Date.now() - t0) / 1000);
   if (job && res.tmp) jobTmp.set(job, res.tmp);
+  if (job) {
+    const drops = dropSessionsOf(paths, dropCacheRoot());
+    if (drops.length) jobDrops.set(job, [...new Set([...(jobDrops.get(job) || []), ...drops])]);
+  }
   const { tmp, ...out } = res;
   lastResult = out;
   return out;
@@ -176,7 +183,7 @@ ipcMain.handle('qr:importCache:release', (_e, job) => {
     const data = history.loadProject(app.getPath('userData'), id);
     if (data) {
       const dest = path.join(app.getPath('userData'), 'projects', id, 'files');
-      const roots = [importCachePath(), jobTmp.get(id)].filter(Boolean);
+      const roots = [importCachePath(), jobTmp.get(id), ...(jobDrops.get(id) || [])].filter(Boolean);
       const next = projects.adoptJobFiles(data, dest, roots);
       projects.saveProject(app.getPath('userData'), id, next);
     }
@@ -184,6 +191,9 @@ ipcMain.handle('qr:importCache:release', (_e, job) => {
   try { releaseJobCache(importCachePath(), id); } catch (e) { mainLog('releaseJobCache ' + ((e && e.message) || e)); }
   const tmp = jobTmp.get(id);
   if (tmp) { try { fs.rmSync(tmp, { recursive: true, force: true }); } catch {} jobTmp.delete(id); }
+  const drops = jobDrops.get(id) || [];
+  for (const d of drops) { try { fs.rmSync(d, { recursive: true, force: true }); } catch {} }
+  jobDrops.delete(id);
   return true;
 });
 const qrproj = require('../core/qrproj.cjs');
