@@ -67,11 +67,20 @@ test('settings: persisted, old palette ids stay valid, unknown ids fall back to 
 test('Settings > Interface is the presets screen: intro, chip row, card grid with a mini mock, SELECTED badge, preview, Apply', () => {
   for (const k of ['st.presetsIntro', 'st.presetsTitle', 'st.presetsSub', 'st.presetBuiltin', 'st.presetSelected', 'st.presetApply', 'st.presetPreviewing', 'tip.presetCard', 'tip.presetApply', 'tip.presetChip']) assert.ok(en[k] && he[k], k);
   assert.match(en['st.presetsTitle'], /Built-in visual presets/i);
+  assert.match(en['st.presetsIntro'], /Select a card to apply it to the whole program/i);
   for (const tid of ['"presets"', '"palettes"', 'selected-badge', 'preset-apply', '"preset-chips"', "'chip-'", "'pal-'", "'mock-'"]) assert.ok(panel.includes(tid), tid);
   for (const part of ['qm-top', 'qm-input', 'qm-grid', 'qm-txt', 'qm-st']) assert.ok(panel.includes(part) && layers.includes(part), part);
   assert.match(panel, /onPreview/); assert.match(panel, /onApply/); assert.match(dlg, /onApplyPreset/);
   assert.match(panel, /title=\{[^}]*t\('tip\.presetApply'\)\}/); assert.match(panel, /t\('dis\.presetSame'\)/); assert.match(panel, /title=\{t\('tip\.presetChip'\)\}/);
   assert.ok(!dlg.includes("t('st.ifaceTheme')"), 'the simple light/dark option is replaced');
+});
+test('selecting a preset applies it to the app root and persists it; Save keeps the chosen palette', () => {
+  assert.match(dlg, /const commitPalette = \(id: string\) =>/);
+  assert.match(dlg, /onApplyPreset\?\.\(n\)/);
+  assert.match(dlg, /onPreview=\{commitPalette\}/);
+  assert.match(dlg, /__qrSetSettings\?\.\(\{ palette: id \}\)/);
+  assert.match(dlg, /onSave\(\{ \.\.\.s, palette: prev \}\)/);
+  assert.match(en['tip.presetCard'], /Apply this preset/);
 });
 test('the preset cards are tiles, not buttons (MRT: tiles are not buttons) and each mock is themed with its own preset id', () => {
   assert.match(panel, /role="radio"/); assert.match(panel, /themeAttrs\(\{ palette: id, accent: 'slate' \}\)/);

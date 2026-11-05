@@ -29,20 +29,30 @@ const LIVE = ['uiLanguage', 'assistantLanguage', 'assistantLanguageSet', 'textSi
 export default function SettingsDialog({ settings, onClose, onSave, onApplyPreset, onRestartTour, onCloseAllJobs, initialTab }: any) {
   const [s, setS] = useState<any>(structuredClone(settings));
   const orig = useRef<any>(structuredClone(settings)); // the saved values: __qrSetSettings mutates the `settings` prop while previewing, so Cancel restores from this copy
-  const [prev, setPrev] = useState<string>(settings.palette); // previewed preset (live); s.palette is the committed one
+  const [prev, setPrev] = useState<string>(settings.palette);
   const [tab, setTab] = useState<Tab>(initialTab || 'interface');
   const [updMsg, setUpdMsg] = useState('');
   const set = (k: string, v: any) => setS((o: any) => ({ ...o, [k]: v }));
   // live preview of language / size; restored on Cancel
   const live = (k: string, v: any) => { set(k, v); (window as any).__qrSetSettings?.({ [k]: v }); };
+  // MRT: picking a preset applies it to the whole app and writes settings.json immediately.
+  // Save used to persist `s.palette` (the value from when the dialog opened) and overwrite the live preview.
+  const commitPalette = (id: string) => {
+    setPrev(id);
+    const n = { ...s, palette: id };
+    setS(n);
+    orig.current = structuredClone(n);
+    (window as any).__qrSetSettings?.({ palette: id });
+    onApplyPreset?.(n);
+  };
   const cancel = () => { (window as any).__qrSetSettings?.(Object.fromEntries(LIVE.map((k) => [k, orig.current[k]]))); onClose(); };
   (window as any).__qrSettingsTab = setTab;
-  return <Modal title={t('st.title')} wide onClose={cancel} testid="settings-dialog" footer={<><button className={MRT_BTN} title={t('tip.cancel')} onClick={cancel}>{t('st.cancel')}</button><button className={MRT_BTN_PRIMARY} data-testid="settings-save" title={t('tip.save')} onClick={() => onSave(s)}>{t('st.save')}</button></>}>
+  return <Modal title={t('st.title')} wide onClose={cancel} testid="settings-dialog" footer={<><button className={MRT_BTN} title={t('tip.cancel')} onClick={cancel}>{t('st.cancel')}</button><button className={MRT_BTN_PRIMARY} data-testid="settings-save" title={t('tip.save')} onClick={() => onSave({ ...s, palette: prev })}>{t('st.save')}</button></>}>
     <div className="qr-settings">
       <div className="qr-settings-nav">{TABS.map((k) => <button key={k} className="qr-settings-tab" data-active={tab === k} data-testid={'stab-' + k} title={t('tip.tab')} onClick={() => setTab(k)}>{t('st.tab.' + k)}</button>)}<div className="qr-settings-about" data-testid="settings-about"><span>{t('about.title')}</span> <AppVersion className="qr-ver qr-ver-about" /></div></div>
       <div className="qr-settings-body">
         {tab === 'interface' && <>
-          <PresetsPanel committed={s.palette} previewed={prev} onPreview={(id: string) => { setPrev(id); (window as any).__qrSetSettings?.({ palette: id }); }} onApply={() => { const n = { ...s, palette: prev }; setS(n); orig.current = structuredClone(n); onApplyPreset?.(n); }} />
+          <PresetsPanel committed={s.palette} previewed={prev} onPreview={commitPalette} onApply={() => commitPalette(prev)} />
           <h3 className="qr-pres-title qr-fine">{t('st.fineTune')}</h3>
           <Field label={t('st.ifaceAccent')}><div className="qr-accs" role="radiogroup" aria-label={t('st.ifaceAccent')} data-testid="accents">{ACCENTS.map((id) => <button key={id} type="button" role="radio" aria-checked={s.accent === id} className="qr-acc" data-active={s.accent === id} data-acc={id} data-testid={'acc-' + id} title={t('tip.accent')} onClick={() => live('accent', id)}><span className="qr-acc-sw" {...themeAttrs({ palette: prev, accent: id })} aria-hidden />{t('acc.' + id)}</button>)}</div></Field>
           <Field label={t('st.textSize')}><select className="qr-input" value={s.textSize} data-testid="text-size" onChange={(e) => live('textSize', e.target.value)}>{['normal', 'large', 'xlarge', 'huge'].map((k) => <option key={k} value={k}>{t('size.' + k)}</option>)}</select></Field>

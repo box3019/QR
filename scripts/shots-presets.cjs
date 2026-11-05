@@ -29,17 +29,21 @@ const IDS = ['aris-glass', 'icloud-windows', 'cleanmymac', 'priority-erp', 'indu
     await win.click('[data-testid=pal-' + id + ']'); await win.waitForTimeout(250);
     const root = await win.evaluate(() => document.querySelector('.qr-root').getAttribute('data-qr-palette'));
     ok(root === id, 'preview applies the preset to the app: ' + id + ' (' + root + ')');
-    if (id !== 'industrial-steel') ok(!(await win.$eval('[data-testid=preset-apply]', (b) => b.disabled)), 'Apply enabled for ' + id);
+    ok(await win.$eval('[data-testid=preset-apply]', (b) => b.disabled), 'Apply disabled after selecting ' + id + ' (already applied)');
+    ok(await win.$eval('[data-testid=pal-' + id + '] [data-testid=selected-badge]', () => true).catch(() => false), 'SELECTED badge moved to ' + id);
+    ok((await saved()).palette === id, 'select persisted ' + id);
     await shot('en_1920_' + id);
   }
-  // Apply persists without closing
-  await win.click('[data-testid=pal-cleanmymac]'); await win.click('[data-testid=preset-apply]'); await win.waitForTimeout(500);
-  ok((await saved()).palette === 'cleanmymac', 'Apply persisted cleanmymac'); ok(!!(await win.$('[data-testid=settings-dialog]')), 'the dialog stays open after Apply');
+  // click applies + persists without closing; Apply is the same commit
+  await win.click('[data-testid=pal-cleanmymac]'); await win.waitForTimeout(500);
+  ok((await saved()).palette === 'cleanmymac', 'click persisted cleanmymac'); ok(!!(await win.$('[data-testid=settings-dialog]')), 'the dialog stays open after select');
   ok(await win.$eval('[data-testid=pal-cleanmymac] [data-testid=selected-badge]', () => true).catch(() => false), 'SELECTED badge moved to CleanMyMac');
-  // Cancel after previewing another preset restores the applied one
+  await win.click('[data-testid=preset-apply]').catch(() => {});
+  // closing after selecting another preset keeps the chosen one (MRT: pick = apply)
   await win.click('[data-testid=pal-priority-erp]'); await win.waitForTimeout(200);
   await win.click('.qr-modal-f button:first-child'); await win.waitForTimeout(400);
-  ok((await win.evaluate(() => document.querySelector('.qr-root').getAttribute('data-qr-palette'))) === 'cleanmymac', 'Cancel restores the applied preset');
+  ok((await win.evaluate(() => document.querySelector('.qr-root').getAttribute('data-qr-palette'))) === 'priority-erp', 'selection stays after closing');
+  ok((await saved()).palette === 'priority-erp', 'selection persisted after closing');
   // HE (RTL) and 1280
   for (const l of ['he', 'en']) for (const [w, h] of [[1920, 1080], [1280, 800]]) {
     await size(w, h); await win.evaluate((x) => window.__qrSetSettings({ uiLanguage: x, assistantLanguage: x }), l); await win.waitForTimeout(400);

@@ -1,6 +1,6 @@
 // Settings > Interface: "Built-in visual presets", laid out like MRT's presets screen (QR's own implementation, no MRT code).
 // Intro + quick chip row, then one card per preset with a mini QR UI mock (top bar, input, table, status bars), the SELECTED badge,
-// click = live preview, Apply = commit. The mock reads the preset's own tokens (src/styles/themes.css) through themeAttrs().
+// click = apply to the whole app and persist (MRT). Apply is the same commit. The mock reads the preset's own tokens (src/styles/themes.css) through themeAttrs().
 import React from 'react';
 import { MRT_ACTION_BTN, MRT_BTN_PRIMARY } from '../ui/mrtButtons';
 import { t } from '../i18n';
