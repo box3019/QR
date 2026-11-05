@@ -211,7 +211,7 @@ ipcMain.handle('qr:std:upload', async (_e, s, customer, owner) => {
 });
 ipcMain.handle('qr:std:open', (_e, file) => shell.openPath(file));
 ipcMain.handle('qr:openPath', (_e, p) => shell.showItemInFolder(p));
-const { launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, partsForPrint, EMPTY_PRINT_ERROR, reportPdfFileName, partPdfFileName, uniquePdfPath, defaultPdfDir } = require('./qrPrint.cjs');
+const { launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, partsForPrint, EMPTY_PRINT_ERROR, reportPdfFileName, partPdfFileName, uniquePdfPath, defaultPdfDir, listSystemPrinters, printDrawingPdfsSilent } = require('./qrPrint.cjs');
 async function reportHtmlFromPayload(payload) {
   const p = payload || {};
   const all = Array.isArray(p.parts) ? p.parts : [];
@@ -223,6 +223,33 @@ async function reportHtmlFromPayload(payload) {
   const meta = { ...(p.meta || {}), package: p.mode === 'package' };
   return { ok: true, html: reportHtml(p.mode === 'package' ? all : parts, lang, meta), payload: p };
 }
+ipcMain.handle('qr:printers', async () => {
+  try {
+    const printers = await listSystemPrinters(win && !win.isDestroyed() ? win.webContents : null);
+    return { ok: true, printers };
+  } catch (e) {
+    return { ok: false, printers: [], error: (e && e.message) || String(e) };
+  }
+});
+ipcMain.handle('qr:printDrawings', async (_e, payload) => {
+  try {
+    const p = payload || {};
+    const files = Array.isArray(p.files) ? p.files : [];
+    const paperSize = p.paperSize === 'A3' ? 'A3' : 'A4';
+    const copies = Math.max(1, Math.min(99, Number(p.copies) || 1));
+    const printer = String(p.printer || p.deviceName || '');
+    const r = await printDrawingPdfsSilent({
+      files, options: { deviceName: printer, paperSize, copies, landscape: 'auto', fit: p.fit !== false }, BrowserWindow, log: mainLog,
+    });
+    const s = loadSettings();
+    saveSettings(normalizeSettings({ ...s, lastPrinter: printer, lastPaperSize: paperSize }));
+    return r;
+  } catch (e) {
+    const error = (e && e.message) || String(e);
+    mainLog('printDrawings failed: ' + error);
+    return { ok: false, error };
+  }
+});
 ipcMain.handle('qr:print', async (_e, payload) => {
   try {
     const prep = await reportHtmlFromPayload(payload);

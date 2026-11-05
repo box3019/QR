@@ -23,6 +23,7 @@ Read-only reference: uploaded `mrt_ui_src` (not cloned, not imported). QR reimpl
 | Collapsible summary (`רשימת בדיקה` / `לכרטיס מסלול`) | `.mrt-report-card` one 1px shell; header band fill only (`mrt-collapsible-nav-group-btn` transparent border) | `ChecklistSummary.tsx`, `RouteCardSection.tsx` |
 | Rail / header / stepper | `LeftPanel` + `MrtCmmProgramWizard` + `WizardHeaderSummaryTable`; step `border: 1px solid transparent`, marker is the circle | `WizardRail`, `RailContext`, `Stepper`, `StepHeader` |
 | Dialogs | `MRT_UTILITY_HEADER` 52px/17px/700; footer `min-h 3.25rem` | `Modal`, `mrtChrome.css` |
+| Print drawings (parts list) | `MrtPrintCenter` side panel: printer, A3/A4, fit-to-page, copies, auto orientation, preview thumbs, Print/Cancel on the panel | `TriageView`, `PrintDrawingsDialog`, `printDrawings.mjs` |
 | Primary buttons | `derivePrimaryButtonCssVars` mixHex | `mrtButtons.ts`, `qrPalette.css` |
 | PIN / ERP / user | `MrtPinInput`, `MrtScreenShell` login | **Excluded** |
 

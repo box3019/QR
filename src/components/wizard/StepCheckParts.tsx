@@ -7,9 +7,9 @@ import { DrawingView, RouteCard, ModelView, DataView } from '../../views/Viewer'
 import { PartCard } from '../partcard/PartCard';
 import { PartNav } from './PartNav';
 
-export function StepCheckParts({ parts, sel, open, onOpen, onBack, onGo, onLeave, rtl, unknown, details, tab, setTab, focus, setFocus, setStep, onPatch, onPrint, onSave, onPrintPack, onSavePack, onSaveEach }: any) {
+export function StepCheckParts({ parts, sel, open, onOpen, onBack, onGo, onLeave, rtl, unknown, details, tab, setTab, focus, setFocus, setStep, onPatch, onPatchAll, files, onPrint, onSave, onPrintPack, onSavePack, onSaveEach, onPrinted }: any) {
   const part = parts[sel];
-  if (!open || !part) return <div className="qr-body qr-onefocus" data-testid="step2-list"><TriageView parts={parts} sel={sel} onOpen={onOpen} onPatch={onPatch} onPrint={onPrint} onSave={onSave} onPrintPack={onPrintPack} onSavePack={onSavePack} onSaveEach={onSaveEach} /></div>;
+  if (!open || !part) return <div className="qr-body qr-onefocus" data-testid="step2-list"><TriageView parts={parts} sel={sel} files={files} onOpen={onOpen} onPatch={onPatch} onPatchAll={onPatchAll} onPrint={onPrint} onSave={onSave} onPrintPack={onPrintPack} onSavePack={onSavePack} onSaveEach={onSaveEach} onPrinted={onPrinted} /></div>;
   const tabs = viewerTabs(details); const cur = tabs.includes(tab) ? tab : 'drawing';
   const loc = (f: any) => { setTab('drawing'); setFocus((cur: any) => {
     if (!f) return null;

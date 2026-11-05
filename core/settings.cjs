@@ -33,6 +33,8 @@ const DEFAULTS = {
   updateCheckOnStartup: true,
   updateCheckInterval: 'daily', // hourly | daily
   lastPdfFolder: '',
+  lastPrinter: '',
+  lastPaperSize: 'A4',
 };
 /** Pure: stored object -> full settings with the capability catalog merged over the defaults. */
 function normalizeSettings(stored) {
@@ -62,6 +64,8 @@ function normalizeSettings(stored) {
   s.updateCheckOnStartup = s.updateCheckOnStartup !== false;
   s.updateCheckInterval = s.updateCheckInterval === 'hourly' ? 'hourly' : 'daily';
   s.lastPdfFolder = typeof s.lastPdfFolder === 'string' ? s.lastPdfFolder : '';
+  s.lastPrinter = typeof s.lastPrinter === 'string' ? s.lastPrinter : '';
+  s.lastPaperSize = s.lastPaperSize === 'A3' ? 'A3' : 'A4';
   return s;
 }
 /** Pure: settings -> the catalog object the checks use. */

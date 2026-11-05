@@ -39,6 +39,8 @@ contextBridge.exposeInMainWorld('qr', {
   stdConfirm: (s, c) => ipcRenderer.invoke('qr:std:confirm', s, c),
   stdUpload: (s, c, o) => ipcRenderer.invoke('qr:std:upload', s, c, o),
   stdOpen: (f) => ipcRenderer.invoke('qr:std:open', f),
+  printers: () => ipcRenderer.invoke('qr:printers'),
+  printDrawings: (payload) => ipcRenderer.invoke('qr:printDrawings', payload),
   print: (payload) => ipcRenderer.invoke('qr:print', payload),
   savePdf: (payload, target) => ipcRenderer.invoke('qr:savePdf', payload, target),
   savePdfEach: (payload, targetDir) => ipcRenderer.invoke('qr:savePdfEach', payload, targetDir),

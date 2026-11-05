@@ -323,6 +323,27 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-tri-acts button, .qr-root .qr-tri-bar button { white-space: nowrap !important; overflow-wrap: normal !important; flex-shrink: 0; height: 40px !important; min-height: 40px !important; max-height: 40px !important; }
 .qr-tri-empty { padding: 0.35rem 0.55rem; }
 .qr-tri-inc { white-space: nowrap; display: inline-flex; align-items: center; }
+.qr-root .qr-print-draw-modal { width: min(1100px, 94vw); height: min(42rem, 88vh); max-height: 88vh; }
+.qr-root .qr-print-draw { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); }
+.qr-root .qr-print-draw-side { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.25rem; border-inline-end: 1px solid var(--mrt-ui-border, var(--mrt-border)); min-width: 0; overflow: auto; }
+.qr-root .qr-print-draw-preview { min-width: 0; min-height: 0; padding: 1rem 1.25rem; overflow: auto; background: var(--mrt-surface-muted, #f5f5f7); }
+.qr-root .qr-print-field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; overflow-wrap: anywhere; }
+.qr-root .qr-print-field select, .qr-root .qr-print-field input[type='number'] { height: 40px; min-height: 40px; width: 100%; box-sizing: border-box; border: 1px solid var(--mrt-ui-border, var(--mrt-border)); border-radius: var(--mrt-radius, 6px); background: var(--mrt-surface, #fff); color: inherit; padding: 0 0.55rem; font: inherit; }
+.qr-root .qr-print-check { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; min-width: 0; overflow-wrap: anywhere; }
+.qr-root .qr-print-missing { border: 1px solid var(--mrt-ui-border, var(--mrt-border)); border-radius: var(--mrt-radius, 6px); padding: 0.5rem 0.65rem; min-width: 0; }
+.qr-root .qr-print-missing-h { font-weight: 600; margin-bottom: 0.3rem; overflow-wrap: anywhere; }
+.qr-root .qr-print-missing ul { margin: 0; padding-inline-start: 1.1rem; }
+.qr-root .qr-print-missing li { overflow-wrap: anywhere; }
+.qr-root .qr-print-empty, .qr-root .qr-print-err { margin: 0; overflow-wrap: anywhere; }
+.qr-root .qr-print-err { color: var(--mrt-danger, #dc2626); }
+.qr-root .qr-print-draw-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.qr-root .qr-print-draw-actions button { height: 40px !important; min-height: 40px !important; max-height: 40px !important; flex: 1 1 7rem; }
+.qr-root .qr-print-preview-h { font-weight: 600; margin-bottom: 0.75rem; overflow-wrap: anywhere; }
+.qr-root .qr-print-thumbs { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.qr-root .qr-print-thumb { width: 10rem; margin: 0; padding: 0.4rem; border: 1px solid var(--mrt-ui-border, var(--mrt-border)); border-radius: var(--mrt-radius, 6px); background: #fff; box-sizing: border-box; }
+.qr-root .qr-print-thumb img { display: block; width: 100%; height: auto; object-fit: contain; }
+.qr-root .qr-print-thumb-empty { width: 100%; aspect-ratio: 3 / 4; background: #fff; border: 1px solid var(--mrt-ui-border, var(--mrt-border)); }
+.qr-root .qr-print-thumb figcaption { margin-top: 0.35rem; font-size: 0.75rem; overflow-wrap: anywhere; }
 
 /* File menu, status bar, unsaved dot, equal toolbar buttons */
 .qr-statusbar { flex: 0 0 auto; min-height: 1.5rem; display: flex; align-items: center; padding: 0 0.9rem; font-size: 0.75rem; color: var(--mrt-text-muted); border-top: 1px solid var(--mrt-chrome-border, var(--mrt-border)); background: var(--mrt-chrome-surface, transparent); }

@@ -1,11 +1,22 @@
 // Package list: Suitable / Not suitable / Material not detected. Move, include, Print and Save PDF per part; package PDF actions.
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
 import { MRT_BTN, MRT_BTN_PRIMARY } from '../../ui/mrtButtons';
 import { MrtTable, MrtHead, MrtGroup, MrtEmpty, MrtRow, OverflowLine } from '../../ui/MrtTable';
 import { triageLists, triageCounts, triageReason, isIncluded, moveTriage, setInclude } from '../../parts/triage.mjs';
+import { includeState, setIncludeAll } from '../../parts/printDrawings.mjs';
 import { SaveEachChoice } from './SaveEachChoice';
+import { PrintDrawingsDialog } from './PrintDrawingsDialog';
 import { MoreMenu } from '../MoreMenu';
+
+function IncludeAll({ parts, onPatchAll }: any) {
+  const st = includeState(parts);
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (ref.current) ref.current.indeterminate = st.some; }, [st.some, st.all]);
+  return <label title={t('tri.includeAll')} className="qr-tri-inc" onClick={(e) => e.stopPropagation()}>
+    <input ref={ref} type="checkbox" data-testid="tri-include-all" checked={st.all} onChange={(e) => onPatchAll(setIncludeAll(parts, e.target.checked))} />
+  </label>;
+}
 
 function Row({ part, index, sel, list, onOpen, onPatch, onPrint, onSave }: any) {
   const r = triageReason(part);
@@ -27,15 +38,18 @@ function Row({ part, index, sel, list, onOpen, onPatch, onPrint, onSave }: any) 
   </MrtRow>;
 }
 
-export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPrintPack, onSavePack, onSaveEach }: any) {
+export function TriageView({ parts, sel, files, onOpen, onPatch, onPatchAll, onPrint, onSave, onPrintPack, onSavePack, onSaveEach, onPrinted }: any) {
   const lists = triageLists(parts);
   const c = triageCounts(parts);
+  const picked = includeState(parts);
   const [ask, setAsk] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
   const COLS = 5;
   return <div className="qr-triage" data-testid="triage">
     <div className="qr-tri-bar">
       <span className="qr-tri-done" data-testid="tri-processed">{t('tri.processed', { d: c.processed, n: c.total })}</span>
       <button type="button" className={MRT_BTN} data-testid="tri-open-drawing" title={t('tip.openDrawing')} onClick={() => onOpen(sel)}>{t('pl.openDrawing')}</button>
+      <button type="button" className={MRT_BTN} data-testid="tri-print-drawings" title={t('tip.printDrawings')} disabled={!picked.selected} onClick={() => setPrintOpen(true)}>{picked.selected ? t('tri.printDrawingsN', { n: picked.selected }) : t('tri.printDrawings')}</button>
       <button type="button" className={MRT_BTN_PRIMARY} data-testid="tri-save-each" title={t('tip.saveEach')} onClick={() => setAsk(true)}>{t('tri.saveEach')}</button>
       <MoreMenu testid="tri-pack-more" items={[
         { testid: 'tri-print-pack', label: t('tri.printPack'), tip: t('tip.printPack'), onClick: onPrintPack },
@@ -43,7 +57,7 @@ export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPri
       ]} />
     </div>
     <MrtTable shell className="qr-tri-tab" cols={<colgroup><col className="qr-mrt-c-check" /><col className="qr-mrt-c-id" /><col className="qr-mrt-c-text" /><col className="qr-mrt-c-status" /><col className="qr-mrt-c-menu" /></colgroup>}>
-      <MrtHead cells={[t('tri.includeCol'), t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), '']} />
+      <MrtHead cells={[{ label: <IncludeAll parts={parts} onPatchAll={onPatchAll} />, title: t('tri.includeAll'), className: 'qr-tri-inc' }, t('ck.col.item'), t('ck.col.value'), t('ck.col.status'), '']} />
       <tbody>
         {(['suitable', 'notSuitable', 'unknown'] as const).map((k) => <React.Fragment key={k}>
           <MrtGroup colSpan={COLS} testid={'tri-' + k}>{t('tri.' + k)} · {lists[k].length}</MrtGroup>
@@ -53,5 +67,6 @@ export function TriageView({ parts, sel, onOpen, onPatch, onPrint, onSave, onPri
       </tbody>
     </MrtTable>
     {ask && <SaveEachChoice parts={parts} onCancel={() => setAsk(false)} onPick={(indexes: number[], counts: any) => { setAsk(false); onSaveEach(indexes, counts); }} />}
+    {printOpen && <PrintDrawingsDialog parts={parts} files={files} onClose={() => setPrintOpen(false)} onDone={(r: any) => { setPrintOpen(false); onPrinted && onPrinted(r); }} />}
   </div>;
 }

@@ -4,6 +4,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { pathToFileURL } = require('url');
 const { spawn, execFileSync } = require('child_process');
 
 const EMPTY_PRINT_ERROR = 'Print document rendered empty';
@@ -226,9 +227,74 @@ async function saveElectronHtmlReportPdf({ html, dest, BrowserWindow, log, timeo
   }
 }
 
+function listSystemPrinters(webContents) {
+  if (!webContents) return Promise.resolve([]);
+  const fn = webContents.getPrintersAsync || (typeof webContents.getPrinters === 'function' ? () => webContents.getPrinters() : null);
+  if (!fn) return Promise.resolve([]);
+  return Promise.resolve(fn.call(webContents)).then((list) => (Array.isArray(list) ? list : []).map((p) => ({
+    name: String((p && p.name) || ''),
+    displayName: String((p && (p.displayName || p.name)) || ''),
+    isDefault: !!(p && p.isDefault),
+  })).filter((p) => p.name));
+}
+
+function autoLandscapeFile(file) {
+  const w = Number(file && file.width) || 0;
+  const h = Number(file && file.height) || 0;
+  return !!(w && h && w > h);
+}
+
+function drawingPrintOptions(file, options) {
+  const o = options || {};
+  const copies = Math.max(1, Math.min(99, Math.round(Number(o.copies) || 1)));
+  const landscape = o.landscape === true || (o.landscape !== false && o.landscape !== 'portrait' && autoLandscapeFile(file));
+  return {
+    silent: true,
+    printBackground: true,
+    deviceName: o.deviceName || o.printer || undefined,
+    copies,
+    pageSize: o.paperSize === 'A3' ? 'A3' : 'A4',
+    landscape: !!landscape,
+    margins: { marginType: o.fit === false ? 'printableArea' : 'none' },
+  };
+}
+
+async function printDrawingPdfsSilent({ files, options, BrowserWindow, existsFn, log, timeoutMs }) {
+  const exists = existsFn || ((p) => { try { return fs.existsSync(p); } catch { return false; } });
+  const list = (files || []).filter((f) => f && f.path && /\.pdf$/i.test(f.path));
+  if (!list.length) throw new Error('No drawing files to print');
+  const printed = [];
+  const skipped = [];
+  for (const file of list) {
+    if (!exists(file.path)) { skipped.push({ path: file.path, error: 'missing' }); continue; }
+    const w = new BrowserWindow({ show: false, width: 800, height: 1100, webPreferences: { sandbox: false, plugins: true } });
+    try {
+      const loaded = waitDidFinishLoad(w.webContents, timeoutMs || LOAD_TIMEOUT_MS);
+      w.loadURL(pathToFileURL(file.path).href);
+      await loaded;
+      const opts = drawingPrintOptions(file, options);
+      await new Promise((resolve, reject) => {
+        w.webContents.print(opts, (ok, reason) => {
+          if (!ok && reason && reason !== 'cancelled') reject(new Error(reason));
+          else resolve({ ok, reason });
+        });
+      });
+      printed.push({ path: file.path, ok: true });
+    } catch (e) {
+      log && log('drawing print: ' + ((e && e.message) || e));
+      skipped.push({ path: file.path, error: (e && e.message) || String(e) });
+    } finally {
+      try { if (w && !w.isDestroyed()) w.destroy(); } catch {}
+    }
+  }
+  if (!printed.length) throw new Error((skipped[0] && skipped[0].error) || 'print failed');
+  return { ok: true, printed: printed.length, files: printed, skipped };
+}
+
 module.exports = {
   EMPTY_PRINT_ERROR, LOAD_TIMEOUT_MS, PDF_PRINT_OPTS, partsForPrint, printDocumentStatsJs, isPrintDocumentReady,
   parseRegValue, parseOpenCommand, isAcrobatExe, resolvePdfOpenCommand, openPdfForPrint,
   launchElectronHtmlPrintDialog, saveElectronHtmlReportPdf, renderReportPdfInHiddenWindow, waitDidFinishLoad,
   sanitizeWinFileName, reportPdfStem, reportPdfFileName, partPdfFileName, uniquePdfPath, defaultPdfDir, ymdLocal,
+  listSystemPrinters, drawingPrintOptions, autoLandscapeFile, printDrawingPdfsSilent,
 };
