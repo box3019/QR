@@ -70,13 +70,13 @@ test('stylesheets load last: mrtTable then mrtChrome', () => {
   assert.match(main, /mrtTable\.css['"];\s*import '\.\/styles\/mrtChrome\.css'/);
 });
 
-test('wizard chrome: 272px rail, 34px footer, 52px/17px dialog header, 42px dialog buttons', () => {
+test('wizard chrome: 272px rail, 34px footer, 52px/17px dialog header, equal dialog buttons', () => {
   const chrome = R('src/styles/mrtChrome.css');
   assert.match(chrome, /--mrt-wizard-rail-width:\s*272px/);
-  assert.match(chrome, /height:\s*34px !important/);
+  assert.match(chrome, /--qr-footer-btn-h/);
   assert.match(chrome, /min-height:\s*52px/);
   assert.match(chrome, /font-size:\s*17px/);
-  assert.match(chrome, /min-height:\s*42px/);
+  assert.match(chrome, /--qr-dialog-btn-h/);
   assert.match(chrome, /justify-content:\s*flex-start/);
 });
 

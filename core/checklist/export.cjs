@@ -1,6 +1,7 @@
 ﻿'use strict';
 // Checklist for the exports (PDF report, Excel): plain text built from the evaluated view p._ck (main attaches it with core/checklist/live.mjs).
 const LAB = require('./labels.json');
+const { suggestLabel } = require('./suggest.cjs');
 const COLS = ['material', 'heat', 'engrave', 'laser', 'engfill', 'threads', 'gauges', 'tight', 'coating', 'paint', 'br127', 'assembly', 'inspect100', 'cleanroom'];
 const fill = (s, v) => String(s).replace(/\{(\w+)\}/g, (_, k) => (v && v[k] != null ? v[k] : ''));
 const mk = (lang) => { const d = LAB[lang === 'he' ? 'he' : 'en']; const tt = (k, v) => (d[k] != null ? fill(d[k], v) : k); return tt; };
@@ -10,7 +11,7 @@ function what(i, tt) {
   const base = tt('ck.k.' + i.key); const b = base === 'ck.k.' + i.key ? i.key : base;
   const spec = i.key === 'material' ? i.spec : i.spec && i.spec !== b ? i.spec : '';
   const col = i.color ? (tt('ck.color.' + i.color) === 'ck.color.' + i.color ? i.color : tt('ck.color.' + i.color)) : '';
-  return [i.key === 'material' ? '' : b, spec, i.qty ? '\u00D7' + i.qty : '', col].filter(Boolean).join(' \u00B7 ');
+  return [i.key === 'material' ? '' : b, spec, i.qty ? '\u00D7' + i.qty : '', col, suggestLabel(i.suggest, tt)].filter(Boolean).join(' \u00B7 ');
 }
 function where(i, tt) {
   const o = [];

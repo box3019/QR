@@ -241,9 +241,41 @@ const o = opac(tbl); res.tableOpacity = o; if (o < 1) res.issues.push('ancestor 
     if (bs.length < 2) return;
     const hs = bs.map((b) => Math.round(b.getBoundingClientRect().height));
     if (Math.max(...hs) - Math.min(...hs) > 2) res.issues.push(label + ' unequal height ' + hs.join(','));
+    const wraps = bs.filter((b) => { const cs = getComputedStyle(b); return cs.whiteSpace !== 'nowrap' && cs.whiteSpace !== 'pre'; });
+    wraps.forEach((b) => res.issues.push(label + ' wraps: ' + (b.getAttribute('data-testid') || (b.textContent || '').trim().slice(0, 24))));
   };
   sameRowH(document.querySelectorAll('.qr-topbar .mrt-topbar-cmd'), 'toolbar buttons');
-  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-tri-bar button'), 'triage buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-tri-bar > button'), 'triage buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) [data-testid=wiz-footer] button'), 'footer buttons');
+  sameRowH(document.querySelectorAll('.qr-modal-f button, [data-testid=settings-dialog] .qr-modal-f button'), 'dialog footer buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-rail-btn'), 'rail buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-drop-btns button'), 'drop buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-loaded-btns button'), 'intake buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-print-draw-actions button'), 'print-drawings buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-pres-bar button'), 'preset bar buttons');
+  sameRowH(document.querySelectorAll('.qr-proj:not(.qr-proj-off) .qr-pres-chips button'), 'preset chip buttons');
+  const skipRow = (row) => row.matches('.qr-tabrow, .mrt-workspace-tab-strip, .qr-ptabs, .qr-settings-nav, .qr-wiz-head, .mrt-wizard-steps, .qr-filemenu, [role=menu], .qr-rail-steps, .qr-ai-hint') || row.closest('.qr-filemenu, [role=menu], .mrt-workspace-tab, .qr-proj-off');
+  const isCmd = (e) => e.matches('button.mrt-btn, button.qr-btn') && !e.matches('.mrt-workspace-tab__close, .qr-ai-avatar, .qr-step-help, .qr-ck-loc, .qr-row-menu, .mrt-workspace-tab__add, .qr-tab-more');
+  document.querySelectorAll('body *').forEach((row) => {
+    if (skipRow(row)) return;
+    const cs = getComputedStyle(row);
+    if (cs.display !== 'flex' && cs.display !== 'inline-flex') return;
+    const dir = cs.flexDirection || 'row';
+    if (dir === 'column' || dir === 'column-reverse') return;
+    const kids = [...row.children].filter((e) => isCmd(e) && getComputedStyle(e).display !== 'none' && getComputedStyle(e).visibility !== 'hidden');
+    if (kids.length < 2) return;
+    const hs = kids.map((b) => Math.round(b.getBoundingClientRect().height));
+    if (Math.max(...hs) - Math.min(...hs) > 2) res.issues.push('row buttons unequal height ' + hs.join(',') + ' in ' + (typeof row.className === 'string' ? row.className : row.tagName).toString().slice(0, 40));
+  });
+  const hintChip = document.querySelector('.qr-proj:not(.qr-proj-off) [data-testid=assistant-bubble]');
+  const railCk = document.querySelector('.qr-proj:not(.qr-proj-off) [data-testid=rail-open-checklist]');
+  if (hintChip && railCk) {
+    const hcs = getComputedStyle(hintChip), rcs = getComputedStyle(railCk);
+    if (hcs.display !== 'none' && rcs.display !== 'none') {
+      const hh = Math.round(hintChip.getBoundingClientRect().height), rh = Math.round(railCk.getBoundingClientRect().height);
+      if (Math.abs(hh - rh) > 4) res.issues.push('hint chip vs Open checklist height ' + hh + ',' + rh);
+    }
+  }
   document.querySelectorAll('.qr-rail .mrt-wizard-step-label, .qr-rail .mrt-wizard-step-text').forEach((e) => {
     const cs = getComputedStyle(e); if (e.closest('.qr-proj-off')) return;
     const t = (e.textContent || '').replace(/\s+/g, ' ').trim();

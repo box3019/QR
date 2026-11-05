@@ -108,8 +108,23 @@ test('UI wiring: part card + summary sections, click-to-zoom focus, tooltips, to
   const lay = rd('scripts/check-layout.cjs');
   assert.match(lay, /checklist is not a table/); assert.match(lay, /checklist columns/); assert.match(lay, /checklist missing group header rows/);
   assert.match(lay, /checklist ellipsis/); assert.match(lay, /table\.qr-ck-tab/);
-  const files = ['core/checklist/detect.cjs', 'core/checklist/live.mjs', 'core/checklist/zones.cjs', 'core/checklist/export.cjs', 'src/checklist/Checklist.tsx', 'src/checklist/ChecklistSummary.tsx', 'src/settings/SettingsDialog.tsx', 'core/settings.cjs', 'src/i18n/en.json'];
+  const files = ['core/checklist/detect.cjs', 'core/checklist/suggest.cjs', 'core/checklist/live.mjs', 'core/checklist/zones.cjs', 'core/checklist/export.cjs', 'src/checklist/Checklist.tsx', 'src/checklist/ChecklistSummary.tsx', 'src/settings/SettingsDialog.tsx', 'core/settings.cjs', 'src/i18n/en.json'];
   for (const f of files) assert.doesNotMatch(rd(f), /reamer/i, f);
+});
+test('special features: countersink/counterbore in the check; missing hole size is labelled suggested, not on drawing', () => {
+  const c = chk([...LINES, 'COUNTERSINK 90 DEG 4 PLACES', 'CBORE FOR SOCKET HEAD']);
+  assert.ok(c.rows.assembly.items.some((i) => i.key === 'csink'), 'csink');
+  assert.ok(c.rows.assembly.items.some((i) => i.key === 'cbore'), 'cbore');
+  const k = c.rows.assembly.items.find((i) => i.key === 'keensert');
+  assert.ok(k && k.suggest && k.suggest.kind === 'insertDrill', JSON.stringify(k && k.suggest));
+  const pin = c.rows.assembly.items.find((i) => i.key === 'pin');
+  assert.ok(pin && pin.suggest && pin.suggest.kind === 'pinFit');
+  const X = require('../core/checklist/export.cjs');
+  assert.match(X.what(k, X.mk('en')), /suggested, not on drawing/);
+  assert.match(X.what(k, X.mk('he')), /מוצע, לא בשרטוט/);
+  const stated = chk(['NOTES:', 'INSTALL 4X KEENSERT M5X0.8 TAP DRILL 5.2 MM IN HOLES AND ENOUGH WORDS SO THIS COUNTS AS WELL READ']);
+  const ks = stated.rows.assembly.items.find((i) => i.key === 'keensert');
+  assert.ok(ks && !ks.suggest, 'stated hole is not suggested');
 });
 test('i18n: every ck / precision key exists in EN and HE, the export labels equal the UI strings, Hebrew tab has no Latin', () => {
   const en = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/i18n/en.json'), 'utf8')), he = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/i18n/he.json'), 'utf8')); const L = require('../core/checklist/labels.json');

@@ -242,12 +242,59 @@
 }
 .qr-root .qr-modal-f .mrt-btn,
 .qr-root .qr-modal-f button {
-  min-height: 42px;
-  height: 42px;
-  padding-inline: 1.25rem;
-  font-size: 14px;
-  font-weight: 600;
+  min-height: var(--qr-dialog-btn-h, 40px) !important;
+  height: var(--qr-dialog-btn-h, 40px) !important;
+  max-height: var(--qr-dialog-btn-h, 40px) !important;
+  padding-block: 0 !important;
+  padding-inline: var(--qr-btn-pad-x, 12px) !important;
+  font-size: var(--qr-btn-fs, 14px) !important;
+  line-height: var(--qr-btn-lh, 1.2) !important;
+  border-width: 1px !important;
   border-radius: var(--mrt-radius, 6px);
+  white-space: nowrap !important;
+  box-sizing: border-box;
+}
+
+/* One shared height per row of command buttons (labels stay on one line). */
+.qr-root .qr-tri-bar > button.mrt-btn,
+.qr-root .qr-drop-btns > button,
+.qr-root .qr-loaded-btns > button,
+.qr-root .qr-print-draw-actions > button,
+.qr-root .qr-guide-acts > button,
+.qr-root .qr-pres-bar > button,
+.qr-root .qr-pres-chips > button {
+  height: var(--qr-row-btn-h, 40px) !important;
+  min-height: var(--qr-row-btn-h, 40px) !important;
+  max-height: var(--qr-row-btn-h, 40px) !important;
+  padding-block: 0 !important;
+  padding-inline: var(--qr-btn-pad-x, 12px) !important;
+  font-size: var(--qr-btn-fs, 14px) !important;
+  line-height: var(--qr-btn-lh, 1.2) !important;
+  border-width: 1px !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+.qr-root .qr-rail button.qr-rail-btn {
+  height: var(--qr-row-btn-h, 40px) !important;
+  min-height: var(--qr-row-btn-h, 40px) !important;
+  max-height: var(--qr-row-btn-h, 40px) !important;
+  padding-block: 0 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+.qr-root .qr-wiz-footer button.mrt-btn {
+  height: var(--qr-footer-btn-h, 34px) !important;
+  min-height: var(--qr-footer-btn-h, 34px) !important;
+  max-height: var(--qr-footer-btn-h, 34px) !important;
+  padding-block: 0 !important;
+  border-width: 1px !important;
+  white-space: nowrap !important;
+}
+.qr-root .qr-ai-bubble {
+  height: var(--qr-chip-h, 40px) !important;
+  min-height: var(--qr-chip-h, 40px) !important;
+  max-height: var(--qr-chip-h, 40px) !important;
+  white-space: nowrap !important;
 }
 
 @media (max-width: 800px) {

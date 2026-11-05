@@ -30,9 +30,11 @@ test('toolbar CSS is MRT 56x96 equal buttons; footer stays 34', () => {
   assert.ok(/height: 56px !important/.test(fit) && /width: 96px !important/.test(fit));
   assert.ok(/height: 56px !important/.test(layers) && /width: 96px !important/.test(layers));
   assert.ok(/width: 96px !important; min-width: 96px !important/.test(wiz));
-  assert.ok(/height: 34px !important/.test(wiz) && /flex: 0 0 10.5rem/.test(wiz));
+  assert.ok(/--qr-footer-btn-h/.test(wiz) && /flex: 0 0 10.5rem/.test(wiz));
   assert.ok(/--mrt-wizard-rail-width: 272px/.test(chrome));
-  assert.ok(/height: 40px !important/.test(wiz) && /qr-tri-bar button/.test(wiz));
+  assert.ok(/--qr-row-btn-h/.test(wiz) && /qr-tri-bar/.test(wiz));
+  assert.ok(/--qr-row-btn-h: 40px/.test(src('src/styles/buttons.css')));
+  assert.ok(/--qr-dialog-btn-h/.test(chrome) && /row buttons unequal height/.test(src('scripts/check-layout.cjs')));
 });
 
 test('side rail merges caption, thumbnail, job table, stepper and actions; no PIN/ERP', () => {
@@ -51,6 +53,8 @@ test('check-layout expects MRT toolbar/footer heights and same-row equality', ()
   const m = src('scripts/check-layout.cjs');
   assert.ok(/want 56/.test(m) && /want 34/.test(m));
   assert.ok(/toolbar buttons/.test(m) && /triage buttons/.test(m) && /unequal height/.test(m));
+  assert.ok(/row buttons unequal height/.test(m) && /hint chip vs Open checklist/.test(m));
+  assert.ok(/dialog footer buttons/.test(m) && /rail buttons/.test(m) && /drop buttons/.test(m));
   assert.ok(/tabs not above toolbar/.test(m));
   assert.ok(/footer button height/.test(m));
 });

@@ -1,6 +1,7 @@
 ﻿'use strict';
 const { zoneGrid, zoneOf } = require('./zones.cjs');
 const Loc = require('./locate.cjs');
+const { applySuggestions } = require('./suggest.cjs');
 // Checklist detector (Alex's paper list): rules-driven, deterministic, no guessing.
 // Each row is yes (found, with WHAT and WHERE), no (explicitly excluded, or the drawing was read well and it is not called out) or notfound (drawing could not be read well enough to say).
 // Thresholds (tight tolerances, fits) are NOT applied here: this module stores every candidate and core/checklist/live.mjs applies the Settings thresholds live.
@@ -34,10 +35,13 @@ const RULES = [
   { row: 'assembly', key: 'helicoil', re: /\bHELI[\s-]?COIL\b|\bHELICAL\s+(?:COIL|INSERT)|\bWIRE\s+THREAD\s+INSERT|\bMS\s?21209|\bNAS\s?1130|\bMS\s?124651|\bSTI\b/ },
   { row: 'assembly', key: 'insert', re: /\b(?:THREADED\s+)?INSERTS?\b/, skip: (t, m, ctx) => /KEEN|HELI|\bSTI\b|MS\s?21209|NAS\s?1130|KNS\d/.test(ctx) || /\bO-?RING\b|\bINSERT\s+(?:PER|AS|SEE)\s+(?:NOTE|VIEW)/.test(t) },
   { row: 'assembly', key: 'pin', re: /\b(?:DOWEL|SPRING|ROLL|COTTER|CLEVIS|TAPER|GROOVE|SLOTTED|LOCATING|ALIGNMENT|PRESS[\s-]?FIT)\s+PINS?\b|\bPINS?\s+(?:PER|ISO|DIN|MS|NAS|AS)\s?[A-Z]?\d|\bMS\s?16555\b|\bISO\s?(?:2338|8734|8752|8750)\b|\bDIN\s?(?:6325|1481|7|1)\b|\bASME\s?B18\.8\.[12]/ },
+  { row: 'assembly', key: 'csink', re: /\bCOUNTER[\s-]?SINK(?:S|ING)?\b|\bC['’]?SINKS?\b|\bCSKS?\b|\bCSINK\b/ },
+  { row: 'assembly', key: 'cbore', re: /\bCOUNTER[\s-]?BORES?\b|\bC['’]?BORES?\b|\bCBORE\b/ },
   { row: 'assembly', key: 'screw', re: /\b(?:SOCKET\s+HEAD\s+)?(?:CAP\s+|SET\s+|MACHINE\s+|SHOULDER\s+)?(?:SCREWS?|BOLTS?|STUDS?|SHCS)\b|\bMS\s?24\d{3}\b|\bNAS\s?\d{3,4}\b|\bISO\s?(?:4762|4017|4014|7380)\b/, need: /\b(?:INSTALL|ASSEMBL|FASTEN|SECURE|SUPPLIED|PROVIDE|ATTACH|W\/|WITH|TORQUE|LOCTITE|STAKE|PRESS)\w*/, skip: (t) => /\bSCREW\s+THREADS?\b|\bTHREADS?\s+SCREW\b/.test(t) },
   { row: 'threads', key: 'unj', re: /\bUNJ[CFE]?\b|\b\d[\s-]\d{2}\s*UNJ[CF]?\b/ },
   { row: 'threads', key: 'mj', re: /\bMJ\s?\d+(?:\.\d+)?|\bM\d+(?:\.\d+)?\s*[Xx]\s*\d+(?:\.\d+)?\s*-?\s*\d[GH]\s*MJ\b|\bMJ\s+THREADS?\b/ },
   { row: 'threads', key: 'thread-other', re: /\bUNEF\b|\bUNS\b(?!\s*[A-Z]?\d{5})|\bSTUB\s+ACME\b|\bACME\b|\bBUTTRESS\b|\bLEFT[\s-]?HAND\s+THREAD|\bLH\s+THREAD|\bTHREAD\s+LH\b|\bTRAPEZOID|\bTR\d+\s?[Xx]\s?\d+/ },
+  { row: 'threads', key: 'thread', re: /\bM\d+(?:\.\d+)?(?:\s*[Xx\u00D7]\s*\d+(?:\.\d+)?)?(?:\s*-?\s*\d[GH])?\b|\b(?:#\d{1,2}|\d+\/\d+)\s*-\s*\d{2}\s*UN[CF]?\b/, skip: (t) => /\bUNJ|\bMJ\b|\bUNEF|\bINSERT|\bHELI|\bKEEN|\bSTI\b|\bPIN\b|\bDOWEL/.test(t) },
   { row: 'gauges', key: 'gauge', re: /\bGO[\s/-]*NO[\s-]?GO\b|\bGAUGES?\b|\bGAGES?\b|\bOPTICAL\s+COMPARATOR\b|\bPROFILE\s+PROJECTOR\b|\bDEDICATED\s+(?:FIXTURE|GAUGE|GAGE)\b|\bSPLINE\s+(?:GAUGE|GAGE)\b|\bTHREAD\s+(?:PLUG|RING)\b/, skip: (t) => /\bSHEET\s+GAU?GE\b|\bGAUGE\s+\d+\s*(?:GA|AWG)\b|\b\d+\s?GA(?:UGE)?\s+(?:SHEET|WIRE)/.test(t) },
 ];
 const NEGABLE = new Set(['heat', 'laser', 'engrave', 'coating', 'paint', 'br127', 'inspect100', 'cleanroom']);
@@ -169,6 +173,7 @@ function buildChecklist(part, pages) {
   rows.material = mat.length ? { state: 'yes', items: mat } : { state: 'notfound', items: [] };
   for (const id of ['heat', 'engrave', 'laser', 'engfill', 'coating', 'paint', 'br127', 'inspect100', 'cleanroom', 'assembly', 'threads', 'gauges']) row(id, hits[id] || [], neg[id]);
   const c = candidates({ pages, notes: part.notes || [] });
+  applySuggestions(rows, c.unit);
   return { v: 1, read: rq, unit: c.unit, rows, cand: c.cand };
 }
 module.exports = { RULES, scan, buildLines, buildChecklist, candidates, unitOf, readQuality, PLASTIC, locate, place };

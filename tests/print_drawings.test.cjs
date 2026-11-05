@@ -99,8 +99,9 @@ test('UI: select-all, print-drawings button, MRT dialog, equal-height toolbar', 
   assert.match(src('src/components/wizard/StepCheckParts.tsx'), /onPatchAll/);
   const css = src('src/styles/wizard.css');
   assert.match(css, /qr-print-draw-side/);
-  assert.match(css, /qr-print-draw-actions button[\s\S]*height: 40px/);
-  assert.match(css, /qr-tri-bar button[\s\S]*height: 40px/);
+  const chrome = src('src/styles/mrtChrome.css');
+  assert.match(chrome, /qr-print-draw-actions[\s\S]*--qr-row-btn-h/);
+  assert.match(css, /qr-tri-bar[\s\S]*--qr-row-btn-h/);
 });
 
 test('IPC: printers list and silent drawing PDF print', () => {

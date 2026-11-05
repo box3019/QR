@@ -6,7 +6,10 @@ export function itemWhat(i: any): string {
   if (i.kind && ['tol', 'fit', 'gdt', 'ra', 'dec'].includes(i.kind)) return [tk('ck.t.' + i.kind), i.value, i.tol].filter(Boolean).join(' ');
   const base = keyLabel(i.key);
   const spec = i.key === 'material' ? i.spec : i.spec && i.spec !== base ? i.spec : '';
-  return [i.key === 'material' ? '' : base, spec, i.qty ? '\u00D7' + i.qty : '', i.color ? tk('ck.color.' + i.color) || i.color : ''].filter(Boolean).join(' \u00B7 ');
+  const sug = i.suggest && i.suggest.kind
+    ? ((i.suggest.kind === 'pinFit' && i.suggest.d === 'H7' ? t('ck.hole.pinFitBare') : t('ck.hole.' + i.suggest.kind, { d: i.suggest.d })) + ' (' + t('ck.suggest') + ')')
+    : '';
+  return [i.key === 'material' ? '' : base, spec, i.qty ? '\u00D7' + i.qty : '', i.color ? tk('ck.color.' + i.color) || i.color : '', sug].filter(Boolean).join(' \u00B7 ');
 }
 export function whereText(i: any): string {
   const out: string[] = [];
