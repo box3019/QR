@@ -132,6 +132,10 @@
 .qr-root table.qr-mrt col.qr-mrt-c-status { width: 1%; }
 .qr-root table.qr-mrt col.qr-mrt-c-text { width: auto; }
 
+.qr-root table.qr-mrt col.qr-bd-c-sev { width: 5.5rem; }
+.qr-root table.qr-mrt col.qr-bd-c-st { width: 4.5rem; }
+.qr-root table.qr-mrt col.qr-bd-c-val { width: auto; }
+
 .qr-root table.qr-mrt.qr-ck-tab,
 .qr-root table.qr-mrt.qr-bd-tab,
 .qr-root table.qr-mrt.qr-rcard-tab {

@@ -126,6 +126,13 @@ test('special features: countersink/counterbore in the check; missing hole size 
   const ks = stated.rows.assembly.items.find((i) => i.key === 'keensert');
   assert.ok(ks && !ks.suggest, 'stated hole is not suggested');
 });
+test('keensert: detects KEY-LOCKED INSERT, KNCM, NASM 33537 and deduplicates M-sizes', () => {
+  const c = chk(['NOTES:', '1 MINIATURE INSERT KNCM 3X0.5, INTERNAL. THR. M3X0.5MM, L. 4.25 MM, MAT. CRESS PAS 4021038876 4 EA']);
+  const k = c.rows.assembly.items.find((i) => i.key === 'keensert');
+  assert.ok(k, 'detected as keensert');
+  assert.equal(k.spec, 'M3X0.5', 'spec is deduplicated to M3X0.5');
+  assert.equal(k.qty, 4, 'qty is 4');
+});
 test('i18n: every ck / precision key exists in EN and HE, the export labels equal the UI strings, Hebrew tab has no Latin', () => {
   const en = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/i18n/en.json'), 'utf8')), he = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/i18n/he.json'), 'utf8')); const L = require('../core/checklist/labels.json');
   const keys = Object.keys(en).filter((k) => /^(ck\.|st\.prec\.|st\.tab\.precision|tip\.ck|tip\.precField|tip\.precReset|tip\.checklist)/.test(k)); assert.ok(keys.length > 90);

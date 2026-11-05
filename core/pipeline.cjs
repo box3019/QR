@@ -57,11 +57,37 @@ function stepHeader(f) {
   } catch { return null; }
 }
 
+const STOP_WORDS = new Set(['APPLY', 'PER', 'ALL', 'SEE', 'NOTE', 'FOR', 'WITH', 'SHALL', 'ITEM', 'NOT', 'AND', 'THE', 'PAGE', 'DRAWING']);
+
 function locate(pages, pr) {
+  // If an exact item number is known (e.g. 40.1, 80.1), target that row directly
+  if (pr.vars && pr.vars.no) {
+    const no = String(pr.vars.no).trim();
+    const targetPage = pr.vars.page || pr.evidence?.[0]?.source?.match(/page\s+(\d+)/i)?.[1];
+    for (const p of pages) {
+      if (targetPage && p.n !== +targetPage) continue;
+      const tNo = p.tokens.find((k) => k.text.trim() === no || k.text.trim() === 'Item ' + no);
+      if (tNo) {
+        const line = p.tokens.find((k) => k !== tNo && Math.abs(k.y - tNo.y) < Math.max(tNo.h, 6) * 1.5 && k.x > tNo.x + 4);
+        const t = line || tNo;
+        return { page: p.n, x: t.x, y: t.y, w: t.w, h: t.h, word: no };
+      }
+    }
+  }
   const words = [];
-  for (const e of pr.evidence || []) for (const w of String(e.text || '').split(/[\s,;:()"]+/)) if (w.length >= 3 && /[A-Z0-9]/.test(w)) words.push(w.toUpperCase());
+  for (const e of pr.evidence || []) {
+    for (const w of String(e.text || '').split(/[\s,;:()"]+/)) {
+      const u = w.toUpperCase();
+      if (u.length >= 3 && /[A-Z0-9]/.test(u) && !STOP_WORDS.has(u)) words.push(u);
+    }
+  }
   for (const m of String(pr.message).matchAll(/(?:Note |Thread |hole )(\S+)/g)) words.unshift(m[1].replace(/[.,]$/, '').toUpperCase());
-  for (const w of words.slice(0, 6)) for (const p of pages) { const t = p.tokens.find((k) => k.text.toUpperCase().replace(/\s/g, '') === w.replace(/\s/g, '')) || p.tokens.find((k) => w.length >= 5 && k.text.toUpperCase().includes(w)); if (t) return { page: p.n, x: t.x, y: t.y, w: t.w, h: t.h, word: w }; }
+  for (const w of words.slice(0, 8)) {
+    for (const p of pages) {
+      const t = p.tokens.find((k) => k.text.toUpperCase().replace(/\s/g, '') === w.replace(/\s/g, '')) || p.tokens.find((k) => w.length >= 5 && k.text.toUpperCase().includes(w));
+      if (t) return { page: p.n, x: t.x, y: t.y, w: t.w, h: t.h, word: w };
+    }
+  }
   return null;
 }
 

@@ -13,6 +13,10 @@ const TYPE_RE = /\b(TYPE\s+(?:[IV]{1,3}[A-Z]?|\d[A-Z]?)|CLASS\s+\d[A-Z]?|GRADE\s
 const SIZE_RE = /(M\d+(?:\.\d+)?\s*[Xx]\s*\d+(?:\.\d+)?|#\d{1,2}[\s-]\d{2}(?:\s*UN[CFJ]+[\s-]?\d[AB])?|\d{1,2}\/\d{1,2}[\s-]\d{2}(?:\s*UN[CFJ]+[\s-]?\d[AB])?|\.\d{3,4}[\s-]\d{2}\s*UN[CFJ]+(?:[\s-]?\d[AB])?|\bM\d+(?:\.\d+)?\b|(?:[\u00D8O]\s?)?\d+(?:\.\d+)?\s*[Xx]\s*\d+(?:\.\d+)?(?:\s?MM)?|[\u00D8]\s?\d+(?:\.\d+)?)/g;
 const uniq = (a) => [...new Set(a.map((x) => String(x).replace(/\s+/g, ' ').trim()))].filter(Boolean);
 const all = (re, s) => uniq([...String(s).matchAll(re)].map((m) => m[0]));
+const cleanSizes = (arr) => {
+  const mSizes = new Set(arr.filter((s) => /^M\d/i.test(s)).map((s) => s.slice(1).toUpperCase()));
+  return arr.filter((s) => !mSizes.has(s.toUpperCase()));
+};
 
 // ---- rules table: [row, key, regex, spec(text, match) -> {spec?, color?}] ----
 const RULES = [
@@ -31,9 +35,9 @@ const RULES = [
   { row: 'br127', key: 'br127', re: /\bBR[\s-]?127\b/ },
   { row: 'inspect100', key: 'insp100', re: /100\s?%\s*(?:INSPECT|CHECK|VERIF|MEASUR|TEST|CMM|OF)|100\s?PERCENT\s*(?:INSPECT|CHECK|VERIF|MEASUR)|\bINSPECT\w*\s+100\s?%|\bFULL\s+INSPECTION\b|\b(?:EACH|EVERY)\s+(?:PART|PIECE|UNIT)\s+(?:SHALL\s+BE\s+|TO\s+BE\s+|MUST\s+BE\s+)?(?:INSPECT|MEASUR|CHECK)|\bALL\s+(?:PARTS|PIECES|UNITS)\s+(?:SHALL\s+BE\s+|TO\s+BE\s+)?(?:INSPECT|MEASUR)/ },
   { row: 'cleanroom', key: 'cleanroom', re: /CLEAN[\s-]?ROOM|ISO[\s-]?14644|CLEANLINESS\s+(?:LEVEL|CLASS|REQUIREMENT)|IEST-STD-CC1246|MIL-STD-1246|\bSEMI\s?F\d+|CLASS\s?(?:100|1000|10000)\s+CLEAN|\bCLEAN(?:ED)?\s+(?:AND|&)\s+(?:PACK(?:AGED|ED)?|BAG(?:GED)?)\s+IN\s+(?:A\s+)?CLEAN/ },
-  { row: 'assembly', key: 'keensert', re: /\bKEEN[\s-]?SERT\b|\bKNS\d+|\bKNL\d+|\bKNH\d+/ },
+  { row: 'assembly', key: 'keensert', re: /\bKEEN[\s-]?SERTS?\b|\bKEY[\s-]?LOCKED\s+INSERTS?\b|\bKN[CSLHMTE]{1,4}\s*\d+|\bNASM[\s-]?33537\b|\bMS\s?5183[0-5]\b|\bMIL-I-45914\b/ },
   { row: 'assembly', key: 'helicoil', re: /\bHELI[\s-]?COIL\b|\bHELICAL\s+(?:COIL|INSERT)|\bWIRE\s+THREAD\s+INSERT|\bMS\s?21209|\bNAS\s?1130|\bMS\s?124651|\bSTI\b/ },
-  { row: 'assembly', key: 'insert', re: /\b(?:THREADED\s+)?INSERTS?\b/, skip: (t, m, ctx) => /KEEN|HELI|\bSTI\b|MS\s?21209|NAS\s?1130|KNS\d/.test(ctx) || /\bO-?RING\b|\bINSERT\s+(?:PER|AS|SEE)\s+(?:NOTE|VIEW)/.test(t) },
+  { row: 'assembly', key: 'insert', re: /\b(?:THREADED\s+)?INSERTS?\b/, skip: (t, m, ctx) => /KEEN|KEY[\s-]?LOCKED|HELI|\bSTI\b|MS\s?21209|NAS\s?1130|MS\s?5183|NASM\s?33537|KN[CSLHMTE]/.test(ctx) || /\bO-?RING\b|\bINSERT\s+(?:PER|AS|SEE)\s+(?:NOTE|VIEW)/.test(t) || /\b(?:DRAWING|TITLE|CHECKED)\b.*INSERTS?\b/i.test(t) },
   { row: 'assembly', key: 'pin', re: /\b(?:DOWEL|SPRING|ROLL|COTTER|CLEVIS|TAPER|GROOVE|SLOTTED|LOCATING|ALIGNMENT|PRESS[\s-]?FIT)\s+PINS?\b|\bPINS?\s+(?:PER|ISO|DIN|MS|NAS|AS)\s?[A-Z]?\d|\bMS\s?16555\b|\bISO\s?(?:2338|8734|8752|8750)\b|\bDIN\s?(?:6325|1481|7|1)\b|\bASME\s?B18\.8\.[12]/ },
   { row: 'assembly', key: 'csink', re: /\bCOUNTER[\s-]?SINK(?:S|ING)?\b|\bC['’]?SINKS?\b|\bCSKS?\b|\bCSINK\b/ },
   { row: 'assembly', key: 'cbore', re: /\bCOUNTER[\s-]?BORES?\b|\bC['’]?BORES?\b|\bCBORE\b/ },
@@ -72,17 +76,56 @@ function scan(lines) {
         const negated = NEGABLE.has(r.row) && NEG.test(before);
         const extra = r.spec ? r.spec(T, m) : {};
         const specs = r.row === 'coating' || r.row === 'paint' || r.row === 'br127' ? uniq([...all(SPEC_RE, T), ...all(TYPE_RE, T)]).join(' ') : '';
-        const sizes = r.row === 'assembly' || r.row === 'threads' ? all(SIZE_RE, T.slice(Math.max(0, m.index - 20), m.index + 60)).slice(0, 4).join(', ') : '';
+        const rawSizes = (r.row === 'assembly' || r.row === 'threads') ? all(SIZE_RE, T.slice(Math.max(0, m.index - 20), m.index + 60)) : [];
+        const sizes = cleanSizes(rawSizes).slice(0, 4).join(', ');
         const col = r.row === 'paint' ? (T.match(COLOR_RE) || [])[1] : '';
         const qm = T.match(/\b(\d{1,3})\s*(?:X(?!\s*[\d.])|PLACES?|PLCS|HOLES|PCS|PIECES|EA)\b|\((\d{1,3})\s?X\)|\bQTY\.?\s*(\d{1,3})/); const qty = (r.row === 'assembly' || r.row === 'threads') && qm ? parseInt(qm[1] || qm[2] || qm[3], 10) : undefined;
-        const item = { needle: m[0], qty, key: r.key, spec: r.row === 'br127' ? 'BR127' : extra.spec || specs || sizes || (r.key === 'unj' || r.key === 'mj' || r.key === 'thread-other' || r.key === 'gauge' || r.key === 'insp100' || r.key === 'cleanroom' ? m[0].trim() : ''), color: col ? col.toLowerCase() : undefined, where: [l.where], line: String(l.text).replace(/\s+/g, ' ').trim().slice(0, 160) };
+        let needle = m[0];
+        if (r.row === 'assembly') {
+          const specMatch = T.match(/\b(KN[CSLHMTE]{1,4}\s*\d+(?:\.\d+)?|KEY[\s-]?LOCKED(?:\s+INSERT)?|KEEN[\s-]?SERT|HELI[\s-]?COIL)\b/i);
+          if (specMatch) needle = specMatch[0];
+        }
+        const item = { needle, qty, key: r.key, spec: r.row === 'br127' ? 'BR127' : extra.spec || specs || sizes || (r.key === 'unj' || r.key === 'mj' || r.key === 'thread-other' || r.key === 'gauge' || r.key === 'insp100' || r.key === 'cleanroom' ? m[0].trim() : ''), color: col ? col.toLowerCase() : undefined, where: [l.where], line: String(l.text).replace(/\s+/g, ' ').trim().slice(0, 160) };
         add(negated ? neg : hits, r.row, item); break;
       }
     }
     // engraving paint fill and its colour (row 5): an ENGRAV line (or note) that also says FILL / PAINT / ENAMEL / INK
     if (/\bENGRAV/.test(T) && /\b(FILL(?:ED)?|PAINT(?:ED)?|ENAMEL|INK(?:ED)?|COLOU?R(?:ED)?)\b/.test(T) && !/\bLASER\b/.test(T)) { const c = (T.match(COLOR_RE) || [])[1]; const negd = /\b(?:NO|WITHOUT|DO NOT)\s+(?:\w+\s+){0,2}FILL/.test(T); add(negd ? neg : hits, 'engfill', { key: 'engfill', color: c ? c.toLowerCase() : undefined, spec: '', where: [l.where], line: String(l.text).replace(/\s+/g, ' ').trim().slice(0, 160) }); }
   }
-  for (const b of [hits, neg]) for (const k of Object.keys(b)) b[k] = b[k].map(({ _k, ...x }) => ({ ...x, where: x.where.sort((a, c) => rank[a.t] - rank[c.t]).slice(0, 3) }));
+function mergeAssemblyItems(items) {
+  const out = [];
+  for (const it of items) {
+    const existing = out.find((o) => {
+      const sameFamily = o.key === it.key || (['insert', 'keensert', 'helicoil'].includes(o.key) && ['insert', 'keensert', 'helicoil'].includes(it.key) && (!o.spec || !it.spec));
+      if (!sameFamily) return false;
+      if (o.qty && it.qty && o.qty !== it.qty) return false;
+      if (!o.spec || !it.spec) return true;
+      const sA = o.spec.toUpperCase().replace(/\s/g, '');
+      const sB = it.spec.toUpperCase().replace(/\s/g, '');
+      return sA === sB || sA.startsWith(sB) || sB.startsWith(sA);
+    });
+    if (existing) {
+      if (existing.key === 'insert' && it.key === 'keensert') existing.key = 'keensert';
+      if (!existing.spec && it.spec) existing.spec = it.spec;
+      else if (existing.spec && it.spec && it.spec.length > existing.spec.length) existing.spec = it.spec;
+      if (!existing.qty && it.qty) existing.qty = it.qty;
+      for (const w of it.where || []) {
+        if (!existing.where.some((tw) => whereKey(tw) === whereKey(w))) existing.where.push(w);
+      }
+      if (it.needle && (!existing.needle || existing.needle === 'INSERT' || existing.needle === 'INSERTS')) existing.needle = it.needle;
+    } else {
+      out.push(it);
+    }
+  }
+  return out;
+}
+
+  for (const b of [hits, neg]) {
+    if (b.assembly && b.assembly.length > 1) {
+      b.assembly = mergeAssemblyItems(b.assembly);
+    }
+    for (const k of Object.keys(b)) b[k] = b[k].map(({ _k, ...x }) => ({ ...x, where: x.where.sort((a, c) => rank[a.t] - rank[c.t]).slice(0, 3) }));
+  }
   return { hits, neg };
 }
 

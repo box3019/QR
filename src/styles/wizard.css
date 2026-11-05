@@ -471,6 +471,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 .qr-root .qr-bd-tab { table-layout: fixed; width: 100%; border-collapse: collapse; font-size: var(--qr-fs-sm); }
 .qr-root .qr-bd-tab th { background: var(--mrt-surface-muted); font-weight: 600; text-align: start; padding: 0.28em 0.4em; white-space: nowrap; border-bottom: 1px solid var(--mrt-grid-border, var(--mrt-border)); }
 .qr-root .qr-bd-tab td { padding: 0.12em 0.4em; white-space: nowrap; overflow: hidden; text-overflow: clip; border-bottom: 1px solid var(--mrt-grid-border, var(--mrt-border)); min-width: 0; }
+.qr-root .qr-bd-tab td.qr-bd-val-wrap { white-space: normal; overflow: visible; word-break: break-word; line-height: 1.35; }
 .qr-root .qr-bd-lab, .qr-root .qr-bd-body { overflow: hidden !important; text-overflow: clip !important; white-space: nowrap !important; max-width: 100%; display: block; min-width: 0; }
 .qr-root .qr-bd-tab tbody tr:nth-child(even) { background: color-mix(in srgb, var(--mrt-text-muted) 6%, var(--mrt-surface)); }
 .qr-root .qr-bd-tab tbody tr:hover { background: color-mix(in srgb, var(--mrt-accent) 10%, var(--mrt-surface)); }

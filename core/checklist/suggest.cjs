@@ -8,6 +8,8 @@ const { stiRow, tables } = require('../standards/tables.cjs');
 const HOLE_STATED = /(?:[\u00D8\u2300\u2205]|DIA\.?|DRILL|TAP[\s-]?DRILL|C['’]?BORE|CBORE|C['’]?SINK|CSK)\s*[\d.#]|[HG][6-9]\b/i;
 // Helicoil metric STI tap drills (manufacturer charts, mm). Inch sizes come from helicoil_sti.json.
 const HELICOIL_METRIC = { 'M2x0.4': 2.1, 'M2.5x0.45': 2.6, 'M3x0.5': 3.2, 'M3.5x0.6': 3.7, 'M4x0.7': 4.2, 'M5x0.8': 5.2, 'M6x1': 6.3, 'M8x1.25': 8.3, 'M10x1.5': 10.4, 'M12x1.75': 12.5, 'M14x2': 14.5, 'M16x2': 16.5 };
+// Keensert metric tap drills (manufacturer charts, mm).
+const KEENSERT_METRIC = { 'M2x0.4': 3.4, 'M2.5x0.45': 3.8, 'M3x0.5': 4.4, 'M4x0.7': 5.5, 'M5x0.8': 6.9, 'M6x1': 8.8, 'M8x1.25': 10.8, 'M10x1.5': 12.8, 'M12x1.75': 14.8 };
 const r2 = (n) => Math.round(n * 100) / 100;
 const blobOf = (it) => [it.spec, it.line].filter(Boolean).join(' ');
 const holeStated = (it) => HOLE_STATED.test(blobOf(it));
@@ -55,6 +57,7 @@ function parseFrom(text) {
 }
 function keensertDrill(th) {
   if (!th) return null;
+  if (th.system === 'metric') return KEENSERT_METRIC[threadKey(th)] || KEENSERT_METRIC['M' + th.dia + 'x' + th.pitch] || null;
   const t = tables()['MS51830']; if (!t) return null;
   const key = threadKey(th).replace(/UNJC|UNJF/g, (x) => x.slice(0, 3)).replace(/-3B|-2A/g, '');
   for (const row of Object.values(t.rows)) {

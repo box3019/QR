@@ -55,9 +55,9 @@ function MaterialDetails({ d }: any) {
   </div>;
 }
 function ProblemDetails({ list }: any) {
-  return <div className="qr-blk-det" data-testid="blk-details"><MrtTable className="qr-bd-tab">
+  return <div className="qr-blk-det" data-testid="blk-details"><MrtTable className="qr-bd-tab" cols={<colgroup><col className="qr-bd-c-sev" /><col className="qr-bd-c-st" /><col className="qr-bd-c-val" /></colgroup>}>
     <MrtHead cells={[t('ck.col.item'), t('ck.col.status'), t('ck.col.value')]} />
-    <tbody>{list.map((p: any) => <MrtRow key={p.id} className="qr-bd-item" data-sev={p.severity}><td>{t('sev.' + p.severity)}</td><td data-s={p.severity}><span className="qr-ck-s" data-s={p.severity === 'Blocker' ? 'no' : 'notfound'}>{p.severity === 'Blocker' ? '\u2013' : '?'}</span></td><td><bdi>{localized(p, 'message')}</bdi></td></MrtRow>)}</tbody>
+    <tbody>{list.map((p: any) => <MrtRow key={p.id} className="qr-bd-item" data-sev={p.severity}><td>{t('sev.' + p.severity)}</td><td data-s={p.severity}><span className="qr-ck-s" data-s={p.severity === 'Blocker' ? 'no' : 'notfound'}>{p.severity === 'Blocker' ? '\u2013' : '?'}</span></td><td className="qr-bd-val-wrap"><bdi>{localized(p, 'message')}</bdi></td></MrtRow>)}</tbody>
   </MrtTable></div>;
 }
 

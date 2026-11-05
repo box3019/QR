@@ -60,7 +60,14 @@ function placeAll(pages, needle, prefer) {
     for (const b of findRuns(p.tokens, needle)) hits.push({ page: p.n, ...b });
   }
   if (!hits.length) return null;
-  if (prefer != null) hits.sort((a, b) => (a.page === prefer ? -1 : b.page === prefer ? 1 : a.page - b.page));
+  if (prefer != null) {
+    hits.sort((a, b) => {
+      const ap = a.page === prefer ? 1 : 0;
+      const bp = b.page === prefer ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      return a.page - b.page;
+    });
+  }
   const page = hits[0].page;
   const bbox = hits.filter((h) => h.page === page).map(({ x, y, w, h }) => ({ x, y, w, h }));
   return { page, bbox, hits };
