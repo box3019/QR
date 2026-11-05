@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('qr', {
   pickFolder: (opts) => ipcRenderer.invoke('qr:pickFolder', opts),
   pathForFile: (f) => { try { return webUtils.getPathForFile(f); } catch { return f.path || ''; } },
   dropStart: () => ({ dir: Drop.newDropDir(Drop.dropCacheRoot()) }),
-  stageDropPath: (dir, src, name) => Drop.copyNow(dir, src, name),
+  stageDropPath: (dir, src, name) => Drop.copyTreeNow(dir, src, name),
   stageDropBytes: (dir, name, bytes) => Drop.writeNow(dir, name, bytes),
   logDrop: (msg) => ipcRenderer.send('qr:drop-log', String(msg || '')),
   process: (paths, job) => ipcRenderer.invoke('qr:process', paths, job),

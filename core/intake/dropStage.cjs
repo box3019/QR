@@ -1,10 +1,11 @@
 'use strict';
 // Persist files dropped from WinRAR / Explorer zip / 7-Zip before the source temp files vanish.
+// WinRAR may only finish writing %TEMP%\Rar$DRa* after the drop handler returns, and may hand us a folder.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const DROP_RETRY = { tries: 8, delayMs: 40 };
+const DROP_RETRY = { timeoutMs: 5000, delayMs: 50 };
 const DROP_MAX_AGE_MS = 48 * 3600 * 1000;
 
 function dropCacheRoot(env, tmp) {
@@ -22,7 +23,7 @@ function dropFileName(name) {
     .replace(/_+/g, '_')
     .replace(/^_+|_+$/g, '')
     .slice(0, 80);
-  const e = ext.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').slice(0, 12);
+  const e = ext.replace(/[<>:"/\\|?*\x00-\x1f]/g, '').slice(0, 24);
   return (stem || 'file') + e;
 }
 
@@ -55,7 +56,26 @@ function usedSet(dir, io) {
 
 function fileReady(p, io) {
   const fsio = io || fs;
-  try { const st = fsio.statSync(p); return !!(st && st.isFile()); } catch { return false; }
+  try { const st = fsio.statSync(p); return !!(st && st.isFile() && st.size > 0); } catch { return false; }
+}
+
+function dirHasEntries(p, io) {
+  const fsio = io || fs;
+  try {
+    const names = fsio.readdirSync(p).filter((n) => n && n !== '.' && n !== '..');
+    return names.length > 0;
+  } catch { return false; }
+}
+
+function pathKind(p, io) {
+  if (!p) return '';
+  const fsio = io || fs;
+  try {
+    const st = fsio.statSync(p);
+    if (st.isDirectory()) return dirHasEntries(p, fsio) ? 'dir' : 'empty-dir';
+    if (st.isFile()) return st.size > 0 ? 'file' : 'empty';
+  } catch {}
+  return '';
 }
 
 function newDropDir(root, now, io) {
@@ -86,31 +106,66 @@ function pruneDropCache(root, maxAgeMs, io, now) {
   return gone;
 }
 
+function copyDirRecursive(src, dest, io) {
+  const fsio = io || fs;
+  fsio.mkdirSync(dest, { recursive: true });
+  let names = [];
+  try { names = fsio.readdirSync(src); } catch { return; }
+  for (const n of names) {
+    if (!n || n === '.' || n === '..') continue;
+    const s = path.join(src, n);
+    const d = path.join(dest, n);
+    let st; try { st = fsio.statSync(s); } catch { continue; }
+    if (st.isDirectory()) copyDirRecursive(s, d, fsio);
+    else if (st.isFile()) fsio.copyFileSync(s, d);
+  }
+}
+
 function copyNow(dir, src, name, io) {
   const fsio = io || fs;
-  if (!src || !fileReady(src, fsio)) return { ok: false, error: 'missing' };
+  const kind = pathKind(src, fsio);
+  if (kind === 'dir' || kind === 'empty-dir') return { ok: false, error: 'is-dir', kind };
+  if (kind === 'empty') return { ok: false, error: 'empty', kind: 'file', size: 0 };
+  if (kind !== 'file') return { ok: false, error: 'missing', kind: kind || 'missing' };
   fsio.mkdirSync(dir, { recursive: true });
   const dest = uniqueDest(dir, name, usedSet(dir, fsio));
   try {
     fsio.copyFileSync(src, dest);
-    if (!fileReady(dest, fsio)) return { ok: false, error: 'copy empty' };
-    return { ok: true, path: dest };
+    if (!fileReady(dest, fsio)) return { ok: false, error: 'copy empty', kind: 'file' };
+    let size = 0; try { size = fsio.statSync(dest).size; } catch {}
+    return { ok: true, path: dest, kind: 'file', size };
   } catch (e) {
-    return { ok: false, error: (e && e.message) || String(e) };
+    return { ok: false, error: (e && e.message) || String(e), kind: 'file' };
+  }
+}
+
+function copyTreeNow(dir, src, name, io) {
+  const fsio = io || fs;
+  const kind = pathKind(src, fsio);
+  if (kind === 'file' || kind === 'empty' || kind === '' || kind === 'missing') return copyNow(dir, src, name, fsio);
+  if (kind === 'empty-dir') return { ok: false, error: 'empty', kind: 'dir', size: 0 };
+  fsio.mkdirSync(dir, { recursive: true });
+  const dest = uniqueDest(dir, name, usedSet(dir, fsio));
+  try {
+    copyDirRecursive(src, dest, fsio);
+    if (!dirHasEntries(dest, fsio)) return { ok: false, error: 'empty', kind: 'dir', size: 0 };
+    return { ok: true, path: dest, kind: 'dir' };
+  } catch (e) {
+    return { ok: false, error: (e && e.message) || String(e), kind: 'dir' };
   }
 }
 
 function writeNow(dir, name, bytes, io) {
   const fsio = io || fs;
   const buf = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes || []);
-  if (!buf.length) return { ok: false, error: 'empty' };
+  if (!buf.length) return { ok: false, error: 'empty', kind: 'bytes', size: 0 };
   fsio.mkdirSync(dir, { recursive: true });
   const dest = uniqueDest(dir, name, usedSet(dir, fsio));
   try {
     fsio.writeFileSync(dest, buf);
-    return { ok: true, path: dest };
+    return { ok: true, path: dest, kind: 'bytes', size: buf.length };
   } catch (e) {
-    return { ok: false, error: (e && e.message) || String(e) };
+    return { ok: false, error: (e && e.message) || String(e), kind: 'bytes' };
   }
 }
 
@@ -132,6 +187,6 @@ function dropSessionsOf(paths, root) {
 }
 
 module.exports = {
-  DROP_RETRY, DROP_MAX_AGE_MS, dropCacheRoot, dropFileName, uniqueDest, fileReady,
-  newDropDir, pruneDropCache, copyNow, writeNow, dropSessionOf, dropSessionsOf,
+  DROP_RETRY, DROP_MAX_AGE_MS, dropCacheRoot, dropFileName, uniqueDest, fileReady, pathKind,
+  newDropDir, pruneDropCache, copyNow, copyTreeNow, writeNow, dropSessionOf, dropSessionsOf,
 };

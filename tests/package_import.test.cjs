@@ -70,6 +70,16 @@ test('RAR4 and RAR5 unpack in-process like ZIP, including nested zip', async () 
   assert.ok(fs.existsSync(path.join(cache, fs.readdirSync(cache)[0], CACHE_MARKER)));
 });
 
+test('mangled WinRAR name is a RAR by Rar! magic', async () => {
+  const d = tmp();
+  const buf = buildRar4([{ name: 'part.pdf', data: '%PDF-1.4 r' }]);
+  const f = write(d, 'PRODUCT.RAR_1_5820277', buf);
+  const { peekArchiveKind } = require('../core/intake/archive.cjs');
+  assert.equal(peekArchiveKind(f), 'rar');
+  const { files } = await expand([f], path.join(d, 'work'), { importCache: path.join(d, 'cache') });
+  assert.ok(files.some((x) => path.basename(x) === 'part.pdf'), files.map((x) => path.basename(x)).join(','));
+});
+
 test('RAR zip-slip and damaged archives are rejected with a clear error', async () => {
   const d = tmp();
   const evil = write(d, 'slip.rar', buildRar4([{ name: '../evil.txt', data: 'nope' }]));
@@ -166,7 +176,7 @@ test('per-part PDF file name is the part number plus date; package print uses mo
   assert.match(proj, /savePdfEach/);
 });
 
-test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.24', () => {
+test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.25', () => {
   const tri = src('src/components/wizard/TriageView.tsx');
   assert.match(tri, /tri-print/);
   assert.match(tri, /tri-save/);
@@ -185,7 +195,7 @@ test('UI: triage, per-part Print/Save PDF, save each, RAR pick, version 0.1.24',
   assert.match(main, /partPdfFileName/);
   assert.match(main, /mode === 'package'/);
   const pkg = JSON.parse(src('package.json'));
-  assert.equal(pkg.version, '0.1.24');
+  assert.equal(pkg.version, '0.1.25');
   assert.ok(pkg.dependencies['node-unrar-js']);
   const en = JSON.parse(src('src/i18n/en.json')); const he = JSON.parse(src('src/i18n/he.json'));
   for (const k of ['tri.suitable', 'tri.notSuitable', 'tri.unknown', 'tri.toSuit', 'tri.toNot', 'tri.saveEach', 'tri.saveEachAsk', 'tri.saveChecked', 'tri.saveSuitable', 'tri.saveAll', 'tri.printDrawings', 'st.mat.shopHelp', 'pdf.savedEach']) {

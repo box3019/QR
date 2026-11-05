@@ -2,7 +2,7 @@
 // Direct ZIP import: synthetic archives only (nested zip, data/files, Hebrew names, zip-slip, corrupt). No customer data.
 const test = require('node:test'); const assert = require('node:assert'); const fs = require('fs'); const os = require('os'); const path = require('path');
 const { expand, sourceLabel } = require('../core/intake/expand.cjs');
-const { extractArchive, decodeZipName, safeJoin, ZIP_NEST_DEPTH, CACHE_MARKER } = require('../core/intake/archive.cjs');
+const { extractArchive, decodeZipName, safeJoin, ZIP_NEST_DEPTH, CACHE_MARKER, archiveMagic, peekArchiveKind } = require('../core/intake/archive.cjs');
 const { buildZip } = require('./zipstore.cjs');
 
 function tmp() { return fs.mkdtempSync(path.join(os.tmpdir(), 'qrt-zip-')); }
@@ -12,6 +12,19 @@ test('.ZIP is an archive regardless of case', () => {
   const { fileKind } = require('../core/intake/classify.cjs');
   assert.equal(fileKind('5799891_1_PRODUCT.ZIP'), 'archive');
   assert.equal(fileKind('pack.zip'), 'archive');
+});
+
+test('WinRAR temp name PRODUCT.ZIP_1_123 is a zip by PK magic, not by extension', async () => {
+  const { fileKind } = require('../core/intake/classify.cjs');
+  const d = tmp();
+  const bytes = buildZip([{ name: 'data/files/part.pdf', data: '%PDF-1.4 drawing' }]);
+  const f = path.join(d, 'PRODUCT.ZIP_1_5820277');
+  fs.writeFileSync(f, bytes);
+  assert.equal(fileKind(f), 'other');
+  assert.equal(archiveMagic(bytes), 'zip');
+  assert.equal(peekArchiveKind(f), 'zip');
+  const { files } = await expand([f], path.join(d, 'work'), { importCache: path.join(d, 'cache') });
+  assert.ok(files.some((x) => path.basename(x) === 'part.pdf'), files.map((x) => path.basename(x)).join(','));
 });
 
 test('data/files layout and nested zip unpack in-process', async () => {

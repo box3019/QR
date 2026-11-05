@@ -98,8 +98,25 @@ function rarError(file, e) {
 
 const isZipName = (f) => /\.zip$/i.test(f);
 const isRarName = (f) => /\.rar$/i.test(f);
-/** ZIP and RAR: in-process, cached, nest depth ZIP_NEST_DEPTH. */
-const isInProcessArchive = (f) => isZipName(f) || isRarName(f);
+/** ZIP local-file header PK\x03\x04; RAR4/RAR5 marker Rar!. */
+function archiveMagic(buf) {
+  if (!buf || buf.length < 4) return '';
+  if (buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04) return 'zip';
+  if (buf[0] === 0x52 && buf[1] === 0x61 && buf[2] === 0x72 && buf[3] === 0x21) return 'rar';
+  return '';
+}
+function peekArchiveKind(file) {
+  try {
+    const fd = fs.openSync(file, 'r');
+    try {
+      const buf = Buffer.alloc(8);
+      const n = fs.readSync(fd, buf, 0, 8, 0);
+      return archiveMagic(n > 0 ? buf.subarray(0, n) : buf);
+    } finally { try { fs.closeSync(fd); } catch {} }
+  } catch { return ''; }
+}
+/** ZIP and RAR: in-process, cached, nest depth ZIP_NEST_DEPTH. Name or magic (WinRAR temp names like X.ZIP_1_123). */
+const isInProcessArchive = (f) => isZipName(f) || isRarName(f) || peekArchiveKind(f) === 'zip' || peekArchiveKind(f) === 'rar';
 
 function toArrayBuffer(buf) {
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
@@ -303,8 +320,11 @@ async function extractInProcess(file, outDir, opts, unpack, wrapError, flatten) 
 /** Unpack any supported archive into outDir. ZIP and RAR are in-process only. @returns {Promise<string[]>} */
 async function extractArchive(file, outDir, opts = {}) {
   fs.mkdirSync(outDir, { recursive: true });
+  const mag = peekArchiveKind(file);
   if (isZipName(file)) return extractInProcess(file, outDir, opts, unzip, zipError, false);
+  if (mag === 'zip') return extractInProcess(file, outDir, opts, unzip, zipError, false);
   if (isRarName(file)) return extractInProcess(file, outDir, opts, unrar, rarError, true);
+  if (mag === 'rar') return extractInProcess(file, outDir, opts, unrar, rarError, true);
   await sevenZip(file, outDir, opts.sevenZip);
   flattenSingleFolder(outDir);
   return walk(outDir);
@@ -313,6 +333,6 @@ async function extractArchive(file, outDir, opts = {}) {
 module.exports = {
   extractArchive, flattenSingleFolder, defaultSevenZip, walk, unzip, unrar, decodeZipName, safeJoin,
   cacheDirFor, pruneImportCache, releaseJobCache, jobCacheBucket, defaultImportCache, sha256File, zipError, rarError,
-  isZipName, isRarName, isInProcessArchive,
+  isZipName, isRarName, isInProcessArchive, archiveMagic, peekArchiveKind,
   MAX_UNCOMPRESSED, MAX_FILES, ZIP_NEST_DEPTH, CACHE_MARKER,
 };

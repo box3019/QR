@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { fileKind } = require('./classify.cjs');
-const { extractArchive, cacheDirFor, defaultImportCache, ZIP_NEST_DEPTH, isInProcessArchive } = require('./archive.cjs');
+const { extractArchive, cacheDirFor, defaultImportCache, ZIP_NEST_DEPTH, isInProcessArchive, peekArchiveKind } = require('./archive.cjs');
 
 let n = 0;
 const sub = (tmp, name) => path.join(tmp, `${path.basename(name).replace(/[^\w.\- ]/g, '_')}_${Date.now()}_${n++}`);
@@ -26,8 +26,9 @@ async function expand(paths, tmp, opts = {}, depth = 0) {
   for (const p of paths) {
     let st; try { st = fs.statSync(p); } catch (e) { fail(p, e); continue; }
     if (st.isDirectory()) { const r = await expand(fs.readdirSync(p).map((x) => path.join(p, x)), tmp, { ...opts, sources, names, chain }, depth); files.push(...r.files); rfqs.push(...r.rfqs); continue; }
-    const kind = fileKind(p);
-    const cached = isCached(p);
+    const mag = peekArchiveKind(p);
+    const kind = fileKind(p) === 'archive' || mag === 'zip' || mag === 'rar' ? 'archive' : fileKind(p);
+    const cached = isCached(p) || mag === 'zip' || mag === 'rar';
     const max = cached ? ZIP_NEST_DEPTH : 5;
     if (kind === 'archive' && depth < max) {
       try {
