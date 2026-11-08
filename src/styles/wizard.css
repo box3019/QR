@@ -350,7 +350,7 @@ button.qr-loaded-part:hover { text-decoration: underline; }
 
 /* File menu, status bar, unsaved dot, equal toolbar buttons */
 .qr-statusbar { flex: 0 0 auto; min-height: 1.5rem; display: flex; align-items: center; padding: 0 0.9rem; font-size: 0.75rem; color: var(--mrt-text-muted); border-top: 1px solid var(--mrt-chrome-border, var(--mrt-border)); background: var(--mrt-chrome-surface, transparent); }
-.qr-filemenu { position: fixed; z-index: 60; min-width: 15rem; padding: 0.25rem; display: flex; flex-direction: column; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border); border-radius: var(--mrt-radius, 8px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+.qr-filemenu { position: fixed; z-index: 60; min-width: 15rem; max-height: calc(100vh - 16px); overflow-y: auto; padding: 0.25rem; display: flex; flex-direction: column; background: var(--mrt-surface); color: var(--mrt-text); border: 1px solid var(--mrt-border); border-radius: var(--mrt-radius, 8px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
 .qr-menu-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.7rem; background: transparent; border: 0; border-radius: 6px; font: inherit; color: inherit; text-align: start; cursor: pointer; white-space: nowrap; }
 .qr-menu-item:hover:not(:disabled), .qr-menu-item:focus-visible { background: rgba(127, 127, 127, 0.16); outline: none; }
 .qr-menu-item:disabled { opacity: 1; cursor: default; background: #ffffff; color: #3a3a3c; border: 1px dashed #86868b; }

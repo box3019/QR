@@ -68,12 +68,38 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
   const byId = Object.fromEntries(visibleTabs.map((tb: any, i: number) => [tb.id, { ...tb, _i: i }]));
   const shownTabs = shown.map((id: string) => byId[id]).filter(Boolean);
   const restTabs = rest.map((id: string) => byId[id]).filter(Boolean);
+  const tabMenuRef = useRef<HTMLDivElement>(null);
+  const [tabMenuPos, setTabMenuPos] = useState({ top: -9999, left: -9999 });
+
   useEffect(() => { if (!menu) return;
     const away = (e: MouseEvent) => { if (!(e.target as HTMLElement).closest('.qr-tab-menu,[data-testid=tab-more]')) setMenu(null); };
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null); };
     window.addEventListener('mousedown', away); window.addEventListener('keydown', esc);
     return () => { window.removeEventListener('mousedown', away); window.removeEventListener('keydown', esc); };
   }, [menu]);
+
+  useLayoutEffect(() => {
+    if (!menu || !tabMenuRef.current) return;
+    const update = () => {
+      if (!tabMenuRef.current) return;
+      const m = tabMenuRef.current.getBoundingClientRect();
+      const pad = 8;
+      const w = m.width || 220;
+      const h = m.height || 140;
+
+      let top = menu.y;
+      if (top + h > window.innerHeight - pad) {
+        top = Math.max(pad, window.innerHeight - h - pad);
+      }
+
+      let left = Math.max(pad, Math.min(menu.x, window.innerWidth - w - pad));
+      setTabMenuPos({ top, left });
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [menu]);
+
   const openMenu = (id: string, x: number, y: number, more?: boolean) => setMenu({ id, x: Math.max(4, Math.min(x, window.innerWidth - 260)), y, more });
   const item = (testid: string, label: string, fn: () => void) =>
     <button type="button" role="menuitem" className="qr-menu-item" data-testid={testid} title={label} onClick={() => { setMenu(null); fn(); }}>{label}</button>;
@@ -81,7 +107,7 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
     {shownTabs.map((tb: any) => <TabChip key={tb.id} tb={tb} on={tb.id === active} onSelect={onSelect} onClose={onClose} onMenu={openMenu} onMove={onMove} from={from} />)}
     {!!restTabs.length && <button type="button" ref={moreRef} className="qr-tab-more" data-testid="tab-more" title={t('tip.tabMore')} aria-label={t('tab.more')} aria-haspopup="menu" onClick={(e) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); openMenu(restTabs[0].id, r.left, r.bottom + 4, true); }}>{t('tab.more')}</button>}
     <button type="button" ref={addRef} className="mrt-workspace-tab__add" data-testid="tab-add" title={t('tab.add')} aria-label={t('tab.add')} onClick={onAdd}>+</button>
-    {menu && <div className="qr-filemenu qr-tab-menu" role="menu" data-testid="tab-menu" style={{ top: menu.y, left: menu.x }}>
+    {menu && <div ref={tabMenuRef} className="qr-filemenu qr-tab-menu" role="menu" data-testid="tab-menu" style={{ top: tabMenuPos.top, left: tabMenuPos.left }}>
       {menu.more && restTabs.map((tb: any) => <div key={tb.id} className="qr-more-job">
         <button type="button" role="menuitem" className="qr-menu-item" data-testid="tab-more-item" data-id={tb.id} title={[tb.label || t('tab.new'), tb.customer].filter(Boolean).join(' ')} onClick={() => { setMenu(null); onSelect(tb.id); }}>
           <bdi>{tb.label || t('tab.new')}</bdi>{tb.customer ? <span className="qr-tab-cust"> <bdi>{tb.customer}</bdi></span> : null}

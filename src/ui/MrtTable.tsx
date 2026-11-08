@@ -4,8 +4,10 @@ import { t } from '../i18n';
 
 export function OverflowLine({ className, testid, text, children }: { className?: string; testid?: string; text: string; children?: any }) {
   const ref = useRef<HTMLSpanElement>(null);
+  const fullRef = useRef<HTMLSpanElement>(null);
   const [over, setOver] = useState(false);
   const [open, setOpen] = useState(false);
+  const [flip, setFlip] = useState(false);
   useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
     const check = () => { setOver(el.scrollWidth > el.clientWidth + 1); };
@@ -17,11 +19,22 @@ export function OverflowLine({ className, testid, text, children }: { className?
     if (host) ro.observe(host);
     return () => ro.disconnect();
   }, [text]);
+
+  useLayoutEffect(() => {
+    if (!open || !fullRef.current) return;
+    const r = fullRef.current.getBoundingClientRect();
+    if (r.bottom > window.innerHeight - 8 && r.top - r.height > 8) {
+      setFlip(true);
+    } else {
+      setFlip(false);
+    }
+  }, [open]);
+
   if (!text) return <span className={className} data-testid={testid}>{children}</span>;
-  return <span className="qr-ck-line" data-overflow={over ? '1' : undefined} data-open={open ? '1' : undefined}>
+  return <span className="qr-ck-line" data-overflow={over ? '1' : undefined} data-open={open ? '1' : undefined} style={{ position: 'relative' }}>
     <span ref={ref} className={className} data-testid={testid} title={text}>{children ?? text}</span>
     {over ? <button type="button" className="qr-ck-more" data-testid="ck-expand" aria-expanded={open} title={open ? t('ck.valueHide') : t('ck.valueFull')} onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}>{open ? '\u25BE' : '\u25B8'}</button> : null}
-    {open ? <span className="qr-ck-full" data-testid="ck-full">{text}</span> : null}
+    {open ? <span ref={fullRef} className="qr-ck-full" data-testid="ck-full" style={flip ? { top: 'auto', bottom: 'calc(100% + 2px)' } : undefined}>{text}</span> : null}
   </span>;
 }
 
