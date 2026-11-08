@@ -28,9 +28,11 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
   const strip = useRef<HTMLDivElement>(null);
   const addRef = useRef<HTMLButtonElement>(null);
   const moreRef = useRef<HTMLButtonElement>(null);
-  const [maxN, setMaxN] = useState(tabs.length || 1);
+  const hideSingleEmpty = tabs.length === 1 && tabs[0].status === 'empty' && !tabs[0].label && !(tabs[0].nParts > 0);
+  const visibleTabs = hideSingleEmpty ? [] : tabs;
+  const [maxN, setMaxN] = useState(visibleTabs.length || 1);
   const [menu, setMenu] = useState(null as null | { id: string; x: number; y: number; more?: boolean });
-  const ids = tabs.map((tb: any) => tb.id);
+  const ids = visibleTabs.map((tb: any) => tb.id);
   const fit = () => {
     const el = strip.current; if (!el) return;
     const bar = (el.closest('.qr-tabrow') || el.closest('.qr-topbar')) as HTMLElement | null;
@@ -51,9 +53,9 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
       }
       width = Math.max(0, Math.min(el.clientWidth || bar.clientWidth, bar.clientWidth - used - gap * Math.max(0, nVis - 1)));
     }
-    setMaxN(tabFitCount(width, tabW, addW, moreW, tabs.length));
+    setMaxN(tabFitCount(width, tabW, addW, moreW, visibleTabs.length));
   };
-  useLayoutEffect(fit, [tabs.length, tabs.map((tb: any) => tb.label + tb.customer).join('|')]);
+  useLayoutEffect(fit, [visibleTabs.length, visibleTabs.map((tb: any) => tb.label + tb.customer).join('|')]);
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return;
     const el = strip.current; const bar = el && (el.closest('.qr-tabrow') || el.closest('.qr-topbar'));
@@ -61,9 +63,9 @@ export function TabsBar({ tabs, active, onSelect, onAdd, onClose, onCloseOthers,
     if (el) ro.observe(el); if (bar) ro.observe(bar);
     window.addEventListener('resize', fit);
     return () => { ro.disconnect(); window.removeEventListener('resize', fit); };
-  }, [tabs.length]);
+  }, [visibleTabs.length]);
   const { shown, rest } = visibleTabIds(ids, active, maxN);
-  const byId = Object.fromEntries(tabs.map((tb: any, i: number) => [tb.id, { ...tb, _i: i }]));
+  const byId = Object.fromEntries(visibleTabs.map((tb: any, i: number) => [tb.id, { ...tb, _i: i }]));
   const shownTabs = shown.map((id: string) => byId[id]).filter(Boolean);
   const restTabs = rest.map((id: string) => byId[id]).filter(Boolean);
   useEffect(() => { if (!menu) return;
